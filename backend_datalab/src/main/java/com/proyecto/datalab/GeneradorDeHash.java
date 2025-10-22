@@ -6,7 +6,7 @@ public class GeneradorDeHash {
     
     public static void main(String[] args) {
         // --- CAMBIA ESTA CONTRASEÑA ---
-        String contraseniaPlana = "administradorEstudiantesDAtalab"; 
+        String contraseniaPlana = "administradorEstudiantesDatalab"; 
         
         BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         String hash = passwordEncoder.encode(contraseniaPlana);
