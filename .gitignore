@@ -1,0 +1,11 @@
+# === Seguridad / secretos ===
+.env
+*.env
+*.env.local
+backend_datalab/src/main/resources/application-local.properties
+*.local.properties
+# === Build/IDE ===
+target/
+.idea/
+*.iml
+.DS_Store
