@@ -1,4 +1,4 @@
-/*package com.proyecto.datalab.servicio;
+package com.proyecto.datalab.servicio;
 
 import java.util.List;
 import java.util.Optional;
@@ -49,19 +49,19 @@ public class UsuarioService {
         nuevoUsuario.setCorreo(correo);
         nuevoUsuario.setContrasenia(contrasenaHasheada);
         nuevoUsuario.setRol(rol);
-        nuevoUsuario.setEstado("Activo");
+        nuevoUsuario.setEstado(EstadoUsuario.Activo);
 
         // 5. Guardar en la base de datos (CRUD)
         return usuarioRepository.save(nuevoUsuario);
     }
 
     
-    @Transactional(readOnly = true)
+    @Transactional //(readOnly = true)
     public List<Usuario> obtenerTodosLosUsuarios() {
         return usuarioRepository.findAll();
     }
 
-    @Transactional(readOnly = true)
+    @Transactional //(readOnly = true)
     public Optional<Usuario> obtenerUsuarioPorId(Long id) {
         return usuarioRepository.findById(id);
     }
@@ -71,5 +71,5 @@ public class UsuarioService {
         usuarioRepository.deleteById(id);
     }
 }
-*/
+
 
