@@ -11,6 +11,8 @@ import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "Respuesta",
@@ -18,6 +20,8 @@ import jakarta.persistence.UniqueConstraint;
         @UniqueConstraint(columnNames = {"id_participante", "id_variable"})
     }
 )
+@Data
+@NoArgsConstructor
 public class Respuesta {
 
     @Id

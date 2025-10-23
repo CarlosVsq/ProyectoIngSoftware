@@ -17,9 +17,13 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "Usuario")
+@Data
+@NoArgsConstructor
 public class Usuario {
 
     @Id
@@ -27,7 +31,7 @@ public class Usuario {
     @Column(name = "id_usuario")
     private Integer idUsuario;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "id_rol", nullable = false)
     private Rol rol;
 
