@@ -20,7 +20,7 @@ CREATE TABLE `Usuario` (
   `nombre_completo` varchar(255) NOT NULL,
   `correo` varchar(255) NOT NULL,
   `contrasenia` varchar(255) NOT NULL COMMENT 'Almacenar como hash',
-  `estado` enum('Activo','Inactivo') NOT NULL DEFAULT 'Activo',
+  `estado` enum('ACTIVO','INACTIVO') NOT NULL DEFAULT 'ACTIVO',
   `fecha_creacion` datetime NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id_usuario`),
   UNIQUE KEY `correo` (`correo`),
@@ -32,12 +32,12 @@ CREATE TABLE `Usuario` (
 CREATE TABLE `Participante` (
   `id_participante` int(11) NOT NULL AUTO_INCREMENT,
   `id_reclutador` int(11) NOT NULL,
-  `codigo_participante` varchar(50) NOT NULL COMMENT 'Se asigna en runtime',
+  `codigo_participante` varchar(50) COMMENT 'Se asigna en runtime',
   `nombre_completo` varchar(255) DEFAULT NULL,
   `telefono` varchar(20) DEFAULT NULL,
   `direccion` varchar(255) DEFAULT NULL,
-  `grupo` enum('Caso','Control') NOT NULL,
-  `estado_ficha` enum('Completa','Incompleta','No completable') NOT NULL DEFAULT 'Incompleta',
+  `grupo` enum('CASO','CONTROL') NOT NULL,
+  `estado_ficha` enum('COMPLETA','INCOMPLETA','NO COMPLETABLE') NOT NULL DEFAULT 'INCOMPLETA',
   `fecha_inclusion` date NOT NULL,
   `observacion` text DEFAULT NULL,
   PRIMARY KEY (`id_participante`),
@@ -105,8 +105,8 @@ INSERT INTO `Rol` (`nombre_rol`, `descripcion`) VALUES
 ('Administrador', 'Control total del sistema.');
 
 INSERT INTO `Usuario` (`id_rol`, `nombre_completo`, `correo`, `contrasenia`, `estado`) VALUES
-((SELECT id_rol FROM Rol WHERE nombre_rol = 'Investigadora Principal'), 'Dra. María González', 'maria.g@investigacion.cl', 'un_hash_muy_seguro_aqui', 'Activo'),
-((SELECT id_rol FROM Rol WHERE nombre_rol = 'Administrador'), 'Admin del Sistema', 'admin@sistema.cl','administradorEstudiantesDatalab', 'Activo');
+((SELECT id_rol FROM Rol WHERE nombre_rol = 'Investigadora Principal'), 'Dra. María González', 'maria.g@investigacion.cl', 'un_hash_muy_seguro_aqui', 'ACTIVO'),
+((SELECT id_rol FROM Rol WHERE nombre_rol = 'Administrador'), 'Admin del Sistema', 'admin@sistema.cl','administradorEstudiantesDatalab', 'ACTIVO');
 
 INSERT INTO `Variable` (`enunciado`, `codigo_variable`, `tipo_dato`, `opciones`, `aplica_a`, `seccion`, `es_obligatoria`) VALUES
 ('Edad', 'edad', 'Numero', NULL, 'Ambos', 'Datos sociodemográficos', 1),
