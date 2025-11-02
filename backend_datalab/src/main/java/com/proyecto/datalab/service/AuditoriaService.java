@@ -1,11 +1,12 @@
-package com.proyecto.datalab.servicio;
+package com.proyecto.datalab.service;
 
-import com.proyecto.datalab.entidades.Auditoria;
-import com.proyecto.datalab.entidades.Usuario;
-import com.proyecto.datalab.repositorio.AuditoriaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.proyecto.datalab.entity.Auditoria;
+import com.proyecto.datalab.entity.Usuario;
+import com.proyecto.datalab.repository.AuditoriaRepository;
 
 @Service
 public class AuditoriaService {

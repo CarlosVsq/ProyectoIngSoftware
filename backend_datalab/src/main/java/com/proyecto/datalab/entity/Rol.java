@@ -1,4 +1,4 @@
-package com.proyecto.datalab.entidades;
+package com.proyecto.datalab.entity;
 
 import java.util.List;
 

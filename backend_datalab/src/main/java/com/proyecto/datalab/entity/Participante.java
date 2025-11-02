@@ -1,4 +1,4 @@
-package com.proyecto.datalab.entidades;
+package com.proyecto.datalab.entity;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -22,8 +22,8 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "Participante")

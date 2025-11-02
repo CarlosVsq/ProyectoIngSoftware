@@ -1,21 +1,22 @@
-package com.proyecto.datalab.servicio;
+package com.proyecto.datalab.service;
 
-import com.proyecto.datalab.entidades.Participante;
-import com.proyecto.datalab.entidades.Respuesta;
-import com.proyecto.datalab.entidades.Usuario;
-import com.proyecto.datalab.entidades.Variable;
-import com.proyecto.datalab.enums.EstadoFicha;
-import com.proyecto.datalab.enums.GrupoParticipante;
-import com.proyecto.datalab.repositorio.ParticipanteRepository;
-import com.proyecto.datalab.repositorio.RespuestaRepository;
-import com.proyecto.datalab.repositorio.UsuarioRepository;
-import com.proyecto.datalab.repositorio.VariableRepository;
+import java.util.List;
+import java.util.Map; // Para recibir las respuestas
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Map; // Para recibir las respuestas
+import com.proyecto.datalab.entity.Participante;
+import com.proyecto.datalab.entity.Respuesta;
+import com.proyecto.datalab.entity.Usuario;
+import com.proyecto.datalab.entity.Variable;
+import com.proyecto.datalab.enums.EstadoFicha;
+import com.proyecto.datalab.enums.GrupoParticipante;
+import com.proyecto.datalab.repository.ParticipanteRepository;
+import com.proyecto.datalab.repository.RespuestaRepository;
+import com.proyecto.datalab.repository.UsuarioRepository;
+import com.proyecto.datalab.repository.VariableRepository;
 
 @Service
 public class ParticipanteService {
@@ -57,7 +58,7 @@ public class ParticipanteService {
         p.setDireccion(direccion);
         p.setGrupo(GrupoParticipante.valueOf(grupo)); // "CASO" o "CONTROL"
         p.setReclutador(reclutador); // Asigna el reclutador
-        p.setEstadoFicha(EstadoFicha.Incompleta);
+        p.setEstadoFicha(EstadoFicha.INCOMPLETA);
 
         // 3. Guardar (CRUD)
         Participante participanteGuardado = participanteRepository.save(p);

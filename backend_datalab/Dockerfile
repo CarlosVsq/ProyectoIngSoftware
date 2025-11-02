@@ -4,7 +4,7 @@ WORKDIR /app
 COPY pom.xml .
 COPY src ./src
 # Speed up: use a local maven repo cache layer if needed
-RUN --mount=type=cache,target=/root/.m2 mvn -q -DskipTests package
+RUN --mount=type=cache,target=/root/.m2 mvn -DskipTests package
 
 # ---------- Runtime stage ----------
 FROM eclipse-temurin:17-jre

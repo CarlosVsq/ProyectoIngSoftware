@@ -1,17 +1,17 @@
-package com.proyecto.datalab.servicio;
+package com.proyecto.datalab.service;
 
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.proyecto.datalab.entidades.Rol;
-import com.proyecto.datalab.entidades.Usuario;
+import com.proyecto.datalab.entity.Rol;
+import com.proyecto.datalab.entity.Usuario;
 import com.proyecto.datalab.enums.EstadoUsuario;
-import com.proyecto.datalab.repositorio.RolRepository;
-import com.proyecto.datalab.repositorio.UsuarioRepository;
+import com.proyecto.datalab.repository.RolRepository;
+import com.proyecto.datalab.repository.UsuarioRepository;
 
 import jakarta.transaction.Transactional;
 
@@ -20,13 +20,12 @@ public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
     private final RolRepository rolRepository;
-    private final PasswordEncoder passwordEncoder;
+    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     @Autowired
-    public UsuarioService(UsuarioRepository usuarioRepository, RolRepository rolRepository, PasswordEncoder passwordEncoder) {
+    public UsuarioService(UsuarioRepository usuarioRepository, RolRepository rolRepository) {
         this.usuarioRepository = usuarioRepository;
         this.rolRepository = rolRepository;
-        this.passwordEncoder = passwordEncoder;
     }
 
     @Transactional
@@ -41,15 +40,15 @@ public class UsuarioService {
                 .orElseThrow(() -> new RuntimeException("Rol no encontrado"));
 
         // 3. Lógica de negocio: Hashear la contraseña
-        String contrasenaHasheada = passwordEncoder.encode(contrasena);
+        //String contrasenaHasheada = passwordEncoder.encode(contrasena);
 
         // 4. Crear la entidad
         Usuario nuevoUsuario = new Usuario();
         nuevoUsuario.setNombreCompleto(nombre);
         nuevoUsuario.setCorreo(correo);
-        nuevoUsuario.setContrasenia(contrasenaHasheada);
+        nuevoUsuario.setContrasenia(passwordEncoder.encode(contrasena));
         nuevoUsuario.setRol(rol);
-        nuevoUsuario.setEstado(EstadoUsuario.Activo);
+        nuevoUsuario.setEstado(EstadoUsuario.ACTIVO);
 
         // 5. Guardar en la base de datos (CRUD)
         return usuarioRepository.save(nuevoUsuario);

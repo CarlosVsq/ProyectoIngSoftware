@@ -1,7 +1,7 @@
 package com.proyecto.datalab.enums;
 
 public enum EstadoFicha {
-    Completa,
-    Incompleta,
-    No_completable
+    COMPLETA,
+    INCOMPLETA,
+    NO_COMPLETA
 }

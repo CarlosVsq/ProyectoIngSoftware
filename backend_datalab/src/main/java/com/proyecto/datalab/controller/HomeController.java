@@ -1,4 +1,4 @@
-package com.proyecto.datalab.controlador;
+package com.proyecto.datalab.controller;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
