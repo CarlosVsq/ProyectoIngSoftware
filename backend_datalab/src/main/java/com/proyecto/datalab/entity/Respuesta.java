@@ -1,5 +1,7 @@
 package com.proyecto.datalab.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -31,10 +33,12 @@ public class Respuesta {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_participante", nullable = false)
+    @JsonIgnore
     private Participante participante;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_variable", nullable = false)
+    @JsonIgnore
     private Variable variable;
 
     @Lob
