@@ -45,7 +45,7 @@ public class ParticipanteService {
      * Esta es la lógica para HU-01 (Registro de CRF) y HU-29 (Seleccionar grupo)
      */
     @Transactional
-    public Participante crearParticipante(String nombreCompleto, String telefono, String direccion, String grupo, Long usuarioReclutadorId) {
+    public Participante crearParticipante(String nombreCompleto, String telefono, String direccion, String grupo, Integer usuarioReclutadorId) {
         
         // 1. Lógica de negocio: Buscar al usuario que lo recluta
         Usuario reclutador = usuarioRepository.findById(usuarioReclutadorId)
@@ -75,7 +75,7 @@ public class ParticipanteService {
      * Lógica para HU-01 y HU-33 (Guardar fichas incompletas)
      */
     @Transactional
-    public void guardarRespuestas(int participanteId, Map<Long, String> respuestasMap, Long usuarioEditorId) {
+    public void guardarRespuestas(int participanteId, Map<Long, String> respuestasMap, Integer usuarioEditorId) {
         
         Participante p = participanteRepository.findById(participanteId)
                 .orElseThrow(() -> new RuntimeException("Participante no encontrado"));

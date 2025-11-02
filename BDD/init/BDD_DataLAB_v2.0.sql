@@ -20,7 +20,7 @@ CREATE TABLE `Usuario` (
   `nombre_completo` varchar(255) NOT NULL,
   `correo` varchar(255) NOT NULL,
   `contrasenia` varchar(255) NOT NULL COMMENT 'Almacenar como hash',
-  `estado` enum('Activo','Inactivo') NOT NULL DEFAULT 'Activo',
+  `estado` enum('ACTIVO','INACTIVO') NOT NULL DEFAULT 'ACTIVO',
   `fecha_creacion` datetime NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id_usuario`),
   UNIQUE KEY `correo` (`correo`),
@@ -36,8 +36,8 @@ CREATE TABLE `Participante` (
   `nombre_completo` varchar(255) DEFAULT NULL,
   `telefono` varchar(20) DEFAULT NULL,
   `direccion` varchar(255) DEFAULT NULL,
-  `grupo` enum('Caso','Control') NOT NULL,
-  `estado_ficha` enum('Completa','Incompleta','No completable') NOT NULL DEFAULT 'Incompleta',
+  `grupo` enum('CASO','CONTROL') NOT NULL,
+  `estado_ficha` enum('COMPLETA','INCOMPLETA','NO_COMPLETABLE') NOT NULL DEFAULT 'INCOMPLETA',
   `fecha_inclusion` date NOT NULL,
   `observacion` text DEFAULT NULL,
   PRIMARY KEY (`id_participante`),
@@ -98,7 +98,7 @@ CREATE TABLE `Auditoria` (
 
 INSERT INTO `Rol` (`nombre_rol`, `descripcion`) VALUES
 ('Investigadora Principal', 'Acceso total: CRF, auditoria, exportaciones, gestión de usuarios.'),
-('Médico', 'Crear/editar CRF de sus casos; sin exportar.'),
+('Medico', 'Crear/editar CRF de sus casos; sin exportar.'),
 ('Investigador que recluta', 'Crear/editar CRF de sus casos; sin exportar.'),
 ('Investigador sin reclutamiento', 'Puede exportar datasets, no ve CRF individuales.'),
 ('Estudiante', 'Puede ingresar y editar datos con acceso restringido.'),
@@ -113,3 +113,40 @@ INSERT INTO `Variable` (`enunciado`, `codigo_variable`, `tipo_dato`, `opciones`,
 ('Genotipificación TLR9 rs5743836', 'tlr9_rs5743836', 'SeleccionUnica', 'TT,TC,CC', 'Ambos', 'Muestras biológicas y genéticas', 1),
 ('Genotipificación TLR9 rs187084', 'tlr9_rs187084', 'SeleccionUnica', 'TT,TC,CC', 'Ambos', 'Muestras biológicas y genéticas', 1),
 ('Genotipificación miR-146a rs2910164', 'mir146a_rs2910164', 'SeleccionUnica', 'GG,GC,CC', 'Ambos', 'Muestras biológicas y genéticas', 1);
+
+INSERT INTO `Usuario` (id_rol, nombre_completo, correo, contrasenia, estado) VALUES
+((SELECT id_rol FROM Rol WHERE nombre_rol = 'Administrador'),
+ 'Usuario Administrador',
+ 'userTest@administrador.com',
+ '$2a$10$oPkyb6yGZE.5pwiYj7sl.u7ARPGDydkHtfiwRXp53kJKmkFuoWrDC', -- Versión encriptada de 'passwordUsuarioAdministrador'
+ 'ACTIVO'),
+
+((SELECT id_rol FROM Rol WHERE nombre_rol = 'Medico'),
+ 'Usuario Medico',
+ 'userTest@medico.com',
+ '$2a$10$.A/zmn9cM.FDH4qoZOCdA.zEHALvv3rYEShvYBykDkAvNeLgUN53a', -- Versión encriptada de 'passwordUsuarioMedico'
+ 'ACTIVO'),
+
+((SELECT id_rol FROM Rol WHERE nombre_rol = 'Investigadora Principal'),
+ 'Usuario Investigadora Principal',
+ 'userTest@investigadora-principal.com',
+ '$2a$10$4sBJ1XNonv8byNKO7C5Q9Ot.fiJ4ARBAgU4quLzDpH4h6lcudRuem', -- Versión encriptada de 'passwordUsuarioInvestigadoraPrincipal'
+ 'ACTIVO'),
+
+((SELECT id_rol FROM Rol WHERE nombre_rol = 'Investigador que recluta'),
+ 'Usuario Investigador que Recluta',
+ 'userTest@investigador-que-recluta.com',
+ '$2a$10$WF2x3HLgJvXzItR5TJCz6uVLuuwl86tmS5s5YDE7ZY3q9FdaZQNgm', -- Versión encriptada de 'passwordUsuarioInvestigadorQueRecluta'
+ 'ACTIVO'),
+
+((SELECT id_rol FROM Rol WHERE nombre_rol = 'Investigador sin reclutamiento'),
+ 'Usuario Investigador sin Reclutamiento',
+ 'userTest@investigador-sin-reclutamiento.com',
+ '$2a$10$DWYk7t2w33d8hxn0D8qDzOu.xUO/lPQnntaOOtKU8EXdQsIFvnC1q', -- Versión encriptada de 'passwordUsuarioInvestigadorSinReclutamiento'
+ 'ACTIVO'),
+
+((SELECT id_rol FROM Rol WHERE nombre_rol = 'Estudiante'),
+ 'Usuario Estudiante',
+ 'userTest@estudiante.com',
+ '$2a$10$3Qv4ylBYgjhAtDWzMrRU9OaN.phD0MEmXtc7BNksMCeooV.mDGKjS', -- Versión encriptada de 'passwordUsuarioEstudiante'
+ 'ACTIVO');

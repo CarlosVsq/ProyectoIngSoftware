@@ -13,6 +13,7 @@ import com.proyecto.datalab.enums.EstadoUsuario;
 import com.proyecto.datalab.repository.RolRepository;
 import com.proyecto.datalab.repository.UsuarioRepository;
 
+import jakarta.persistence.criteria.CriteriaBuilder.In;
 import jakarta.transaction.Transactional;
 
 @Service
@@ -29,7 +30,7 @@ public class UsuarioService {
     }
 
     @Transactional
-    public Usuario crearUsuario(String nombre, String correo, String contrasena, Long rolId) {
+    public Usuario crearUsuario(String nombre, String correo, String contrasena, Integer rolId) {
         // 1. Lógica de negocio: Verificar si el correo ya existe
         if (usuarioRepository.findByCorreo(correo).isPresent()) {
             throw new RuntimeException("El correo ya está registrado");
@@ -61,12 +62,12 @@ public class UsuarioService {
     }
 
     @Transactional //(readOnly = true)
-    public Optional<Usuario> obtenerUsuarioPorId(Long id) {
+    public Optional<Usuario> obtenerUsuarioPorId(Integer id) {
         return usuarioRepository.findById(id);
     }
 
     @Transactional
-    public void borrarUsuario(Long id) {
+    public void borrarUsuario(Integer id) {
         usuarioRepository.deleteById(id);
     }
 }
