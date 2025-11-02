@@ -1,7 +1,7 @@
 package com.proyecto.datalab.service;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.time.LocalDate;
@@ -55,7 +55,7 @@ class RespuestaServiceTest {
         participante.setCodigoParticipante("PART-001");
         participante.setNombreCompleto("Juan Pérez");
         participante.setGrupo(GrupoParticipante.CONTROL);
-        participante.setEstadoFicha(EstadoFicha.ACTIVA);
+        participante.setEstadoFicha(EstadoFicha.INCOMPLETA);
         participante.setFechaInclusion(LocalDate.now());
 
         // Configurar variable de prueba
