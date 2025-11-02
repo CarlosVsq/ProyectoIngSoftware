@@ -1,4 +1,4 @@
-package com.proyecto.web.dto.user;
+package com.proyecto.datalab.web.dto.user;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

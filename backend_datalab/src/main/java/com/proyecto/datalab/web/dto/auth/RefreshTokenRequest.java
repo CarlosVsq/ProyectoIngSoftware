@@ -1,4 +1,4 @@
-package com.proyecto.web.dto.auth;
+package com.proyecto.datalab.web.dto.auth;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
