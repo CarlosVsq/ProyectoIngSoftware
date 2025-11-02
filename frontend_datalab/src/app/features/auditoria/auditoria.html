@@ -1,0 +1,142 @@
+<div class="flex min-h-screen bg-gray-50 text-gray-800">
+  <!-- CONTENIDO PRINCIPAL -->
+  <main class="flex-1 p-6 max-w-[1200px] mx-auto">
+
+    <!-- ENCABEZADO -->
+    <header class="flex justify-between items-center mb-8">
+  <h2 class="text-2xl font-semibold text-primary">Auditoría</h2>
+
+  <div class="flex items-center gap-4">
+    <div class="flex flex-col text-right">
+      <span class="text-sm font-medium text-gray-800">{{ usuarioNombre }}</span>
+      <span class="text-xs text-gray-500">Investigadora Principal</span>
+    </div>
+
+    <button
+  (click)="abrirLogoutPanel()"
+  class="flex items-center gap-1 text-gray-600 hover:text-red-600 transition"
+>
+  <span class="material-icons text-base">logout</span>
+  <span class="text-sm font-medium">Cerrar Sesión</span>
+</button>
+  </div>
+</header>
+
+    <!-- TARJETAS SUPERIORES -->
+    <section class="grid grid-cols-4 gap-6 mb-8">
+      <div class="bg-white p-6 rounded-xl border-l-4 border-blue-500 shadow-sm">
+        <h3 class="text-gray-500 text-sm font-semibold mb-2">Accesos Hoy</h3>
+        <p class="text-3xl font-bold text-blue-700">0</p>
+        <p class="text-xs text-gray-500 mt-1">Eventos registrados</p>
+      </div>
+
+      <div class="bg-white p-6 rounded-xl border-l-4 border-green-500 shadow-sm">
+        <h3 class="text-gray-500 text-sm font-semibold mb-2">Modificaciones</h3>
+        <p class="text-3xl font-bold text-green-600">0</p>
+        <p class="text-xs text-gray-500 mt-1">Esta semana</p>
+      </div>
+
+      <div class="bg-white p-6 rounded-xl border-l-4 border-yellow-400 shadow-sm">
+        <h3 class="text-gray-500 text-sm font-semibold mb-2">Alertas</h3>
+        <p class="text-3xl font-bold text-yellow-500">0</p>
+        <p class="text-xs text-gray-500 mt-1">Pendientes</p>
+      </div>
+
+      <div class="bg-white p-6 rounded-xl border-l-4 border-red-500 shadow-sm">
+        <h3 class="text-gray-500 text-sm font-semibold mb-2">Intentos Fallidos</h3>
+        <p class="text-3xl font-bold text-red-600">0</p>
+        <p class="text-xs text-gray-500 mt-1">Últimas 24h</p>
+      </div>
+    </section>
+
+    <!-- SECCIÓN PRINCIPAL -->
+    <section class="grid grid-cols-2 gap-6">
+      <!-- REGISTRO DE ACTIVIDAD -->
+      <div class="bg-white p-6 rounded-xl shadow">
+        <h3 class="text-primary font-semibold mb-4">Registro de Actividad Reciente</h3>
+
+        <div class="space-y-3 text-sm">
+          <div class="flex items-center justify-between bg-green-50 p-3 rounded-lg">
+            <div class="flex items-center gap-2 text-green-700">
+              <span class="material-icons text-green-500 text-lg">person</span>
+              <p>Texto de Ejemplo</p>
+            </div>
+            <span class="text-xs text-gray-500">Hace 15 min</span>
+          </div>
+
+          <div class="flex items-center justify-between bg-blue-50 p-3 rounded-lg">
+            <div class="flex items-center gap-2 text-blue-700">
+              <span class="material-icons text-blue-500 text-lg">edit</span>
+              <p>Texto de Ejemplo</p>
+            </div>
+            <span class="text-xs text-gray-500">Hace 1 hora</span>
+          </div>
+
+          <div class="flex items-center justify-between bg-purple-50 p-3 rounded-lg">
+            <div class="flex items-center gap-2 text-purple-700">
+              <span class="material-icons text-purple-500 text-lg">file_download</span>
+              <p>Texto de Ejemplo</p>
+            </div>
+            <span class="text-xs text-gray-500">Hace 2 horas</span>
+          </div>
+
+          <div class="flex items-center justify-between bg-yellow-50 p-3 rounded-lg">
+            <div class="flex items-center gap-2 text-yellow-700">
+              <span class="material-icons text-yellow-500 text-lg">warning</span>
+              <p>Intento de acceso sin permisos detectado</p>
+            </div>
+            <span class="text-xs text-gray-500">Hace 3 horas</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- FILTROS -->
+      <div class="bg-white p-6 rounded-xl shadow">
+        <h3 class="text-primary font-semibold mb-4">Filtros de Auditoría</h3>
+
+        <form class="space-y-4 text-sm">
+          <div>
+            <label class="text-gray-700 font-medium mb-1 block">Usuario</label>
+            <select class="border border-gray-300 rounded-md px-3 py-2 w-full">
+              <option>Todos los usuarios</option>
+              <option>Dra. González</option>
+              <option>Dr. Martínez</option>
+              <option>Enf. López</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="text-gray-700 font-medium mb-1 block">Tipo de Evento</label>
+            <select class="border border-gray-300 rounded-md px-3 py-2 w-full">
+              <option>Todos los eventos</option>
+              <option>Accesos</option>
+              <option>Modificaciones</option>
+              <option>Exportaciones</option>
+              <option>Alertas</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="text-gray-700 font-medium mb-1 block">Rango de Fechas</label>
+            <div class="grid grid-cols-2 gap-3">
+              <input type="date" class="border border-gray-300 rounded-md px-3 py-2">
+              <input type="date" class="border border-gray-300 rounded-md px-3 py-2">
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            class="w-full bg-blue-700 text-white py-2 rounded-md hover:bg-blue-800 transition flex items-center justify-center gap-2">
+            <span class="material-icons text-sm">search</span>
+            Buscar Eventos
+          </button>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <app-logout-panel></app-logout-panel>
+
+  <!-- PANEL DE ALERTAS -->
+  <app-alert-panel></app-alert-panel>
+</div>

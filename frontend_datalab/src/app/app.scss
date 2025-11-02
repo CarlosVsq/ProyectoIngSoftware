@@ -1,0 +1,9 @@
+/* Ajuste del contenido cuando el sidebar está visible solo en pantallas ≥ lg (1024px) */
+.content {
+  transition: margin-left 200ms ease;
+}
+@media (min-width: 1024px) {
+  .content.with-sidebar {
+    margin-left: 16rem; /* w-64 */
+  }
+}
