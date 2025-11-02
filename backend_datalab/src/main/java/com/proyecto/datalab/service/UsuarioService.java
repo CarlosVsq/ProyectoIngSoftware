@@ -29,7 +29,9 @@ public class UsuarioService {
     }
 
     @Transactional
-    public Usuario crearUsuario(String nombre, String correo, String contrasena, Long rolId) {
+
+    public Usuario crearUsuario(String nombre, String correo, String contrasena, Integer rolId) {
+        // 1. Lógica de negocio: Verificar si el correo ya existe
         if (usuarioRepository.findByCorreo(correo).isPresent()) {
             throw new RuntimeException("El correo ya está registrado");
         }
@@ -55,18 +57,18 @@ public class UsuarioService {
         return usuarioRepository.findAll();
     }
 
-    @Transactional
-    public Optional<Usuario> obtenerUsuarioPorId(Long id) {
+    @Transactional //(readOnly = true)
+    public Optional<Usuario> obtenerUsuarioPorId(Integer id) {
         return usuarioRepository.findById(id);
     }
 
     @Transactional
-    public void borrarUsuario(Long id) {
+    public void borrarUsuario(Integer id) {
         usuarioRepository.deleteById(id);
     }
 
     @Transactional
-    public Usuario actualizarUsuario(Long id, @RequestBody UsuarioUpdateRequest datos) {
+    public Usuario actualizarUsuario(Integer id, @RequestBody UsuarioUpdateRequest datos) {
         
         //Buscar al usuario existente
         Usuario usuario = usuarioRepository.findById(id)

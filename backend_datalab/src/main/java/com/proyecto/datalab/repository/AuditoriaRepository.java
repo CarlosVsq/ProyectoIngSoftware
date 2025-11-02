@@ -6,6 +6,6 @@ import org.springframework.stereotype.Repository;
 import com.proyecto.datalab.entity.Auditoria;
 
 @Repository
-public interface AuditoriaRepository extends JpaRepository<Auditoria, Long> {
+public interface AuditoriaRepository extends JpaRepository<Auditoria, Integer> {
 
 }

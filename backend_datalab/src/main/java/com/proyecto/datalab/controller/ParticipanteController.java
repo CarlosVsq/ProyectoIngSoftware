@@ -1,7 +1,6 @@
 package com.proyecto.datalab.controller;
 
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -14,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.proyecto.datalab.dto.GuardarRespuestasRequest;
+import com.proyecto.datalab.dto.ParticipanteCreateRequest;
 import com.proyecto.datalab.entity.Participante;
 import com.proyecto.datalab.service.ParticipanteService;
 
@@ -47,7 +48,7 @@ public class ParticipanteController {
     // (Este método actualiza las respuestas de un participante existente)
     @PostMapping("/{idParticipante}/respuestas")
     public ResponseEntity<Void> guardarRespuestas(
-            @PathVariable int idParticipante,
+            @PathVariable Integer idParticipante,
             @RequestBody GuardarRespuestasRequest request) {
         
         // Asumimos que el ID del usuario editor viene en el request
@@ -58,30 +59,4 @@ public class ParticipanteController {
         );
         return ResponseEntity.ok().build();
     }
-}
-
-// --- Clases DTO para las peticiones de Participante ---
-
-class ParticipanteCreateRequest {
-    private String nombreCompleto;
-    private String telefono;
-    private String direccion;
-    private String grupo; // "CASO" o "CONTROL"
-    private Long usuarioReclutadorId;
-    
-    // Getters...
-    public String getNombreCompleto() { return nombreCompleto; }
-    public String getTelefono() { return telefono; }
-    public String getDireccion() { return direccion; }
-    public String getGrupo() { return grupo; }
-    public Long getUsuarioReclutadorId() { return usuarioReclutadorId; }
-}
-
-class GuardarRespuestasRequest {
-    private Long usuarioEditorId;
-    private Map<Long, String> respuestasMap; // Ej: { 1: "ValorRespuesta1", 2: "ValorRespuesta2" }
-
-    // Getters...
-    public Long getUsuarioEditorId() { return usuarioEditorId; }
-    public Map<Long, String> getRespuestasMap() { return respuestasMap; }
 }
