@@ -31,7 +31,7 @@ public class RespuestaService {
             .orElseThrow(() -> new RuntimeException("Participante no encontrado"));
 
         Variable columna = variableRepository.findById(idVariable)
-            .orElseThrow(() -> new RuntimeException("Usuario reclutador no encontrado"));
+            .orElseThrow(() -> new RuntimeException("Variable no encontrada"));
 
         Respuesta newRespuesta = new Respuesta();
         newRespuesta.setParticipante(participante);
