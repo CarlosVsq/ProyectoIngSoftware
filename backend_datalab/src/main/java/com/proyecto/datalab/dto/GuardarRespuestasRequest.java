@@ -3,9 +3,9 @@ package com.proyecto.datalab.dto;
 import java.util.Map;
 
 public class GuardarRespuestasRequest {
-    private Long usuarioEditorId;
-    private Map<Long, String> respuestasMap;
+    private Integer usuarioEditorId;
+    private Map<Integer, String> respuestasMap;
 
-    public Long getUsuarioEditorId() { return usuarioEditorId; }
-    public Map<Long, String> getRespuestasMap() { return respuestasMap; }
+    public Integer getUsuarioEditorId() { return usuarioEditorId; }
+    public Map<Integer, String> getRespuestasMap() { return respuestasMap; }
 }

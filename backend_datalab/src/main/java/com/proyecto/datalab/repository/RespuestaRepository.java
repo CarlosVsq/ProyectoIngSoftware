@@ -6,6 +6,6 @@ import org.springframework.stereotype.Repository;
 import com.proyecto.datalab.entity.Respuesta;
 
 @Repository
-public interface RespuestaRepository extends JpaRepository<Respuesta, Long> {
+public interface RespuestaRepository extends JpaRepository<Respuesta, Integer> {
 
 }

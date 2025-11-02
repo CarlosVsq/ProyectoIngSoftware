@@ -35,7 +35,7 @@ public class UsuarioController {
 
     // --- GET (Id especifico) ---
     @GetMapping("/{id}")
-    public ResponseEntity<Usuario> obtenerPorId(@PathVariable Long id) {
+    public ResponseEntity<Usuario> obtenerPorId(@PathVariable Integer id) {
         return usuarioService.obtenerUsuarioPorId(id)
                 .map(usuario -> ResponseEntity.ok(usuario)) // 200 OK si se encuentra
                 .orElse(ResponseEntity.notFound().build()); // 404 Not Found si no
@@ -56,13 +56,13 @@ public class UsuarioController {
     // --- DELETE ---
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT) // Devuelve un 204 No Content
-    public void borrarUsuario(@PathVariable Long id) {
+    public void borrarUsuario(@PathVariable Integer id) {
         usuarioService.borrarUsuario(id);
     }
 
     // --- PUT ---
     @PutMapping("/{id}")
-    public ResponseEntity<Usuario> actualizarUsuario(@PathVariable Long id,@RequestBody UsuarioUpdateRequest request) {
+    public ResponseEntity<Usuario> actualizarUsuario(@PathVariable Integer id,@RequestBody UsuarioUpdateRequest request) {
         try {
             Usuario usuarioActualizado = usuarioService.actualizarUsuario(id, request);
             return ResponseEntity.ok(usuarioActualizado); // 200 OK

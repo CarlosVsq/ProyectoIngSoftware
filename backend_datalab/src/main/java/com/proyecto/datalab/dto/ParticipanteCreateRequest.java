@@ -5,11 +5,11 @@ public class ParticipanteCreateRequest {
     private String telefono;
     private String direccion;
     private String grupo;
-    private Long usuarioReclutadorId;
+    private Integer usuarioReclutadorId;
 
     public String getNombreCompleto() { return nombreCompleto; }
     public String getTelefono() { return telefono; }
     public String getDireccion() { return direccion; }
     public String getGrupo() { return grupo; }
-    public Long getUsuarioReclutadorId() { return usuarioReclutadorId; }
+    public Integer getUsuarioReclutadorId() { return usuarioReclutadorId; }
 }

@@ -5,7 +5,7 @@ public class UsuarioUpdateRequest {
     private String nombre;
     private String correo;
     private String contrasena;
-    private Long rolId;
+    private Integer rolId;
     
 
     public String getNombre() { return nombre; }
@@ -14,5 +14,5 @@ public class UsuarioUpdateRequest {
 
     public String getContrasena() { return contrasena; }
 
-    public Long getRolId() { return rolId; }
+    public Integer getRolId() { return rolId; }
 }

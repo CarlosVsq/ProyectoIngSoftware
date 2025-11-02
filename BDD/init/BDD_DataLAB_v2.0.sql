@@ -6,7 +6,7 @@ CREATE DATABASE IF NOT EXISTS `DBB_DATALAB` DEFAULT CHARACTER SET utf8mb4 COLLAT
 USE `DBB_DATALAB`;
 
 CREATE TABLE `Rol` (
-  `id_rol` int(11) NOT NULL AUTO_INCREMENT,
+  `id_rol` INT(11) NOT NULL AUTO_INCREMENT,
   `nombre_rol` varchar(100) NOT NULL,
   `descripcion` text DEFAULT NULL,
   PRIMARY KEY (`id_rol`),
@@ -15,8 +15,8 @@ CREATE TABLE `Rol` (
 
 
 CREATE TABLE `Usuario` (
-  `id_usuario` int(11) NOT NULL AUTO_INCREMENT,
-  `id_rol` int(11) NOT NULL,
+  `id_usuario` INT(11) NOT NULL AUTO_INCREMENT,
+  `id_rol` INT(11) NOT NULL,
   `nombre_completo` varchar(255) NOT NULL,
   `correo` varchar(255) NOT NULL,
   `contrasenia` varchar(255) NOT NULL COMMENT 'Almacenar como hash',
@@ -30,8 +30,8 @@ CREATE TABLE `Usuario` (
 
 
 CREATE TABLE `Participante` (
-  `id_participante` int(11) NOT NULL AUTO_INCREMENT,
-  `id_reclutador` int(11) NOT NULL,
+  `id_participante` INT(11) NOT NULL AUTO_INCREMENT,
+  `id_reclutador` INT(11) NOT NULL,
   `codigo_participante` varchar(50) COMMENT 'Se asigna en runtime',
   `nombre_completo` varchar(255) DEFAULT NULL,
   `telefono` varchar(20) DEFAULT NULL,
@@ -48,7 +48,7 @@ CREATE TABLE `Participante` (
 
 
 CREATE TABLE `Variable` (
-  `id_variable` int(11) NOT NULL AUTO_INCREMENT,
+  `id_variable` INT(11) NOT NULL AUTO_INCREMENT,
   `enunciado` text NOT NULL,
   `codigo_variable` varchar(100) NOT NULL,
   `tipo_dato` varchar(50) NOT NULL COMMENT 'Ej: Texto, Numero, SeleccionUnica',
@@ -64,9 +64,9 @@ CREATE TABLE `Variable` (
 
 
 CREATE TABLE `Respuesta` (
-  `id_respuesta` int(11) NOT NULL AUTO_INCREMENT,
-  `id_participante` int(11) NOT NULL,
-  `id_variable` int(11) NOT NULL,
+  `id_respuesta` INT(11) NOT NULL AUTO_INCREMENT,
+  `id_participante` INT(11) NOT NULL,
+  `id_variable` INT(11) NOT NULL,
   `valor_ingresado` text DEFAULT NULL,
   PRIMARY KEY (`id_respuesta`),
   UNIQUE KEY `participante_variable_unique` (`id_participante`,`id_variable`),
@@ -77,9 +77,9 @@ CREATE TABLE `Respuesta` (
 
 
 CREATE TABLE `Auditoria` (
-  `id_auditoria` int(11) NOT NULL AUTO_INCREMENT,
-  `id_usuario` int(11) NOT NULL,
-  `id_participante` int(11) NOT NULL,
+  `id_auditoria` INT(11) NOT NULL AUTO_INCREMENT,
+  `id_usuario` INT(11) NOT NULL,
+  `id_participante` INT(11) NOT NULL,
   `tabla_afectada` varchar(100) DEFAULT NULL,
   `accion` varchar(100) NOT NULL,
   `detalle_cambio` text DEFAULT NULL,
@@ -98,16 +98,14 @@ CREATE TABLE `Auditoria` (
 
 INSERT INTO `Rol` (`nombre_rol`, `descripcion`) VALUES
 ('Investigadora Principal', 'Acceso total: CRF, auditoria, exportaciones, gestión de usuarios.'),
-('Médico', 'Crear/editar CRF de sus casos; sin exportar.'),
+('Medico', 'Crear/editar CRF de sus casos; sin exportar.'),
 ('Investigador que recluta', 'Crear/editar CRF de sus casos; sin exportar.'),
 ('Investigador sin reclutamiento', 'Puede exportar datasets, no ve CRF individuales.'),
 ('Estudiante', 'Puede ingresar y editar datos con acceso restringido.'),
 ('Administrador', 'Control total del sistema.');
-
 INSERT INTO `Usuario` (`id_rol`, `nombre_completo`, `correo`, `contrasenia`, `estado`) VALUES
 ((SELECT id_rol FROM Rol WHERE nombre_rol = 'Investigadora Principal'), 'Dra. María González', 'maria.g@investigacion.cl', 'un_hash_muy_seguro_aqui', 'ACTIVO'),
 ((SELECT id_rol FROM Rol WHERE nombre_rol = 'Administrador'), 'Admin del Sistema', 'admin@sistema.cl','administradorEstudiantesDatalab', 'ACTIVO');
-
 INSERT INTO `Variable` (`enunciado`, `codigo_variable`, `tipo_dato`, `opciones`, `aplica_a`, `seccion`, `es_obligatoria`) VALUES
 ('Edad', 'edad', 'Numero', NULL, 'Ambos', 'Datos sociodemográficos', 1),
 ('Sexo', 'sexo', 'SeleccionUnica', 'Hombre,Mujer', 'Ambos', 'Datos sociodemográficos', 1),
@@ -117,3 +115,40 @@ INSERT INTO `Variable` (`enunciado`, `codigo_variable`, `tipo_dato`, `opciones`,
 ('Genotipificación TLR9 rs5743836', 'tlr9_rs5743836', 'SeleccionUnica', 'TT,TC,CC', 'Ambos', 'Muestras biológicas y genéticas', 1),
 ('Genotipificación TLR9 rs187084', 'tlr9_rs187084', 'SeleccionUnica', 'TT,TC,CC', 'Ambos', 'Muestras biológicas y genéticas', 1),
 ('Genotipificación miR-146a rs2910164', 'mir146a_rs2910164', 'SeleccionUnica', 'GG,GC,CC', 'Ambos', 'Muestras biológicas y genéticas', 1);
+
+INSERT INTO `Usuario` (id_rol, nombre_completo, correo, contrasenia, estado) VALUES
+((SELECT id_rol FROM Rol WHERE nombre_rol = 'Administrador'),
+ 'Usuario Administrador',
+ 'userTest@administrador.com',
+ '$2a$10$oPkyb6yGZE.5pwiYj7sl.u7ARPGDydkHtfiwRXp53kJKmkFuoWrDC', -- Versión encriptada de 'passwordUsuarioAdministrador'
+ 'ACTIVO'),
+
+((SELECT id_rol FROM Rol WHERE nombre_rol = 'Medico'),
+ 'Usuario Medico',
+ 'userTest@medico.com',
+ '$2a$10$.A/zmn9cM.FDH4qoZOCdA.zEHALvv3rYEShvYBykDkAvNeLgUN53a', -- Versión encriptada de 'passwordUsuarioMedico'
+ 'ACTIVO'),
+
+((SELECT id_rol FROM Rol WHERE nombre_rol = 'Investigadora Principal'),
+ 'Usuario Investigadora Principal',
+ 'userTest@investigadora-principal.com',
+ '$2a$10$4sBJ1XNonv8byNKO7C5Q9Ot.fiJ4ARBAgU4quLzDpH4h6lcudRuem', -- Versión encriptada de 'passwordUsuarioInvestigadoraPrincipal'
+ 'ACTIVO'),
+
+((SELECT id_rol FROM Rol WHERE nombre_rol = 'Investigador que recluta'),
+ 'Usuario Investigador que Recluta',
+ 'userTest@investigador-que-recluta.com',
+ '$2a$10$WF2x3HLgJvXzItR5TJCz6uVLuuwl86tmS5s5YDE7ZY3q9FdaZQNgm', -- Versión encriptada de 'passwordUsuarioInvestigadorQueRecluta'
+ 'ACTIVO'),
+
+((SELECT id_rol FROM Rol WHERE nombre_rol = 'Investigador sin reclutamiento'),
+ 'Usuario Investigador sin Reclutamiento',
+ 'userTest@investigador-sin-reclutamiento.com',
+ '$2a$10$DWYk7t2w33d8hxn0D8qDzOu.xUO/lPQnntaOOtKU8EXdQsIFvnC1q', -- Versión encriptada de 'passwordUsuarioInvestigadorSinReclutamiento'
+ 'ACTIVO'),
+
+((SELECT id_rol FROM Rol WHERE nombre_rol = 'Estudiante'),
+ 'Usuario Estudiante',
+ 'userTest@estudiante.com',
+ '$2a$10$3Qv4ylBYgjhAtDWzMrRU9OaN.phD0MEmXtc7BNksMCeooV.mDGKjS', -- Versión encriptada de 'passwordUsuarioEstudiante'
+ 'ACTIVO');

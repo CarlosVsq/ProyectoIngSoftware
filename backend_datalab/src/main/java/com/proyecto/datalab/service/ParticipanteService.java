@@ -40,7 +40,7 @@ public class ParticipanteService {
         }
 
         @Transactional
-        public Participante crearParticipante(String nombreCompleto, String telefono, String direccion, String grupo, Long usuarioReclutadorId) {
+        public Participante crearParticipante(String nombreCompleto, String telefono, String direccion, String grupo, Integer usuarioReclutadorId) {
 
                 Usuario reclutador = usuarioRepository.findById(usuarioReclutadorId)
                         .orElseThrow(() -> new RuntimeException("Usuario reclutador no encontrado"));
@@ -69,7 +69,7 @@ public class ParticipanteService {
         }
 
         @Transactional
-        public void guardarRespuestas(int participanteId, Map<Long, String> respuestasMap, Long usuarioEditorId) {
+        public void guardarRespuestas(Integer participanteId, Map<Integer, String> respuestasMap, Integer usuarioEditorId) {
                 
                 Participante p = participanteRepository.findById(participanteId)
                         .orElseThrow(() -> new RuntimeException("Participante no encontrado"));
@@ -77,8 +77,8 @@ public class ParticipanteService {
                 Usuario editor = usuarioRepository.findById(usuarioEditorId)
                         .orElseThrow(() -> new RuntimeException("Usuario editor no encontrado"));
 
-                for (Map.Entry<Long, String> entry : respuestasMap.entrySet()) {
-                Long variableId = entry.getKey();
+                for (Map.Entry<Integer, String> entry : respuestasMap.entrySet()) {
+                Integer variableId = entry.getKey();
                 String valor = entry.getValue();
 
                 Variable v = variableRepository.findById(variableId)
