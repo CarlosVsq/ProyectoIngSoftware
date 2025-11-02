@@ -3,10 +3,11 @@ package com.proyecto.datalab.service;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestBody;
 
+import com.proyecto.datalab.dto.UsuarioUpdateRequest;
 import com.proyecto.datalab.entity.Rol;
 import com.proyecto.datalab.entity.Usuario;
 import com.proyecto.datalab.enums.EstadoUsuario;
@@ -22,7 +23,6 @@ public class UsuarioService {
     private final RolRepository rolRepository;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-    @Autowired
     public UsuarioService(UsuarioRepository usuarioRepository, RolRepository rolRepository) {
         this.usuarioRepository = usuarioRepository;
         this.rolRepository = rolRepository;
@@ -30,19 +30,15 @@ public class UsuarioService {
 
     @Transactional
     public Usuario crearUsuario(String nombre, String correo, String contrasena, Long rolId) {
-        // 1. Lógica de negocio: Verificar si el correo ya existe
         if (usuarioRepository.findByCorreo(correo).isPresent()) {
             throw new RuntimeException("El correo ya está registrado");
         }
 
-        // 2. Lógica de negocio: Buscar el rol
         Rol rol = rolRepository.findById(rolId)
                 .orElseThrow(() -> new RuntimeException("Rol no encontrado"));
 
-        // 3. Lógica de negocio: Hashear la contraseña
         //String contrasenaHasheada = passwordEncoder.encode(contrasena);
 
-        // 4. Crear la entidad
         Usuario nuevoUsuario = new Usuario();
         nuevoUsuario.setNombreCompleto(nombre);
         nuevoUsuario.setCorreo(correo);
@@ -50,17 +46,16 @@ public class UsuarioService {
         nuevoUsuario.setRol(rol);
         nuevoUsuario.setEstado(EstadoUsuario.ACTIVO);
 
-        // 5. Guardar en la base de datos (CRUD)
         return usuarioRepository.save(nuevoUsuario);
     }
 
     
-    @Transactional //(readOnly = true)
+    @Transactional
     public List<Usuario> obtenerTodosLosUsuarios() {
         return usuarioRepository.findAll();
     }
 
-    @Transactional //(readOnly = true)
+    @Transactional
     public Optional<Usuario> obtenerUsuarioPorId(Long id) {
         return usuarioRepository.findById(id);
     }
@@ -68,6 +63,40 @@ public class UsuarioService {
     @Transactional
     public void borrarUsuario(Long id) {
         usuarioRepository.deleteById(id);
+    }
+
+    @Transactional
+    public Usuario actualizarUsuario(Long id, @RequestBody UsuarioUpdateRequest datos) {
+        
+        //Buscar al usuario existente
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con id: " + id));
+
+        if (datos.getCorreo() != null && !datos.getCorreo().isEmpty()) {
+            // Verifica que el nuevo correo no esté en uso por OTRO usuario
+            Optional<Usuario> existenteConCorreo = usuarioRepository.findByCorreo(datos.getCorreo());
+            if (existenteConCorreo.isPresent() && !existenteConCorreo.get().getIdUsuario().equals(id)) {
+                throw new RuntimeException("El correo ya está en uso por otro usuario");
+            }
+            usuario.setCorreo(datos.getCorreo());
+        }
+
+        if (datos.getNombre() != null && !datos.getNombre().isEmpty()) {
+        System.out.println(datos.getNombre());
+            usuario.setNombreCompleto(datos.getNombre());
+        }
+
+        if (datos.getRolId() != null) {
+            Rol rol = rolRepository.findById(datos.getRolId())
+                    .orElseThrow(() -> new RuntimeException("Rol no encontrado"));
+            usuario.setRol(rol);
+        }
+
+        if (datos.getContrasena() != null && !datos.getContrasena().isEmpty()) {
+            // Siempre hashear la nueva contraseña
+            usuario.setContrasenia(passwordEncoder.encode(datos.getContrasena()));
+        }
+        return usuarioRepository.save(usuario);
     }
 }
 

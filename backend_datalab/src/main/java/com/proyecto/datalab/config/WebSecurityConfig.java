@@ -47,15 +47,16 @@ public class WebSecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .authorizeHttpRequests(authorize -> authorize
-                .requestMatchers("/admin/**").hasRole("ADMIN")
-                .anyRequest().authenticated()
+                //.requestMatchers("/admin/**").hasRole("ADMIN")
+                .anyRequest().permitAll()//.authenticated()//
             )
             .formLogin(form -> form
                 .permitAll() 
             )
             .logout(logout -> logout
                 .permitAll()
-            );
+            )
+            .csrf(csrf -> csrf.disable());
 
         return http.build();
     }

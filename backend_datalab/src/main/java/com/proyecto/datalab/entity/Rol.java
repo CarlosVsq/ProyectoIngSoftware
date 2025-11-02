@@ -2,6 +2,8 @@ package com.proyecto.datalab.entity;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -33,5 +35,6 @@ public class Rol {
     private String descripcion;
 
     @OneToMany(mappedBy = "rol", fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<Usuario> usuarios;
 }

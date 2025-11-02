@@ -2,6 +2,7 @@ package com.proyecto.datalab.entity;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.proyecto.datalab.enums.EstadoUsuario;
 
 import jakarta.persistence.Column;
@@ -52,9 +53,11 @@ public class Usuario {
     private LocalDateTime fechaCreacion;
 
     @OneToMany(mappedBy = "reclutador", fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<Participante> participantesReclutados;
 
     @OneToMany(mappedBy = "usuario", fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<Auditoria> auditorias;
 
     @PrePersist

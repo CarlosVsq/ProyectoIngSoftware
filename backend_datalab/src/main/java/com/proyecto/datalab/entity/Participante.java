@@ -3,6 +3,7 @@ package com.proyecto.datalab.entity;
 import java.time.LocalDate;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.proyecto.datalab.enums.EstadoFicha;
 import com.proyecto.datalab.enums.GrupoParticipante;
 
@@ -75,6 +76,7 @@ public class Participante {
         orphanRemoval = true,
         fetch = FetchType.LAZY
     )
+    @JsonIgnore
     private List<Respuesta> respuestas;
 
     @OneToMany(
@@ -83,5 +85,6 @@ public class Participante {
         orphanRemoval = true,
         fetch = FetchType.LAZY
     )
+    @JsonIgnore
     private List<Auditoria> auditorias;
 }
