@@ -104,10 +104,6 @@ INSERT INTO `Rol` (`nombre_rol`, `descripcion`) VALUES
 ('Estudiante', 'Puede ingresar y editar datos con acceso restringido.'),
 ('Administrador', 'Control total del sistema.');
 
-INSERT INTO `Usuario` (`id_rol`, `nombre_completo`, `correo`, `contrasenia`, `estado`) VALUES
-((SELECT id_rol FROM Rol WHERE nombre_rol = 'Investigadora Principal'), 'Dra. María González', 'maria.g@investigacion.cl', 'un_hash_muy_seguro_aqui', 'Activo'),
-((SELECT id_rol FROM Rol WHERE nombre_rol = 'Administrador'), 'Admin del Sistema', 'admin@sistema.cl','administradorEstudiantesDatalab', 'Activo');
-
 INSERT INTO `Variable` (`enunciado`, `codigo_variable`, `tipo_dato`, `opciones`, `aplica_a`, `seccion`, `es_obligatoria`) VALUES
 ('Edad', 'edad', 'Numero', NULL, 'Ambos', 'Datos sociodemográficos', 1),
 ('Sexo', 'sexo', 'SeleccionUnica', 'Hombre,Mujer', 'Ambos', 'Datos sociodemográficos', 1),
