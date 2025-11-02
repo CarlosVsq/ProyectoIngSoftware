@@ -6,6 +6,7 @@ public class UsuarioUpdateRequest {
     private String correo;
     private String contrasena;
     private Integer rolId;
+    private String estado;
     
 
     public String getNombre() { return nombre; }
@@ -15,4 +16,6 @@ public class UsuarioUpdateRequest {
     public String getContrasena() { return contrasena; }
 
     public Integer getRolId() { return rolId; }
+
+    public String getEstado() { return estado; }
 }

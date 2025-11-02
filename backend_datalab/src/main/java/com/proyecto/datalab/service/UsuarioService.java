@@ -39,8 +39,6 @@ public class UsuarioService {
         Rol rol = rolRepository.findById(rolId)
                 .orElseThrow(() -> new RuntimeException("Rol no encontrado"));
 
-        //String contrasenaHasheada = passwordEncoder.encode(contrasena);
-
         Usuario nuevoUsuario = new Usuario();
         nuevoUsuario.setNombreCompleto(nombre);
         nuevoUsuario.setCorreo(correo);
@@ -97,6 +95,10 @@ public class UsuarioService {
         if (datos.getContrasena() != null && !datos.getContrasena().isEmpty()) {
             // Siempre hashear la nueva contraseña
             usuario.setContrasenia(passwordEncoder.encode(datos.getContrasena()));
+        }
+
+        if (datos.getEstado() != null) {
+            usuario.setEstado(EstadoUsuario.valueOf(datos.getEstado().toUpperCase()));
         }
         return usuarioRepository.save(usuario);
     }
