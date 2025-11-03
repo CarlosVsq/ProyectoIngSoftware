@@ -1,6 +1,7 @@
 package com.proyecto.datalab.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -16,4 +17,6 @@ public interface ParticipanteRepository extends JpaRepository<Participante, Inte
     List<Participante> findByGrupo(GrupoParticipante grupo);
     List<Participante> findByEstadoFicha(EstadoFicha estadoFicha);
     List<Participante> findByReclutador(Usuario reclutador);
+
+    Optional<Participante> findByCodigoParticipante(String codigoParticipante);
 }

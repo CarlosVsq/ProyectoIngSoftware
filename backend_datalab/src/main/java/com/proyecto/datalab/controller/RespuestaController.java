@@ -1,8 +1,11 @@
 package com.proyecto.datalab.controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -33,6 +36,12 @@ public class RespuestaController {
      * @param entity DTO con los datos de la respuesta a crear
      * @return ResponseEntity con la respuesta creada y código HTTP 201
      */
+
+    @GetMapping
+    public List<Respuesta> obtenerTodos() {
+        return respuestaService.obtenerTodasRespuestas();
+    }
+
     @PostMapping
     public ResponseEntity<Respuesta> creaRespuesta(@Valid @RequestBody RespuestaCreateRequest entity) {
         try {

@@ -17,9 +17,9 @@ services:
       - ./BDD/init:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 10s
+      interval: 20s
       timeout: 8s
-      retries: 10
+      retries: 20
 
   app:
     build:
