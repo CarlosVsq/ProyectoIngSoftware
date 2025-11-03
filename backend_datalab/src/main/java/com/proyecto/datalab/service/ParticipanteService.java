@@ -3,6 +3,7 @@ package com.proyecto.datalab.service;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -99,5 +100,10 @@ public class ParticipanteService {
         @Transactional(readOnly = true)
         public List<Participante> obtenerTodosLosParticipantes() {
                 return participanteRepository.findAll();
+        }
+
+        @Transactional(readOnly = true)
+        public Optional<Participante> obtenerParticipantePorCodigo(String codigoParticipante) {
+                return participanteRepository.findByCodigoParticipante(codigoParticipante);
         }
 }

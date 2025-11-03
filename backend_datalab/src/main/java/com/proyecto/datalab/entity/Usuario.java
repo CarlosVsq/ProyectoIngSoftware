@@ -83,6 +83,7 @@ public class Usuario implements Serializable, UserDetails {
 
     // IMPLEMENTACIÓN DE UserDetails (Spring Security)
     @Override
+    @JsonIgnore
     public Collection<? extends GrantedAuthority> getAuthorities() {
         if (rol == null) {
             return List.of();
@@ -114,33 +115,39 @@ public class Usuario implements Serializable, UserDetails {
 
     //Devuelve contraseña ya hasheada
     @Override
+    @JsonIgnore
     public String getPassword() {
         return this.contrasenia;
     }
 
     @Override
+    @JsonIgnore
     public String getUsername() {
         return this.correo;
     }
 
     @Override
+    @JsonIgnore
     public boolean isAccountNonExpired() {
         return true;
     }
 
     @Override
+    @JsonIgnore
     public boolean isAccountNonLocked() {
         return EstadoUsuario.ACTIVO.equals(this.estado);
     }
 
     //Las credenciales no expiran nunca
     @Override
+    @JsonIgnore
     public boolean isCredentialsNonExpired() {
         return true;
     }
 
     //Usuario habilitado si está Activo
     @Override
+    @JsonIgnore
     public boolean isEnabled() {
         return EstadoUsuario.ACTIVO.equals(this.estado);
     }
@@ -205,6 +212,7 @@ public class Usuario implements Serializable, UserDetails {
 
     // EQUALS Y HASHCODE (basados en ID)
     @Override
+    @JsonIgnore
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Usuario)) return false;
@@ -213,6 +221,7 @@ public class Usuario implements Serializable, UserDetails {
     }
 
     @Override
+    @JsonIgnore
     public int hashCode() {
         return getClass().hashCode();
     }

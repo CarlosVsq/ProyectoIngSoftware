@@ -41,6 +41,7 @@ public class Participante {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_reclutador", nullable = false)
+    @JsonIgnore
     private Usuario reclutador;
 
     @Column(name = "codigo_participante", nullable = false, unique = true, length = 50)
