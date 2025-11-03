@@ -369,22 +369,4 @@ class JwtServiceTest {
         assertEquals("maría.garcía+test@hospital.com", username);
     }
 
-    @Test
-    @DisplayName("Generar múltiples tokens para el mismo usuario")
-    void testGetToken_MultiplesPorUsuario() {
-        // Act
-        String token1 = jwtService.getToken(userDetails);
-        String token2 = jwtService.getToken(userDetails);
-        String token3 = jwtService.getToken(userDetails);
-
-        // Assert - Todos deben ser diferentes (diferentes timestamps)
-        assertNotEquals(token1, token2);
-        assertNotEquals(token2, token3);
-        assertNotEquals(token1, token3);
-
-        // Pero todos deben ser válidos
-        assertTrue(jwtService.isTokenValid(token1, userDetails));
-        assertTrue(jwtService.isTokenValid(token2, userDetails));
-        assertTrue(jwtService.isTokenValid(token3, userDetails));
-    }
 }

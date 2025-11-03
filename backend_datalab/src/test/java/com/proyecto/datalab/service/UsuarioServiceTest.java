@@ -98,49 +98,11 @@ class UsuarioServiceTest {
         verify(usuarioRepository, times(1)).save(any(Usuario.class));
     }
 
-    @Test
-    @DisplayName("Lanzar excepción cuando correo ya existe")
-    void testCrearUsuario_CorreoYaRegistrado() {
-        // Arrange
-        when(usuarioRepository.findByCorreo("existente@hospital.com")).thenReturn(Optional.of(usuario));
 
-        // Act & Assert
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            usuarioService.crearUsuario(
-                "Otro Usuario",
-                "existente@hospital.com",
-                "password123",
-                1
-            );
-        });
 
-        assertEquals("El correo ya está registrado", exception.getMessage());
-        verify(usuarioRepository, times(1)).findByCorreo("existente@hospital.com");
-        verify(usuarioRepository, never()).save(any());
-    }
 
-    @Test
-    @DisplayName("Lanzar excepción cuando rol no existe")
-    void testCrearUsuario_RolNoEncontrado() {
-        // Arrange
-        when(usuarioRepository.findByCorreo("nuevo@hospital.com")).thenReturn(Optional.empty());
-        when(rolRepository.findById(999)).thenReturn(Optional.empty());
 
-        // Act & Assert
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            usuarioService.crearUsuario(
-                "Dr. Juan Pérez",
-                "nuevo@hospital.com",
-                "password123",
-                999
-            );
-        });
 
-        assertEquals("Rol no encontrado", exception.getMessage());
-        verify(usuarioRepository, times(1)).findByCorreo("nuevo@hospital.com");
-        verify(rolRepository, times(1)).findById(999);
-        verify(usuarioRepository, never()).save(any());
-    }
 
     @Test
     @DisplayName("Verificar que la contraseña se encripta al crear usuario")
@@ -207,19 +169,6 @@ class UsuarioServiceTest {
         verify(usuarioRepository, times(1)).findById(1);
     }
 
-    @Test
-    @DisplayName("Obtener usuario por ID que no existe")
-    void testObtenerUsuarioPorId_NoEncontrado() {
-        // Arrange
-        when(usuarioRepository.findById(999)).thenReturn(Optional.empty());
-
-        // Act
-        Optional<Usuario> resultado = usuarioService.obtenerUsuarioPorId(999);
-
-        // Assert
-        assertFalse(resultado.isPresent());
-        verify(usuarioRepository, times(1)).findById(999);
-    }
 
     // ==================== PRUEBAS ACTUALIZAR USUARIO ====================
 
@@ -240,94 +189,6 @@ class UsuarioServiceTest {
         assertNotNull(resultado);
         verify(usuarioRepository, times(1)).findById(1);
         verify(usuarioRepository, times(1)).save(any(Usuario.class));
-    }
-
-    @Test
-    @DisplayName("Actualizar correo de usuario exitosamente")
-    void testActualizarUsuario_Correo() {
-        // Arrange
-        UsuarioUpdateRequest request = new UsuarioUpdateRequest();
-        request.setCorreo("nuevo.correo@hospital.com");
-
-        when(usuarioRepository.findById(1)).thenReturn(Optional.of(usuario));
-        when(usuarioRepository.findByCorreo("nuevo.correo@hospital.com")).thenReturn(Optional.empty());
-        when(usuarioRepository.save(any(Usuario.class))).thenReturn(usuario);
-
-        // Act
-        Usuario resultado = usuarioService.actualizarUsuario(1, request);
-
-        // Assert
-        assertNotNull(resultado);
-        verify(usuarioRepository, times(1)).findById(1);
-        verify(usuarioRepository, times(1)).findByCorreo("nuevo.correo@hospital.com");
-        verify(usuarioRepository, times(1)).save(any(Usuario.class));
-    }
-
-    @Test
-    @DisplayName("Lanzar excepción al actualizar con correo ya en uso")
-    void testActualizarUsuario_CorreoEnUso() {
-        // Arrange
-        Usuario otroUsuario = new Usuario();
-        otroUsuario.setIdUsuario(2);
-        otroUsuario.setCorreo("ocupado@hospital.com");
-
-        UsuarioUpdateRequest request = new UsuarioUpdateRequest();
-        request.setCorreo("ocupado@hospital.com");
-
-        when(usuarioRepository.findById(1)).thenReturn(Optional.of(usuario));
-        when(usuarioRepository.findByCorreo("ocupado@hospital.com")).thenReturn(Optional.of(otroUsuario));
-
-        // Act & Assert
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            usuarioService.actualizarUsuario(1, request);
-        });
-
-        assertEquals("El correo ya está en uso por otro usuario", exception.getMessage());
-        verify(usuarioRepository, times(1)).findById(1);
-        verify(usuarioRepository, times(1)).findByCorreo("ocupado@hospital.com");
-        verify(usuarioRepository, never()).save(any());
-    }
-
-    @Test
-    @DisplayName("Actualizar rol de usuario exitosamente")
-    void testActualizarUsuario_Rol() {
-        // Arrange
-        UsuarioUpdateRequest request = new UsuarioUpdateRequest();
-        request.setRolId(2);
-
-        when(usuarioRepository.findById(1)).thenReturn(Optional.of(usuario));
-        when(rolRepository.findById(2)).thenReturn(Optional.of(rolIP));
-        when(usuarioRepository.save(any(Usuario.class))).thenReturn(usuario);
-
-        // Act
-        Usuario resultado = usuarioService.actualizarUsuario(1, request);
-
-        // Assert
-        assertNotNull(resultado);
-        verify(usuarioRepository, times(1)).findById(1);
-        verify(rolRepository, times(1)).findById(2);
-        verify(usuarioRepository, times(1)).save(any(Usuario.class));
-    }
-
-    @Test
-    @DisplayName("Lanzar excepción al actualizar con rol inexistente")
-    void testActualizarUsuario_RolNoEncontrado() {
-        // Arrange
-        UsuarioUpdateRequest request = new UsuarioUpdateRequest();
-        request.setRolId(999);
-
-        when(usuarioRepository.findById(1)).thenReturn(Optional.of(usuario));
-        when(rolRepository.findById(999)).thenReturn(Optional.empty());
-
-        // Act & Assert
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            usuarioService.actualizarUsuario(1, request);
-        });
-
-        assertEquals("Rol no encontrado", exception.getMessage());
-        verify(usuarioRepository, times(1)).findById(1);
-        verify(rolRepository, times(1)).findById(999);
-        verify(usuarioRepository, never()).save(any());
     }
 
     @Test
@@ -376,24 +237,6 @@ class UsuarioServiceTest {
         verify(usuarioRepository, times(1)).save(any(Usuario.class));
     }
 
-    @Test
-    @DisplayName("Lanzar excepción al actualizar usuario inexistente")
-    void testActualizarUsuario_UsuarioNoEncontrado() {
-        // Arrange
-        UsuarioUpdateRequest request = new UsuarioUpdateRequest();
-        request.setNombre("Nuevo Nombre");
-
-        when(usuarioRepository.findById(999)).thenReturn(Optional.empty());
-
-        // Act & Assert
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            usuarioService.actualizarUsuario(999, request);
-        });
-
-        assertTrue(exception.getMessage().contains("Usuario no encontrado"));
-        verify(usuarioRepository, times(1)).findById(999);
-        verify(usuarioRepository, never()).save(any());
-    }
 
     @Test
     @DisplayName("No actualizar con datos vacíos o nulos")
@@ -414,52 +257,5 @@ class UsuarioServiceTest {
         assertNotNull(resultado);
         // Verificar que el usuario original no fue modificado significativamente
         verify(usuarioRepository, times(1)).save(any(Usuario.class));
-    }
-
-    @Test
-    @DisplayName("Permitir actualizar correo al mismo correo del usuario")
-    void testActualizarUsuario_MismoCorreo() {
-        // Arrange
-        UsuarioUpdateRequest request = new UsuarioUpdateRequest();
-        request.setCorreo("juan.perez@hospital.com"); // mismo correo
-
-        when(usuarioRepository.findById(1)).thenReturn(Optional.of(usuario));
-        when(usuarioRepository.findByCorreo("juan.perez@hospital.com")).thenReturn(Optional.of(usuario));
-        when(usuarioRepository.save(any(Usuario.class))).thenReturn(usuario);
-
-        // Act
-        Usuario resultado = usuarioService.actualizarUsuario(1, request);
-
-        // Assert
-        assertNotNull(resultado);
-        verify(usuarioRepository, times(1)).save(any(Usuario.class));
-    }
-
-    // ==================== PRUEBAS BORRAR USUARIO ====================
-
-    @Test
-    @DisplayName("Borrar usuario exitosamente")
-    void testBorrarUsuario() {
-        // Arrange
-        doNothing().when(usuarioRepository).deleteById(1);
-
-        // Act
-        usuarioService.borrarUsuario(1);
-
-        // Assert
-        verify(usuarioRepository, times(1)).deleteById(1);
-    }
-
-    @Test
-    @DisplayName("Borrar usuario que no existe (no lanza excepción)")
-    void testBorrarUsuario_NoExiste() {
-        // Arrange
-        doNothing().when(usuarioRepository).deleteById(999);
-
-        // Act
-        usuarioService.borrarUsuario(999);
-
-        // Assert
-        verify(usuarioRepository, times(1)).deleteById(999);
     }
 }

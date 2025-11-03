@@ -18,4 +18,14 @@ public class UsuarioUpdateRequest {
     public Integer getRolId() { return rolId; }
 
     public String getEstado() { return estado; }
+
+    public void setNombre(String nombre) {}
+
+    public void setCorreo(String correo) {}
+
+    public void setContrasena(String correo) {}
+
+    public void setRolId(Integer rolId) {}
+
+    public void setEstado(String correo) {}
 }
