@@ -1,0 +1,465 @@
+================================================================================
+  INSTRUCCIONES DE COMPILACIÓN Y DESPLIEGUE - DATALAB
+  Proyecto: Sistema de gestión de datos para investigación de cáncer de páncreas
+  Rama: testing
+================================================================================
+
+ÍNDICE:
+1. Requisitos previos
+2. Compilación manual del proyecto
+3. Ejecución con Docker (RECOMENDADO)
+4. Pruebas del sistema
+5. Importar colección de Postman
+6. Solución de problemas comunes
+
+================================================================================
+1. REQUISITOS PREVIOS
+================================================================================
+
+OPCIÓN A - COMPILACIÓN MANUAL:
+-------------------------------
+• Java JDK 17 o superior
+  - Verificar: java -version
+  - Descargar de: https://adoptium.net/
+
+• Node.js 22 o superior + npm
+  - Verificar: node -v && npm -v
+  - Descargar de: https://nodejs.org/
+
+• Maven 3.9+
+  - Verificar: mvn -version
+  - Incluido con la mayoría de IDEs (IntelliJ IDEA, Eclipse)
+
+• MySQL 8.0
+  - Servidor MySQL corriendo en localhost:3306
+  - Usuario y contraseña configurados
+
+OPCIÓN B - DOCKER (RECOMENDADO):
+---------------------------------
+• Docker Desktop instalado (versión 24.0+)
+  - Verificar: docker --version
+  - Descargar de: https://www.docker.com/products/docker-desktop
+
+• Docker Compose (incluido en Docker Desktop)
+  - Verificar: docker compose version
+
+• Mínimo 4GB de RAM disponible
+• 10GB de espacio en disco
+
+================================================================================
+2. COMPILACIÓN MANUAL DEL PROYECTO
+================================================================================
+
+2.1. CLONAR Y CAMBIAR A LA RAMA TESTING
+-----------------------------------------
+git clone <URL-DEL-REPOSITORIO>
+cd ProyectoIngSoftware
+git checkout testing
+
+2.2. COMPILAR EL BACKEND (Spring Boot)
+---------------------------------------
+cd backend_datalab
+
+# Opción 1: Usando Maven Wrapper (recomendado)
+./mvnw clean package -DskipTests
+
+# Opción 2: Usando Maven instalado
+mvn clean package -DskipTests
+
+# El archivo JAR se generará en: target/datalab-0.0.1-SNAPSHOT.jar
+
+2.3. CONFIGURAR BASE DE DATOS
+------------------------------
+# Crear base de datos en MySQL
+mysql -u root -p
+CREATE DATABASE DBB_DATALAB CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+CREATE USER 'datalab_user'@'localhost' IDENTIFIED BY 'password_datalab_user';
+GRANT ALL PRIVILEGES ON DBB_DATALAB.* TO 'datalab_user'@'localhost';
+FLUSH PRIVILEGES;
+EXIT;
+
+# Opcional: Ejecutar script de inicialización si existe
+mysql -u datalab_user -p DBB_DATALAB < BDD/init/init.sql
+
+2.4. EJECUTAR EL BACKEND
+-------------------------
+cd backend_datalab
+
+# Opción 1: Con Maven
+./mvnw spring-boot:run
+
+# Opción 2: Con el JAR generado
+java -jar target/datalab-0.0.1-SNAPSHOT.jar
+
+# El backend estará disponible en: http://localhost:8080
+# Swagger UI: http://localhost:8080/swagger-ui.html
+
+2.5. COMPILAR EL FRONTEND (Angular)
+------------------------------------
+# Desde la raíz del proyecto
+cd frontend_datalab
+
+# Instalar dependencias
+npm install
+
+# Opción 1: Modo desarrollo (con hot-reload)
+npm start
+# Frontend disponible en: http://localhost:4200
+
+# Opción 2: Build de producción
+npm run build
+# Los archivos compilados estarán en: dist/datalab-frontend/browser/
+
+2.6. EJECUTAR PRUEBAS
+---------------------
+# Pruebas del Backend
+cd backend_datalab
+./mvnw test
+
+# Pruebas del Frontend
+cd frontend_datalab
+npm test
+
+================================================================================
+3. EJECUCIÓN CON DOCKER (MÉTODO RECOMENDADO)
+================================================================================
+
+Este método levanta TODA la aplicación (frontend + backend + base de datos)
+con un solo comando.
+
+3.1. PREPARAR VARIABLES DE ENTORNO (OPCIONAL)
+----------------------------------------------
+# Copiar archivo de ejemplo
+cp .env.example .env
+
+# Editar .env si deseas cambiar las credenciales por defecto
+# Variables disponibles:
+#   MYSQL_DATABASE=DBB_DATALAB
+#   MYSQL_USER=datalab_user
+#   MYSQL_PASSWORD=password_datalab_user
+#   MYSQL_ROOT_PASSWORD=root_password_datalab
+#   SERVER_PORT=8080
+
+3.2. LEVANTAR TODA LA APLICACIÓN
+---------------------------------
+# Desde la raíz del proyecto
+docker compose up --build -d
+
+# Explicación de flags:
+#   --build: Reconstruye las imágenes (úsalo en primera ejecución o tras cambios)
+#   -d: Modo detached (ejecuta en segundo plano)
+
+# Este comando levanta:
+#   ✓ MySQL 8.0 (puerto 3306)
+#   ✓ Backend Spring Boot (puerto 8080)
+#   ✓ Frontend Angular (puerto 80)
+#   ✓ phpMyAdmin (puerto 8081) - para gestión de BD
+
+3.3. VERIFICAR QUE TODO ESTÁ CORRIENDO
+---------------------------------------
+docker compose ps
+
+# Deberías ver 4 servicios corriendo:
+# - db (MySQL)
+# - app (Backend)
+# - frontend (Angular)
+# - phpmyadmin
+
+3.4. VER LOGS DE LOS SERVICIOS
+-------------------------------
+# Ver logs del backend
+docker compose logs -f app
+
+# Ver logs del frontend
+docker compose logs -f frontend
+
+# Ver logs de todos los servicios
+docker compose logs -f
+
+# Detener ver logs: Ctrl+C
+
+3.5. ACCEDER A LA APLICACIÓN
+-----------------------------
+• Frontend: http://localhost
+• Backend API: http://localhost:8080
+• Swagger UI: http://localhost:8080/swagger-ui.html
+• phpMyAdmin: http://localhost:8081
+  - Servidor: db
+  - Usuario: datalab_user (o el configurado en .env)
+  - Contraseña: password_datalab_user (o el configurado en .env)
+
+3.6. DETENER LA APLICACIÓN
+---------------------------
+# Detener servicios (conserva datos)
+docker compose down
+
+# Detener y ELIMINAR TODOS LOS DATOS (¡CUIDADO!)
+docker compose down -v
+
+# Reiniciar un servicio específico
+docker compose restart app
+
+================================================================================
+4. PRUEBAS DEL SISTEMA
+================================================================================
+
+4.1. EJECUTAR PRUEBAS UNITARIAS (Backend)
+------------------------------------------
+cd backend_datalab
+./mvnw test
+
+# Pruebas generadas incluyen:
+#   ✓ UsuarioServiceTest (HU-27: Gestión de usuarios)
+#   ✓ ParticipanteServiceTest (HU-01: Registro de participantes)
+#   ✓ VariableServiceTest (Gestión de variables del CRF)
+#   ✓ RespuestaServiceTest (HU-15: Guardar formularios)
+#   ✓ AuditoriaServiceTest (HU-11: Bitácora de cambios)
+#   ✓ JwtServiceTest (HU-40: Mantener sesión)
+
+4.2. EJECUTAR PRUEBAS DE INTEGRACIÓN
+-------------------------------------
+cd backend_datalab
+./mvnw integration-test
+
+# Pruebas de integración incluyen:
+#   ✓ UsuarioControllerTest (Endpoints de gestión de usuarios)
+
+4.3. EJECUTAR PRUEBAS DEL FRONTEND
+-----------------------------------
+cd frontend_datalab
+npm test
+
+4.4. VER REPORTE DE COBERTURA (Backend)
+----------------------------------------
+cd backend_datalab
+./mvnw jacoco:report
+
+# El reporte se genera en: target/site/jacoco/index.html
+
+================================================================================
+5. IMPORTAR COLECCIÓN DE POSTMAN
+================================================================================
+
+La colección de Postman permite probar todos los endpoints de la API.
+
+5.1. IMPORTAR LA COLECCIÓN
+---------------------------
+1. Abrir Postman Desktop o Web (https://www.postman.com/)
+2. Click en "Import" (esquina superior izquierda)
+3. Seleccionar archivo: Datalab_API_Tests.postman_collection.json
+4. Click en "Import"
+
+5.2. CONFIGURAR ENTORNO (Environment)
+--------------------------------------
+Opción A - Automático:
+La colección ya incluye variables predefinidas:
+  - base_url: http://localhost:8080
+  - jwt_token: (se llena automáticamente tras el login)
+
+Opción B - Manual:
+1. Click en "Environments" en Postman
+2. Click en "+" para crear nuevo entorno
+3. Agregar variables:
+   - base_url: http://localhost:8080
+   - jwt_token: (dejar vacío inicialmente)
+4. Guardar y seleccionar el entorno
+
+5.3. EJECUTAR PRUEBAS CON POSTMAN
+----------------------------------
+ORDEN RECOMENDADO DE EJECUCIÓN:
+
+1. Autenticación → Login - Obtener JWT
+   - Este request guarda automáticamente el token JWT
+   - IMPORTANTE: Ejecutar primero
+
+2. Autenticación → Obtener perfil del usuario actual
+   - Verifica que el token funciona
+
+3. Usuarios → Obtener todos los usuarios
+   - Prueba el endpoint GET
+
+4. Participantes → Crear nuevo participante (CASO)
+   - Crea un participante del grupo CASO
+
+5. Participantes → Guardar respuestas del CRF
+   - Guarda respuestas para el participante creado
+
+6. Variables → Crear variable numérica
+   - Crea una pregunta del formulario
+
+TIP: Puedes ejecutar toda la colección automáticamente:
+1. Click derecho en la colección "Datalab API"
+2. Click en "Run collection"
+3. Click en "Run Datalab API"
+
+5.4. TESTS AUTOMÁTICOS INCLUIDOS
+---------------------------------
+Cada request incluye tests automáticos que verifican:
+  ✓ Código de estado HTTP correcto
+  ✓ Estructura de la respuesta
+  ✓ Datos esperados en la respuesta
+  ✓ Tiempo de respuesta < 2000ms
+
+================================================================================
+6. SOLUCIÓN DE PROBLEMAS COMUNES
+================================================================================
+
+PROBLEMA: Puerto 8080 ya en uso
+SOLUCIÓN:
+  # Linux/Mac
+  lsof -ti:8080 | xargs kill -9
+
+  # Windows
+  netstat -ano | findstr :8080
+  taskkill /PID <PID> /F
+
+  # O cambiar puerto en .env: SERVER_PORT=8081
+
+PROBLEMA: Error "Cannot connect to MySQL"
+SOLUCIÓN:
+  1. Verificar que MySQL está corriendo:
+     systemctl status mysql (Linux)
+     o revisar en Docker: docker compose ps
+
+  2. Verificar credenciales en application.properties o .env
+
+  3. Verificar que la base de datos existe:
+     mysql -u root -p -e "SHOW DATABASES;"
+
+PROBLEMA: Docker no levanta los servicios
+SOLUCIÓN:
+  1. Verificar logs: docker compose logs -f
+  2. Verificar espacio en disco: df -h
+  3. Limpiar Docker: docker system prune -a
+  4. Reiniciar Docker Desktop
+
+PROBLEMA: Frontend no se conecta al Backend
+SOLUCIÓN:
+  1. Verificar que el backend está corriendo: http://localhost:8080/swagger-ui.html
+  2. Revisar CORS en SecurityConfig.java
+  3. Verificar configuración de proxy en frontend
+
+PROBLEMA: Pruebas fallan con "User not found"
+SOLUCIÓN:
+  Las pruebas unitarias usan mocks, no necesitan BD real.
+  Si fallan, verificar que los imports sean correctos:
+    import static org.mockito.Mockito.*;
+
+PROBLEMA: "mvn command not found"
+SOLUCIÓN:
+  Usar Maven Wrapper incluido: ./mvnw en lugar de mvn
+
+PROBLEMA: Docker Compose v1 vs v2
+SOLUCIÓN:
+  - v1 (deprecated): docker-compose up
+  - v2 (actual): docker compose up (sin guion)
+
+================================================================================
+ARQUITECTURA DEL PROYECTO
+================================================================================
+
+ProyectoIngSoftware/
+├── backend_datalab/              # Backend Spring Boot
+│   ├── src/main/java/
+│   │   └── com/proyecto/datalab/
+│   │       ├── controller/       # Controladores REST
+│   │       ├── service/          # Lógica de negocio
+│   │       ├── repository/       # Acceso a datos (JPA)
+│   │       ├── entity/           # Entidades JPA
+│   │       ├── dto/              # DTOs
+│   │       ├── config/           # Configuración (Security, CORS)
+│   │       └── exception/        # Manejo de excepciones
+│   ├── src/test/java/            # PRUEBAS UNITARIAS E INTEGRACIÓN
+│   ├── Dockerfile                # Docker para backend
+│   └── pom.xml                   # Dependencias Maven
+├── frontend_datalab/             # Frontend Angular
+│   ├── src/app/
+│   │   ├── features/             # Módulos principales
+│   │   ├── shared/               # Componentes compartidos
+│   │   └── app.routes.ts         # Rutas de Angular
+│   ├── Dockerfile                # Docker para frontend
+│   ├── nginx.conf                # Configuración de Nginx
+│   └── package.json              # Dependencias npm
+├── BDD/                          # Scripts de base de datos
+│   └── init/                     # Scripts de inicialización
+├── docker-compose.yml            # Orquestación de servicios
+├── .env.example                  # Ejemplo de variables de entorno
+├── Datalab_API_Tests.postman_collection.json  # Colección Postman
+├── PATRONES_DE_DISENO.md         # Análisis de patrones
+└── INSTRUCCIONES.txt             # Este archivo
+
+================================================================================
+ENDPOINTS PRINCIPALES DE LA API
+================================================================================
+
+AUTENTICACIÓN:
+  POST   /auth/login              - Iniciar sesión (obtener JWT)
+  POST   /auth/register           - Registrar usuario
+  GET    /auth/me                 - Obtener perfil actual
+  GET    /auth/validate           - Validar token
+
+USUARIOS (HU-27):
+  GET    /api/usuarios            - Listar todos
+  GET    /api/usuarios/{id}       - Obtener por ID
+  POST   /api/usuarios            - Crear usuario
+  PUT    /api/usuarios/{id}       - Actualizar usuario
+  DELETE /api/usuarios/{id}       - Eliminar usuario
+
+PARTICIPANTES (HU-01, HU-15):
+  GET    /api/participantes       - Listar todos
+  POST   /api/participantes       - Crear participante
+  POST   /api/participantes/{id}/respuestas - Guardar respuestas CRF
+
+VARIABLES DEL CRF:
+  POST   /api/preguntas           - Crear variable/pregunta
+
+RESPUESTAS:
+  POST   /api/respuestas          - Crear respuesta
+  PUT    /api/respuestas/{id}     - Actualizar respuesta
+
+SWAGGER UI: http://localhost:8080/swagger-ui.html (documentación completa)
+
+================================================================================
+CREDENCIALES POR DEFECTO
+================================================================================
+
+BASE DE DATOS MYSQL:
+  Host: localhost (o 'db' en Docker)
+  Puerto: 3306
+  Base de datos: DBB_DATALAB
+  Usuario: datalab_user
+  Contraseña: password_datalab_user
+  Root: root_password_datalab
+
+USUARIO DE LA APLICACIÓN (si existe seed data):
+  Correo: admin@datalab.com
+  Contraseña: admin123
+
+PHPMYADMIN (Docker):
+  URL: http://localhost:8081
+  Servidor: db
+  Usuario: datalab_user
+  Contraseña: password_datalab_user
+
+================================================================================
+DOCUMENTACIÓN ADICIONAL
+================================================================================
+
+• Swagger API: http://localhost:8080/swagger-ui.html
+• Patrones de Diseño: Ver archivo PATRONES_DE_DISENO.md
+• README Docker: Ver archivo README-DOCKER.md
+• README Profiles: Ver archivo README-PROFILES.md
+
+================================================================================
+CONTACTO Y SOPORTE
+================================================================================
+
+Este es un proyecto universitario de Ingeniería de Software.
+Para consultas, reportar issues en el repositorio o contactar al equipo.
+
+Rama de trabajo: testing
+Última actualización: 2024
+
+================================================================================
+FIN DE LAS INSTRUCCIONES
+================================================================================
