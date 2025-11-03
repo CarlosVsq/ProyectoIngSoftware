@@ -48,6 +48,12 @@ services:
       PMA_PORT: 3306
     ports:
       - "8081:80"
-
+  frontend:
+      build:
+        context: ./frontend_datalab
+      environment:
+        NODE_ENV: production
+      ports:
+        - 80:80
 volumes:
   db_data:

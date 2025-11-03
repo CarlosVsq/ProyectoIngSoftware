@@ -1,0 +1,32 @@
+canvas {
+  max-height: 300px;
+  width: 100%;
+}
+main {
+  background-color: #f5f6fa;
+}
+
+aside {
+  min-width: 300px;
+}
+
+section button {
+  @apply flex items-center justify-center gap-2 text-sm font-medium;
+}
+
+main {
+  min-height: 100vh;
+}
+
+aside {
+  position: sticky;
+  top: 1.5rem;
+  align-self: start;
+  margin-right: 10px;
+}
+
+
+body {
+  background-color: #f5f6fa;
+}
+

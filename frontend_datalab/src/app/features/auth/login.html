@@ -1,0 +1,30 @@
+<div class="h-screen flex items-center justify-center bg-accent">
+  <div class="bg-white rounded-2xl shadow-2xl p-10 w-[420px] text-center">
+    <img src="/imagenes/logo.png" alt="DATALAB" class="mx-auto mb-4 h-16">
+    <h1 class="text-xl font-semibold text-primary">Bienvenido a DATALAB</h1>
+    <p class="text-gray-500 mb-6">Plataforma de Investigación Biomédica</p>
+
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-4 text-left">
+      <div>
+        <label class="text-sm font-medium text-primary">Usuario</label>
+        <input formControlName="username" placeholder="Ingrese su usuario"
+          class="w-full border rounded-md p-2 focus:ring-2 focus:ring-primary outline-none" />
+      </div>
+
+      <div>
+        <label class="text-sm font-medium text-primary">Contraseña</label>
+        <input type="password" formControlName="password" placeholder="Ingrese su contraseña"
+          class="w-full border rounded-md p-2 focus:ring-2 focus:ring-primary outline-none" />
+      </div>
+
+      <button type="submit"
+        class="w-full bg-gradient-to-r from-primary to-secondary text-white py-2 rounded-md hover:opacity-90 transition">
+        Ingresar
+      </button>
+    </form>
+
+    <a routerLink="/recover" class="text-sm text-secondary block mt-4 hover:underline">
+      ¿Olvidaste tu contraseña?
+    </a>
+  </div>
+</div>

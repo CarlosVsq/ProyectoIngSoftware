@@ -1,0 +1,26 @@
+h2, h3, h4 {
+  color: #1e3a8a;
+}
+
+button {
+  transition: all 0.3s ease;
+}
+
+button:hover {
+  transform: translateY(-1px);
+}
+
+.bg-success {
+  background-color: #dcfce7;
+  color: #15803d;
+}
+
+.bg-warning {
+  background-color: #fef9c3;
+  color: #92400e;
+}
+
+.bg-error {
+  background-color: #fee2e2;
+  color: #b91c1c;
+}

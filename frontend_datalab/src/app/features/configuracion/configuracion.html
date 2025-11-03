@@ -1,0 +1,155 @@
+<div class="flex min-h-screen bg-gray-50 text-gray-800">
+  <!-- CONTENIDO PRINCIPAL -->
+  <main class="flex-1 p-6 max-w-[1200px] mx-auto">
+
+    <!-- ENCABEZADO -->
+    <header class="flex justify-between items-center mb-8">
+  <h2 class="text-2xl font-semibold text-primary">Auditoría</h2>
+
+  <div class="flex items-center gap-4">
+    <div class="flex flex-col text-right">
+      <span class="text-sm font-medium text-gray-800">{{ usuarioNombre }}</span>
+      <span class="text-xs text-gray-500">Investigadora Principal</span>
+    </div>
+
+    <button
+  (click)="abrirLogoutPanel()"
+  class="flex items-center gap-1 text-gray-600 hover:text-red-600 transition"
+>
+  <span class="material-icons text-base">logout</span>
+  <span class="text-sm font-medium">Cerrar Sesión</span>
+</button>
+  </div>
+</header>
+    <!-- GESTIÓN DE USUARIOS -->
+    <section class="grid grid-cols-2 gap-6 mb-8">
+      <div class="bg-white p-6 rounded-xl shadow">
+        <h3 class="text-primary font-semibold mb-4">Gestión de Usuarios</h3>
+
+        <div class="space-y-3">
+          <div class="flex items-center justify-between bg-green-50 px-4 py-3 rounded-lg">
+            <div>
+              <p class="font-medium text-gray-800">Dra. González</p>
+              <p class="text-xs text-gray-500">Investigadora Principal</p>
+            </div>
+            <span class="bg-green-100 text-green-700 text-xs px-3 py-1 rounded-full font-semibold">
+              Activo
+            </span>
+          </div>
+
+          <div class="flex items-center justify-between bg-green-50 px-4 py-3 rounded-lg">
+            <div>
+              <p class="font-medium text-gray-800">Dr. Martínez</p>
+              <p class="text-xs text-gray-500">Investigador</p>
+            </div>
+            <span class="bg-green-100 text-green-700 text-xs px-3 py-1 rounded-full font-semibold">
+              Activo
+            </span>
+          </div>
+
+          <div class="flex items-center justify-between bg-yellow-50 px-4 py-3 rounded-lg">
+            <div>
+              <p class="font-medium text-gray-800">Enf. López</p>
+              <p class="text-xs text-gray-500">Coordinadora</p>
+            </div>
+            <span class="bg-yellow-100 text-yellow-700 text-xs px-3 py-1 rounded-full font-semibold">
+              Pendiente
+            </span>
+          </div>
+        </div>
+
+        <button
+          class="w-full mt-4 bg-blue-700 text-white py-2 rounded-md hover:bg-blue-800 transition flex items-center justify-center gap-2">
+          <span class="material-icons text-sm">person_add</span> Agregar Usuario
+        </button>
+      </div>
+
+      <!-- CONFIGURACIÓN DEL SISTEMA -->
+      <div class="bg-white p-6 rounded-xl shadow">
+        <h3 class="text-primary font-semibold mb-4">Configuración del Sistema</h3>
+
+        <div class="space-y-3 text-sm text-gray-700">
+          <label class="flex justify-between items-center">
+            <span>Notificaciones por email</span>
+            <input type="checkbox" checked class="accent-blue-600 scale-110">
+          </label>
+
+          <label class="flex justify-between items-center">
+            <span>Backup automático</span>
+            <input type="checkbox" checked class="accent-blue-600 scale-110">
+          </label>
+
+          <label class="flex justify-between items-center">
+            <span>Auditoría detallada</span>
+            <input type="checkbox" checked class="accent-blue-600 scale-110">
+          </label>
+
+          <label class="flex justify-between items-center">
+            <span>Autenticación 2FA</span>
+            <input type="checkbox" class="accent-blue-600 scale-110">
+          </label>
+
+          <div class="mt-4">
+            <label class="text-gray-700 font-medium text-sm mb-1 block">Retención de datos (días)</label>
+            <input type="number" value="2555" class="border border-gray-300 rounded-md px-3 py-2 w-full text-sm">
+          </div>
+
+          <button
+            class="w-full mt-4 bg-gray-900 text-white py-2 rounded-md text-sm hover:bg-gray-800 transition flex items-center justify-center gap-2">
+            <span class="material-icons text-sm">save</span> Guardar Configuración
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- PERMISOS Y ROLES -->
+    <section class="bg-white p-6 rounded-xl shadow">
+      <h3 class="text-primary font-semibold mb-4">Permisos y Roles</h3>
+
+      <table class="w-full border-collapse text-sm text-left">
+        <thead>
+          <tr class="border-b text-gray-600">
+            <th class="py-2">Rol</th>
+            <th class="py-2 text-center">Ver Datos</th>
+            <th class="py-2 text-center">Modificar</th>
+            <th class="py-2 text-center">Exportar</th>
+            <th class="py-2 text-center">Administrar</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="border-b hover:bg-gray-50">
+            <td class="py-2 font-medium">Investigadora Principal</td>
+            <td class="text-center">✓</td>
+            <td class="text-center">✓</td>
+            <td class="text-center">✓</td>
+            <td class="text-center">✓</td>
+          </tr>
+          <tr class="border-b hover:bg-gray-50">
+            <td class="py-2 font-medium">Investigador</td>
+            <td class="text-center">✓</td>
+            <td class="text-center">✓</td>
+            <td class="text-center">✓</td>
+            <td class="text-center">-</td>
+          </tr>
+          <tr class="border-b hover:bg-gray-50">
+            <td class="py-2 font-medium">Coordinadora</td>
+            <td class="text-center">✓</td>
+            <td class="text-center">✓</td>
+            <td class="text-center">-</td>
+            <td class="text-center">-</td>
+          </tr>
+          <tr class="hover:bg-gray-50">
+            <td class="py-2 font-medium">Analista</td>
+            <td class="text-center">✓</td>
+            <td class="text-center">-</td>
+            <td class="text-center">-</td>
+            <td class="text-center">-</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+  <app-logout-panel></app-logout-panel>
+  <!-- PANEL DE ALERTAS -->
+  <app-alert-panel></app-alert-panel>
+</div>
