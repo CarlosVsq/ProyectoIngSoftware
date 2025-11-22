@@ -3,7 +3,7 @@
   <div class="w-full max-w-4xl bg-white rounded-xl shadow-xl overflow-hidden">
     <div class="px-6 py-4 border-b flex items-center justify-between">
       <h2 class="text-lg font-semibold">
-        Registrar CRF — {{ (form.get('grupo')?.value || selectedGroup)?.toString().toUpperCase() }}
+        Registrar CRF · {{ (form.get('grupo')?.value || selectedGroup)?.toString().toUpperCase() }}
       </h2>
       <button class="text-gray-500 hover:text-red-600" (click)="close()">✕</button>
     </div>
@@ -40,6 +40,9 @@
                     <input *ngSwitchCase="'date'" type="date" class="border rounded-md px-3 py-2 w-full" [formControlName]="f.id" />
                     <textarea *ngSwitchCase="'textarea'" rows="3" class="border rounded-md px-3 py-2 w-full" [formControlName]="f.id"></textarea>
                   </ng-container>
+                  <p class="text-xs text-red-600 mt-1" *ngIf="form.get(f.id)?.invalid && (form.get(f.id)?.touched || form.get(f.id)?.dirty)">
+                    Campo obligatorio o formato invalido.
+                  </p>
                 </div>
 
                 <!-- radio -->
@@ -72,7 +75,7 @@
                 <div *ngIf="f.type==='select'">
                   <label class="text-sm text-gray-700 mb-1 block">{{ f.label }}</label>
                   <select class="border rounded-md px-3 py-2 w-full" [formControlName]="f.id">
-                    <option [ngValue]="null">Seleccione…</option>
+                    <option [ngValue]="null">Seleccione...</option>
                     <option *ngFor="let o of f.options" [value]="o">{{ o }}</option>
                   </select>
                 </div>
@@ -83,9 +86,18 @@
       </ng-container>
 
       <!-- Footer -->
-      <div class="flex items-center justify-end gap-3 pt-4 border-t">
-        <button type="button" class="px-4 py-2 rounded-lg bg-gray-200" (click)="guardarBorrador()">Guardar borrador</button>
-        <button type="button" class="px-4 py-2 rounded-lg bg-green-600 text-white" (click)="guardarFinal()">Guardar CRF</button>
+      <div class="flex items-center justify-between gap-3 pt-4 border-t">
+        <div class="text-xs text-gray-500">
+          Auto-guardado cada 15s <span *ngIf="lastAutoSaveAt">· Ultimo: {{ lastAutoSaveAt }}</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <button type="button" class="px-4 py-2 rounded-lg bg-gray-200" (click)="guardarBorrador()">Guardar borrador</button>
+          <button type="button" class="px-4 py-2 rounded-lg bg-green-600 text-white" (click)="guardarFinal()">Guardar CRF</button>
+        </div>
+      </div>
+
+      <div *ngIf="missingRequiredLabels.length" class="mt-3 text-sm text-red-600">
+        Faltan: {{ missingRequiredLabels.join(', ') }}
       </div>
     </form>
   </div>

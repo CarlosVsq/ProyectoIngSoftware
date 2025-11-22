@@ -9,6 +9,13 @@ export interface CRFField {
   options?: string[];             // para radio/checkbox/select
   placeholder?: string;
   groupVisibility?: Array<'caso' | 'control'>; // si se requiere filtrar por grupo a nivel campo
+  validation?: {
+    min?: number;
+    max?: number;
+    pattern?: string;
+    minLength?: number;
+    maxLength?: number;
+  };
 }
 
 export interface CRFSection {

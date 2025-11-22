@@ -42,7 +42,7 @@ public class Auditoria {
     private String accion;
 
     @Lob
-    @Column(name = "detalle_cambio")
+    @Column(name = "detalle_cambio", columnDefinition = "text")
     private String detalleCambio;
 
     @Column(name = "fecha_cambio", nullable = false, updatable = false)

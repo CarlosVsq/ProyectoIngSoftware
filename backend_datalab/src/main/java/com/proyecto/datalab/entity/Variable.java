@@ -28,7 +28,7 @@ public class Variable {
     private Integer idVariable;
 
     @Lob
-    @Column(name = "enunciado", nullable = false)
+    @Column(name = "enunciado", nullable = false, columnDefinition = "text")
     private String enunciado;
 
     @Column(name = "codigo_variable", nullable = false, unique = true, length = 100)
@@ -38,7 +38,7 @@ public class Variable {
     private String tipoDato;
 
     @Lob
-    @Column(name = "opciones")
+    @Column(name = "opciones", columnDefinition = "text")
     private String opciones;
 
     @Column(name = "aplica_a", nullable = false, length = 50)
@@ -54,7 +54,7 @@ public class Variable {
     private boolean esObligatoria;
 
     @Lob
-    @Column(name = "regla_validacion")
+    @Column(name = "regla_validacion", columnDefinition = "text")
     private String reglaValidacion;
 
     @OneToMany(mappedBy = "variable", fetch = FetchType.LAZY)

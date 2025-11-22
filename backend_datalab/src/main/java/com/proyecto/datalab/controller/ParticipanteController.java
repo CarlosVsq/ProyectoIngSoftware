@@ -14,9 +14,12 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.proyecto.datalab.dto.GuardarRespuestasRequest;
+import com.proyecto.datalab.dto.MarcarNoCompletableRequest;
 import com.proyecto.datalab.dto.ParticipanteCreateRequest;
 import com.proyecto.datalab.entity.Participante;
 import com.proyecto.datalab.service.ParticipanteService;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/participantes")
@@ -34,7 +37,7 @@ public class ParticipanteController {
     // --- POST (Crear Participante) ---
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Participante crear(@RequestBody ParticipanteCreateRequest request) {
+    public Participante crear(@Valid @RequestBody ParticipanteCreateRequest request) {
         return participanteService.crearParticipante(
                 request.getNombreCompleto(),
                 request.getTelefono(),
@@ -44,14 +47,25 @@ public class ParticipanteController {
         );
     }
 
+    // --- POST (Marcar ficha como NO_COMPLETABLE) ---
+    @PostMapping("/{idParticipante}/no-completable")
+    public Participante marcarNoCompletable(
+            @PathVariable Integer idParticipante,
+            @Valid @RequestBody MarcarNoCompletableRequest request) {
+        return participanteService.marcarNoCompletable(
+                idParticipante,
+                request.getJustificacion(),
+                request.getUsuarioEditorId()
+        );
+    }
+
     // --- POST (Guardar Respuestas de un Participante) ---
-    // (Este método actualiza las respuestas de un participante existente)
+    // Este metodo actualiza o crea las respuestas de un participante existente
     @PostMapping("/{idParticipante}/respuestas")
     public ResponseEntity<Void> guardarRespuestas(
             @PathVariable Integer idParticipante,
-            @RequestBody GuardarRespuestasRequest request) {
-        
-        // Asumimos que el ID del usuario editor viene en el request
+            @Valid @RequestBody GuardarRespuestasRequest request) {
+
         participanteService.guardarRespuestas(
                 idParticipante,
                 request.getRespuestasMap(),

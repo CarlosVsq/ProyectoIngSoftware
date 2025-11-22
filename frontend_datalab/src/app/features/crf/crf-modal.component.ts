@@ -1,7 +1,7 @@
 // src/app/features/crf/crf-modal.component.ts
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormArray } from '@angular/forms';
+import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormArray, AbstractControl, ValidatorFn } from '@angular/forms';
 import { CrfService } from './crf.service';
 import { CRFSchema, CRFSection, CRFField } from './schema';
 
@@ -11,7 +11,7 @@ import { CRFSchema, CRFSection, CRFField } from './schema';
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './crf-modal.component.html',
 })
-export class CrfModalComponent implements OnInit {
+export class CrfModalComponent implements OnInit, OnDestroy {
   @Input() open = false;
   @Input() recordId: string | null = null;  // por si editas
   @Output() closed = new EventEmitter<void>();
@@ -19,16 +19,27 @@ export class CrfModalComponent implements OnInit {
   schema!: CRFSchema;
   form!: FormGroup;
   selectedGroup: 'caso' | 'control' = 'control';
+  lastAutoSaveAt = '';
+  missingRequiredLabels: string[] = [];
+  private autoSaveHandle?: ReturnType<typeof setInterval>;
+  isSubmitting = false;
 
   constructor(private fb: FormBuilder, private crf: CrfService) {}
 
   ngOnInit(): void {
     this.schema = this.crf.getSchema();
     this.buildForm();
+    this.startAutoSave();
+  }
+
+  ngOnDestroy(): void {
+    if (this.autoSaveHandle) {
+      clearInterval(this.autoSaveHandle);
+    }
   }
 
   private buildForm(): void {
-    const controls: any = {};
+    const controls: Record<string, AbstractControl> = {};
 
     // base controls
     controls['grupo'] = this.fb.control(this.selectedGroup, Validators.required);
@@ -39,8 +50,7 @@ export class CrfModalComponent implements OnInit {
         if (f.type === 'checkbox') {
           controls[f.id] = this.fb.array([]); // array de strings
         } else {
-          const v = f.required ? [null, Validators.required] : [null];
-          controls[f.id] = this.fb.control(v[0], v[1]);
+          controls[f.id] = this.fb.control(null, this.buildValidatorsForField(f));
         }
       });
     });
@@ -51,6 +61,35 @@ export class CrfModalComponent implements OnInit {
     this.form.get('grupo')?.valueChanges.subscribe((val) => {
       this.selectedGroup = val;
     });
+
+    // si hay recordId intenta precargar borrador
+    if (this.recordId) {
+      const draft = this.crf.load(this.recordId);
+      if (draft) {
+        this.form.patchValue(draft);
+      }
+    }
+  }
+
+  private buildValidatorsForField(field: CRFField): ValidatorFn[] {
+    const validators: ValidatorFn[] = [];
+    if (field.required) {
+      validators.push(Validators.required);
+    }
+    if (field.type === 'number') {
+      if (field.validation?.min !== undefined) validators.push(Validators.min(field.validation.min));
+      if (field.validation?.max !== undefined) validators.push(Validators.max(field.validation.max));
+    }
+    if (field.validation?.pattern) {
+      validators.push(Validators.pattern(field.validation.pattern));
+    }
+    if (field.validation?.minLength !== undefined) {
+      validators.push(Validators.minLength(field.validation.minLength));
+    }
+    if (field.validation?.maxLength !== undefined) {
+      validators.push(Validators.maxLength(field.validation.maxLength));
+    }
+    return validators;
   }
 
   // Helpers
@@ -79,22 +118,68 @@ export class CrfModalComponent implements OnInit {
   // Guardados
   guardarBorrador(): void {
     const codigo = this.form.get('codigo')?.value || 'SIN_CODIGO';
-    this.crf.saveDraft(codigo, this.form.value);
+    this.crf.saveDraft(codigo, { ...this.form.value, estado: 'borrador' });
+    this.lastAutoSaveAt = 'Borrador guardado manualmente';
     alert('Borrador guardado');
   }
 
   guardarFinal(): void {
+    if (this.isSubmitting) return;
+    this.isSubmitting = true;
     const codigo = this.form.get('codigo')?.value || 'SIN_CODIGO';
     if (this.form.invalid) {
-      alert('Completa los campos obligatorios');
+      this.missingRequiredLabels = this.getMissingRequiredFields();
+      alert(`Completa los campos obligatorios: ${this.missingRequiredLabels.join(', ')}`);
+      this.isSubmitting = false;
       return;
     }
-    this.crf.saveFinal(codigo, this.form.value);
-    alert('CRF guardado');
-    this.close();
+    const payload = {
+      nombreCompleto: this.form.get('nombre')?.value || '',
+      telefono: this.form.get('telefono')?.value || '',
+      direccion: this.form.get('direccion')?.value || '',
+      grupo: this.form.get('grupo')?.value || 'CONTROL'
+    };
+
+    this.crf.crearParticipante(payload).subscribe({
+      next: (res) => {
+        this.crf.saveFinalLocal(codigo, { ...this.form.value, estado: 'completo', idParticipante: res.idParticipante });
+        alert('CRF guardado y participante creado');
+        this.isSubmitting = false;
+        this.close();
+      },
+      error: (err) => {
+        const msg = err?.error?.message || 'No se pudo crear el participante. Verifica los datos.';
+        alert(msg);
+        this.isSubmitting = false;
+      }
+    });
+  }
+
+  private startAutoSave(): void {
+    this.autoSaveHandle = setInterval(() => {
+      const codigo = this.form.get('codigo')?.value || 'SIN_CODIGO';
+      this.crf.saveDraft(codigo, { ...this.form.value, estado: 'autosave' });
+      this.lastAutoSaveAt = new Date().toLocaleTimeString();
+    }, 15000); // 15 segundos
+  }
+
+  private getMissingRequiredFields(): string[] {
+    const missing: string[] = [];
+    this.schema.sections.forEach(section => {
+      section.fields.forEach(field => {
+        const control = this.form.get(field.id);
+        if (field.required && control && control.invalid) {
+          missing.push(field.label);
+        }
+      });
+    });
+    return missing;
   }
 
   close(): void {
+    if (this.autoSaveHandle) {
+      clearInterval(this.autoSaveHandle);
+    }
     this.open = false;
     this.closed.emit();
   }
