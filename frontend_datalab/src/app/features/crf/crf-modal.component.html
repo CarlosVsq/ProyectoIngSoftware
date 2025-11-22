@@ -1,0 +1,92 @@
+<!-- src/app/features/crf/crf-modal.component.html -->
+<div *ngIf="open" class="fixed inset-0 bg-black/40 flex justify-center items-start pt-6">
+  <div class="w-full max-w-4xl bg-white rounded-xl shadow-xl overflow-hidden">
+    <div class="px-6 py-4 border-b flex items-center justify-between">
+      <h2 class="text-lg font-semibold">
+        Registrar CRF — {{ (form.get('grupo')?.value || selectedGroup)?.toString().toUpperCase() }}
+      </h2>
+      <button class="text-gray-500 hover:text-red-600" (click)="close()">✕</button>
+    </div>
+
+   <form class="p-6 space-y-8 max-h-[75vh] overflow-y-auto bg-white scrollbar-thin scrollbar-thumb-gray-300 rounded-b-xl" [formGroup]="form">
+
+      <!-- Grupo selector arriba siempre visible -->
+      <div class="flex items-center gap-4">
+        <label class="text-sm text-gray-600">Grupo:</label>
+        <label class="flex items-center gap-2">
+          <input type="radio" value="caso" formControlName="grupo" />
+          <span>caso</span>
+        </label>
+        <label class="flex items-center gap-2">
+          <input type="radio" value="control" formControlName="grupo" />
+          <span>control</span>
+        </label>
+      </div>
+
+      <!-- Secciones -->
+      <ng-container *ngFor="let s of schema.sections">
+        <section *ngIf="showSection(s)">
+          <h3 class="text-primary font-semibold mb-3">{{ s.title }}</h3>
+
+          <div class="grid md:grid-cols-2 gap-4">
+            <ng-container *ngFor="let f of s.fields">
+              <ng-container *ngIf="showField(f)">
+                <!-- text/number/date/textarea -->
+                <div *ngIf="f.type==='text' || f.type==='number' || f.type==='date' || f.type==='textarea'">
+                  <label class="text-sm text-gray-700 mb-1 block">{{ f.label }} <span *ngIf="f.required" class="text-red-500">*</span></label>
+                  <ng-container [ngSwitch]="f.type">
+                    <input *ngSwitchCase="'text'" class="border rounded-md px-3 py-2 w-full" [placeholder]="f.placeholder || f.label" [formControlName]="f.id" />
+                    <input *ngSwitchCase="'number'" type="number" class="border rounded-md px-3 py-2 w-full" [formControlName]="f.id" />
+                    <input *ngSwitchCase="'date'" type="date" class="border rounded-md px-3 py-2 w-full" [formControlName]="f.id" />
+                    <textarea *ngSwitchCase="'textarea'" rows="3" class="border rounded-md px-3 py-2 w-full" [formControlName]="f.id"></textarea>
+                  </ng-container>
+                </div>
+
+                <!-- radio -->
+                <div *ngIf="f.type==='radio'">
+                  <label class="text-sm text-gray-700 mb-1 block">{{ f.label }}</label>
+                  <div class="flex flex-wrap gap-4">
+                    <label class="inline-flex items-center gap-2" *ngFor="let o of f.options">
+                      <input type="radio" [value]="o" [formControlName]="f.id" />
+                      <span>{{ o }}</span>
+                    </label>
+                  </div>
+                </div>
+
+                <!-- checkbox (FormArray) -->
+                <div *ngIf="f.type==='checkbox'">
+                  <label class="text-sm text-gray-700 mb-1 block">{{ f.label }}</label>
+                  <div class="flex flex-wrap gap-4">
+                    <label class="inline-flex items-center gap-2" *ngFor="let o of f.options">
+                      <input
+                        type="checkbox"
+                        [checked]="(form.get(f.id)?.value || []).includes(o)"
+                        (change)="onCheckboxChange($event, f.id, o)"
+                      />
+                      <span>{{ o }}</span>
+                    </label>
+                  </div>
+                </div>
+
+                <!-- select (opcional si lo usas) -->
+                <div *ngIf="f.type==='select'">
+                  <label class="text-sm text-gray-700 mb-1 block">{{ f.label }}</label>
+                  <select class="border rounded-md px-3 py-2 w-full" [formControlName]="f.id">
+                    <option [ngValue]="null">Seleccione…</option>
+                    <option *ngFor="let o of f.options" [value]="o">{{ o }}</option>
+                  </select>
+                </div>
+              </ng-container>
+            </ng-container>
+          </div>
+        </section>
+      </ng-container>
+
+      <!-- Footer -->
+      <div class="flex items-center justify-end gap-3 pt-4 border-t">
+        <button type="button" class="px-4 py-2 rounded-lg bg-gray-200" (click)="guardarBorrador()">Guardar borrador</button>
+        <button type="button" class="px-4 py-2 rounded-lg bg-green-600 text-white" (click)="guardarFinal()">Guardar CRF</button>
+      </div>
+    </form>
+  </div>
+</div>

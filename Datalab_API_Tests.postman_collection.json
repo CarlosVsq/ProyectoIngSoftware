@@ -1,0 +1,901 @@
+{
+	"info": {
+		"_postman_id": "datalab-api-tests-2024",
+		"name": "Datalab API - Pruebas de Integración",
+		"description": "Colección de pruebas para la API de Datalab - Proyecto de investigación de cáncer de páncreas\n\n**Funcionalidades cubiertas:**\n- HU-40: Autenticación y sesión con JWT\n- HU-27: Gestión de usuarios (CRUD)\n- HU-01: Registro de participantes y CRF digital\n- HU-15: Guardar formularios incompletos\n- Variables del CRF\n- Respuestas del CRF\n\n**Instrucciones de uso:**\n1. Ejecutar primero el endpoint de Login para obtener el token JWT\n2. El token se guardará automáticamente en la variable de entorno {{jwt_token}}\n3. Ejecutar los demás endpoints (todos usan el token automáticamente)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Autenticación",
+			"item": [
+				{
+					"name": "Login - Obtener JWT",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Guardar el token JWT en variable de entorno",
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    if (response.success && response.data && response.data.token) {",
+									"        pm.environment.set('jwt_token', response.data.token);",
+									"        console.log('Token JWT guardado correctamente');",
+									"    }",
+									"}",
+									"",
+									"// Test: Verificar que el login fue exitoso",
+									"pm.test('Login exitoso', function() {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Respuesta contiene token', function() {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data.token).to.exist;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"correo\": \"admin@datalab.com\",\n    \"contrasena\": \"admin123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						},
+						"description": "HU-40: Autenticación de usuario y obtención de token JWT"
+					},
+					"response": []
+				},
+				{
+					"name": "Register - Crear nuevo usuario",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Usuario registrado exitosamente', function() {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test('Respuesta contiene token', function() {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data.token).to.exist;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nombreCompleto\": \"Dr. Juan Pérez\",\n    \"correo\": \"juan.perez@hospital.com\",\n    \"contrasena\": \"password123\",\n    \"rolId\": 2\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"register"
+							]
+						},
+						"description": "HU-27: Registro de nuevo usuario en el sistema"
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener perfil del usuario actual",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Perfil obtenido exitosamente', function() {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Respuesta contiene datos del usuario', function() {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data.correo).to.exist;",
+									"    pm.expect(jsonData.data.nombreCompleto).to.exist;",
+									"    pm.expect(jsonData.data.permisos).to.exist;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/auth/me",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"me"
+							]
+						},
+						"description": "HU-03: Obtener perfil y permisos del usuario autenticado"
+					},
+					"response": []
+				},
+				{
+					"name": "Validar token JWT",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Token válido', function() {",
+									"    pm.response.to.have.status(200);",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.be.true;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/auth/validate",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"validate"
+							]
+						},
+						"description": "HU-40: Validar que el token JWT sigue siendo válido"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints de autenticación y gestión de sesión"
+		},
+		{
+			"name": "Usuarios",
+			"item": [
+				{
+					"name": "Obtener todos los usuarios",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Lista de usuarios obtenida', function() {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Respuesta es un array', function() {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/usuarios",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"usuarios"
+							]
+						},
+						"description": "Obtener lista completa de usuarios del sistema"
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener usuario por ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Usuario obtenido exitosamente', function() {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Respuesta contiene datos del usuario', function() {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.idUsuario).to.exist;",
+									"    pm.expect(jsonData.nombreCompleto).to.exist;",
+									"    pm.expect(jsonData.correo).to.exist;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/usuarios/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"usuarios",
+								"1"
+							]
+						},
+						"description": "Obtener información de un usuario específico por su ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Crear nuevo usuario",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Usuario creado exitosamente', function() {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test('Respuesta contiene ID del nuevo usuario', function() {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.idUsuario).to.exist;",
+									"    pm.environment.set('nuevo_usuario_id', jsonData.idUsuario);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nombre\": \"Dra. María García\",\n    \"correo\": \"maria.garcia@hospital.com\",\n    \"contrasena\": \"password456\",\n    \"rolId\": 2\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/usuarios",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"usuarios"
+							]
+						},
+						"description": "HU-27: Crear un nuevo usuario en el sistema"
+					},
+					"response": []
+				},
+				{
+					"name": "Actualizar usuario",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Usuario actualizado exitosamente', function() {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Cambios reflejados en la respuesta', function() {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.nombreCompleto).to.exist;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nombre\": \"Dra. María García López\",\n    \"estado\": \"ACTIVO\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/usuarios/2",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"usuarios",
+								"2"
+							]
+						},
+						"description": "Actualizar información de un usuario existente"
+					},
+					"response": []
+				},
+				{
+					"name": "Eliminar usuario",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Usuario eliminado exitosamente', function() {",
+									"    pm.response.to.have.status(204);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/usuarios/999",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"usuarios",
+								"999"
+							]
+						},
+						"description": "Eliminar un usuario del sistema"
+					},
+					"response": []
+				}
+			],
+			"description": "HU-27: Gestión de usuarios (CRUD completo)"
+		},
+		{
+			"name": "Participantes",
+			"item": [
+				{
+					"name": "Obtener todos los participantes",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Lista de participantes obtenida', function() {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Respuesta es un array', function() {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/participantes",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"participantes"
+							]
+						},
+						"description": "Obtener lista de todos los participantes del estudio"
+					},
+					"response": []
+				},
+				{
+					"name": "Crear nuevo participante (CASO)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Participante creado exitosamente', function() {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test('Código de participante generado correctamente', function() {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.codigoParticipante).to.match(/^CS\\d+$/);",
+									"    pm.environment.set('participante_caso_id', jsonData.idParticipante);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nombreCompleto\": \"Pedro Ramírez\",\n    \"telefono\": \"555-1234\",\n    \"direccion\": \"Calle Principal 123\",\n    \"grupo\": \"CASO\",\n    \"usuarioReclutadorId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/participantes",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"participantes"
+							]
+						},
+						"description": "HU-01: Crear nuevo participante del grupo CASO"
+					},
+					"response": []
+				},
+				{
+					"name": "Crear nuevo participante (CONTROL)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Participante creado exitosamente', function() {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test('Código de participante CONTROL generado', function() {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.codigoParticipante).to.match(/^CT\\d+$/);",
+									"    pm.environment.set('participante_control_id', jsonData.idParticipante);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nombreCompleto\": \"Ana López\",\n    \"telefono\": \"555-5678\",\n    \"direccion\": \"Avenida Libertad 456\",\n    \"grupo\": \"CONTROL\",\n    \"usuarioReclutadorId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/participantes",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"participantes"
+							]
+						},
+						"description": "HU-01: Crear nuevo participante del grupo CONTROL"
+					},
+					"response": []
+				},
+				{
+					"name": "Guardar respuestas del CRF",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Respuestas guardadas exitosamente', function() {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"respuestasMap\": {\n        \"1\": \"45\",\n        \"2\": \"Masculino\",\n        \"3\": \"75\"\n    },\n    \"usuarioEditorId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/participantes/1/respuestas",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"participantes",
+								"1",
+								"respuestas"
+							]
+						},
+						"description": "HU-15: Guardar respuestas del CRF (permite guardar formularios incompletos)"
+					},
+					"response": []
+				}
+			],
+			"description": "HU-01 y HU-15: Gestión de participantes y registro de CRF"
+		},
+		{
+			"name": "Variables (Preguntas del CRF)",
+			"item": [
+				{
+					"name": "Crear variable numérica",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Variable creada exitosamente', function() {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test('Variable tiene código único', function() {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.codigoVariable).to.exist;",
+									"    pm.expect(jsonData.idVariable).to.exist;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"enunciado\": \"¿Cuál es su edad?\",\n    \"codigoVariable\": \"VAR-EDAD\",\n    \"tipoDato\": \"NUMERICO\",\n    \"opciones\": null,\n    \"aplicaA\": \"TODOS\",\n    \"seccion\": \"DEMOGRAFICO\",\n    \"ordenEnunciado\": 1,\n    \"esObligatoria\": true,\n    \"reglaValidacion\": \"min:0;max:120\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/preguntas",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"preguntas"
+							]
+						},
+						"description": "Crear variable numérica del CRF"
+					},
+					"response": []
+				},
+				{
+					"name": "Crear variable de selección múltiple",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Variable de selección creada', function() {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test('Variable tiene opciones definidas', function() {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.opciones).to.exist;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"enunciado\": \"Seleccione síntomas presentes\",\n    \"codigoVariable\": \"VAR-SINTOMAS\",\n    \"tipoDato\": \"SELECCION_MULTIPLE\",\n    \"opciones\": \"Dolor|Náuseas|Fatiga|Fiebre|Pérdida de peso\",\n    \"aplicaA\": \"CASO\",\n    \"seccion\": \"SINTOMAS\",\n    \"ordenEnunciado\": 5,\n    \"esObligatoria\": true,\n    \"reglaValidacion\": null\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/preguntas",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"preguntas"
+							]
+						},
+						"description": "Crear variable de selección múltiple para el CRF"
+					},
+					"response": []
+				}
+			],
+			"description": "Gestión de variables (preguntas) del CRF"
+		},
+		{
+			"name": "Respuestas",
+			"item": [
+				{
+					"name": "Crear respuesta",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Respuesta creada exitosamente', function() {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test('Respuesta tiene ID asignado', function() {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.idRespuesta).to.exist;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"idParticipante\": 1,\n    \"idVariable\": 1,\n    \"valorIngresado\": \"45\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/respuestas",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"respuestas"
+							]
+						},
+						"description": "Crear una respuesta individual para una variable del CRF"
+					},
+					"response": []
+				},
+				{
+					"name": "Actualizar respuesta",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Respuesta actualizada exitosamente', function() {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"valorIngresado\": \"46\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/respuestas/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"respuestas",
+								"1"
+							]
+						},
+						"description": "Actualizar una respuesta existente del CRF"
+					},
+					"response": []
+				}
+			],
+			"description": "Gestión de respuestas individuales del CRF"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Script pre-request global",
+					"console.log('Ejecutando request a: ' + pm.request.url);",
+					"",
+					"// Verificar si el token está configurado (excepto para login)",
+					"if (!pm.request.url.path.includes('login') && !pm.environment.get('jwt_token')) {",
+					"    console.warn('⚠️ No hay token JWT configurado. Por favor, ejecute primero el endpoint de Login.');",
+					"}"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Script de test global",
+					"pm.test('Response time menor a 2000ms', function() {",
+					"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+					"});",
+					"",
+					"// Verificar que no hay errores 500",
+					"pm.test('Sin errores de servidor (500)', function() {",
+					"    pm.expect(pm.response.code).to.not.equal(500);",
+					"});"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "jwt_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "nuevo_usuario_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "participante_caso_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "participante_control_id",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
