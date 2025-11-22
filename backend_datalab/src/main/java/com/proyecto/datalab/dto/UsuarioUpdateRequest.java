@@ -19,13 +19,19 @@ public class UsuarioUpdateRequest {
 
     public String getEstado() { return estado; }
 
-    public void setNombre(String nombre) {}
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
 
-    public void setCorreo(String correo) {}
+    public void setContrasena(String contrasena) {
+        this.contrasena = contrasena;
+    }
 
-    public void setContrasena(String correo) {}
+    public void setEstado(String estado) {
+        this.estado = estado;
+    }
 
-    public void setRolId(Integer rolId) {}
-
-    public void setEstado(String correo) {}
+    public void setCorreo(String correo) {
+        this.correo = correo;
+    }
 }

@@ -31,13 +31,6 @@ public class ParticipanteController {
         return participanteService.obtenerTodosLosParticipantes();
     }
 
-    @GetMapping("/{codigoParticipante}")
-    public ResponseEntity<Participante> obtenerPorId(@PathVariable String codigoParticipante) {
-        return participanteService.obtenerParticipantePorCodigo(codigoParticipante)
-                .map(participante -> ResponseEntity.ok(participante)) // 200 OK si se encuentra
-                .orElse(ResponseEntity.notFound().build()); // 404 Not Found si no
-    }
-
     // --- POST (Crear Participante) ---
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
