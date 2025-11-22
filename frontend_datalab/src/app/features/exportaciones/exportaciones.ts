@@ -14,14 +14,14 @@ Chart.register(...registerables);
   styleUrls: ['./exportaciones.scss']
 })
 export class ExportacionesComponent implements AfterViewInit {
-   usuarioNombre = 'Dra. González';
+  usuarioNombre = 'Dra. González';
   @ViewChild(LogoutPanelComponent)
   logoutPanel!: LogoutPanelComponent;
+
   abrirLogoutPanel() {
     this.logoutPanel.showPanel();
   }
   
-
   ngAfterViewInit(): void {
     this.renderExportChart();
   }
@@ -55,5 +55,13 @@ export class ExportacionesComponent implements AfterViewInit {
         }
       }
     });
+  }
+
+  descargarExcel(): void {
+    window.open('http://localhost:8080/api/export/excel', '_blank');
+  }
+
+  descargarPdf(): void {
+    window.open('http://localhost:8080/api/export/pdf', '_blank');
   }
 }

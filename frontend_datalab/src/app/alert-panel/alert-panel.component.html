@@ -3,22 +3,30 @@
   <div class="bg-white rounded-xl shadow p-4">
     <h4 class="text-primary font-semibold mb-3">Panel de Alertas</h4>
 
-    <div class="border-l-4 border-red-400 bg-red-50 p-3 mb-3 rounded flex flex-col">
-      <p class="text-red-600 font-semibold text-sm">Datos Incompletos</p>
-      <p class="text-gray-600 text-xs">15 participantes requieren información adicional</p>
-      <span class="text-xs bg-red-500 text-white px-2 py-0.5 rounded w-fit mt-1">Pendiente</span>
+    <div *ngIf="loading" class="text-xs text-gray-500">Cargando auditoría...</div>
+    <div *ngIf="!loading && auditorias.length === 0" class="text-xs text-gray-500">
+      Sin registros de auditoría.
     </div>
 
-    <div class="border-l-4 border-green-400 bg-green-50 p-3 mb-3 rounded flex flex-col">
-      <p class="text-green-600 font-semibold text-sm">Últimas Modificaciones</p>
-      <p class="text-gray-600 text-xs">Dr. Martínez actualizó 3 registros</p>
-      <span class="text-xs bg-green-500 text-white px-2 py-0.5 rounded w-fit mt-1">Hace 2 horas</span>
+    <div class="space-y-3 max-h-[320px] overflow-y-auto" *ngIf="auditorias.length">
+      <div *ngFor="let a of auditorias" class="border-l-4 border-blue-400 bg-blue-50 p-3 rounded flex flex-col">
+        <p class="text-blue-600 font-semibold text-sm">
+          {{ a.accion }} en {{ a.tablaAfectada }}
+        </p>
+        <p class="text-gray-600 text-xs">
+          {{ a.detalleCambio }}
+        </p>
+        <span class="text-[11px] text-gray-500 mt-1">
+          {{ a.usuario?.nombreCompleto || 'Usuario' }} ·
+          {{ a.participante?.codigoParticipante || 'N/A' }} ·
+          {{ a.fechaCambio | date:'short' }}
+        </span>
+      </div>
     </div>
 
-    <div class="border-l-4 border-blue-400 bg-blue-50 p-3 rounded flex flex-col">
-      <p class="text-blue-600 font-semibold text-sm">Comentarios de Auditoría</p>
-      <p class="text-gray-600 text-xs">Nueva revisión del comité ético disponible</p>
-      <span class="text-xs bg-blue-500 text-white px-2 py-0.5 rounded w-fit mt-1">Nuevo</span>
+    <div class="mt-3 flex justify-between items-center">
+      <span class="text-xs text-gray-500">Mostrando {{ auditorias.length }} / {{ limit }} registros</span>
+      <button (click)="verMas()" class="text-xs text-blue-600 hover:underline" [disabled]="limit >= 100">Ver más</button>
     </div>
   </div>
 

@@ -1,63 +1,87 @@
-import { Component, AfterViewInit,ViewChild } from '@angular/core';
+import { Component, AfterViewInit, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Chart, registerables } from 'chart.js';
 import { AlertPanelComponent } from '../../alert-panel/alert-panel.component';
 import { LogoutPanelComponent } from '../../shared/logout-panel/logout-panel.component';
 import { FormsModule } from '@angular/forms';
-
 import { CrfModalComponent } from '../crf/crf-modal.component';
-import { AuthService } from '../../shared/auth/auth.service'; // tu servicio de roles
+import { AuthService } from '../../shared/auth/auth.service';
+import { DashboardService, DashboardResumen } from '../../shared/dashboard/dashboard.service';
 
 Chart.register(...registerables);
 
 @Component({
   selector: 'app-reclutamiento',
   standalone: true,
-  imports: [CommonModule,AlertPanelComponent, FormsModule, LogoutPanelComponent, CrfModalComponent],
+  imports: [CommonModule, AlertPanelComponent, FormsModule, LogoutPanelComponent, CrfModalComponent],
   templateUrl: './reclutamiento.html',
   styleUrls: ['./reclutamiento.scss'],
 })
-export class ReclutamientoComponent implements AfterViewInit {
+export class ReclutamientoComponent implements OnInit, AfterViewInit {
   usuarioNombre = 'Dra. González';
+  crfOpen = false;
+  codigoBusqueda = '';
+  resumen?: DashboardResumen;
+  private chart?: Chart;
 
-  @ViewChild(LogoutPanelComponent)
-  logoutPanel!: LogoutPanelComponent;
+  @ViewChild('logoutPanelRef') logoutPanelRef!: LogoutPanelComponent;
 
-  // 👇 Nuevas propiedades
-  crfOpen = false; // controla el modal del CRF
-  codigoBusqueda = ''; // búsqueda por código
+  constructor(public auth: AuthService, private dashboard: DashboardService) {}
 
- @ViewChild(CrfModalComponent) crfModal!: CrfModalComponent;
-constructor(public auth: AuthService) {}
-
-abrirCRF() { this.crfModal.open = true; }
-cerrarCRF() { this.crfModal.open = false; }
-
-  abrirLogoutPanel() {
-    this.logoutPanel.showPanel();
+  ngOnInit(): void {
+    this.dashboard.getResumen().subscribe({
+      next: (res: { data: DashboardResumen }) => {
+        this.resumen = res.data;
+        if (this.chart) {
+          this.chart.data.datasets[0].data = [
+            this.resumen.casos,
+            this.resumen.controles,
+            this.resumen.completas + this.resumen.incompletas
+          ];
+          this.chart.update();
+        } else {
+          this.renderChart();
+        }
+      },
+      error: () => {
+        // deja números mock si falla
+      }
+    });
   }
 
-  // 👇 Abre/cierra modal CRF
+  abrirLogoutPanel(panel: LogoutPanelComponent) {
+    panel.showPanel();
+  }
 
-  // 👇 Buscar un CRF por código
+  abrirCRF() { this.crfOpen = true; }
+  cerrarCRF() { this.crfOpen = false; }
+
   buscarPorCodigo() {
     if (!this.codigoBusqueda.trim()) {
       alert('Ingresa un código para buscar.');
       return;
     }
-
+    // TODO: implementar búsqueda
   }
-    
+
   ngAfterViewInit(): void {
+    this.renderChart();
+  }
+
+  private renderChart(): void {
     const ctx = document.getElementById('progresoChart') as HTMLCanvasElement;
-    new Chart(ctx, {
+    if (!ctx) return;
+    const dataPoints = this.resumen
+      ? [this.resumen.casos, this.resumen.controles, this.resumen.completas + this.resumen.incompletas]
+      : [60, 80, 100];
+    const config: any = {
       type: 'line',
       data: {
-        labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
+        labels: ['Casos', 'Controles', 'Fichas'],
         datasets: [
           {
-            label: 'Participantes Reclutados',
-            data: [60, 80, 120, 160, 220, 300],
+            label: 'Reclutamiento',
+            data: dataPoints,
             borderColor: '#22c55e',
             backgroundColor: 'rgba(34, 197, 94, 0.2)',
             fill: true,
@@ -76,6 +100,7 @@ cerrarCRF() { this.crfModal.open = false; }
           y: { grid: { color: '#f3f4f6' } },
         },
       },
-    });
+    };
+    this.chart = new Chart(ctx as any, config);
   }
 }

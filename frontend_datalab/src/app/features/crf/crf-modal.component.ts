@@ -142,10 +142,27 @@ export class CrfModalComponent implements OnInit, OnDestroy {
 
     this.crf.crearParticipante(payload).subscribe({
       next: (res) => {
+<<<<<<< Updated upstream
         this.crf.saveFinalLocal(codigo, { ...this.form.value, estado: 'completo', idParticipante: res.idParticipante });
         alert('CRF guardado y participante creado');
         this.isSubmitting = false;
         this.close();
+=======
+        const respuestas = this.buildRespuestasMap();
+        this.crf.guardarRespuestas(res.idParticipante, respuestas).subscribe({
+          next: () => {
+            this.crf.saveFinalLocal(codigo, { ...this.form.value, estado: 'completo', idParticipante: res.idParticipante });
+            alert('CRF guardado y participante creado');
+            this.isSubmitting = false;
+            this.close();
+          },
+          error: (err) => {
+            const msg = err?.error?.message || 'No se pudieron guardar las respuestas.';
+            alert(msg);
+            this.isSubmitting = false;
+          }
+        });
+>>>>>>> Stashed changes
       },
       error: (err) => {
         const msg = err?.error?.message || 'No se pudo crear el participante. Verifica los datos.';
@@ -174,6 +191,28 @@ export class CrfModalComponent implements OnInit, OnDestroy {
       });
     });
     return missing;
+<<<<<<< Updated upstream
+=======
+  }
+
+  private buildRespuestasMap(): Record<string, string> {
+    const map: Record<string, string> = {};
+    this.schema.sections.forEach(section => {
+      section.fields.forEach(field => {
+        // omite campos de control que no queremos mandar como variable
+        if (field.id === 'codigo' || field.id === 'grupo') return;
+        const control = this.form.get(field.id);
+        if (!control) return;
+        const value = control.value;
+        if (field.type === 'checkbox' && Array.isArray(value)) {
+          if (value.length > 0) map[field.id] = value.join(',');
+        } else if (value !== null && value !== undefined && value !== '') {
+          map[field.id] = value.toString();
+        }
+      });
+    });
+    return map;
+>>>>>>> Stashed changes
   }
 
   close(): void {

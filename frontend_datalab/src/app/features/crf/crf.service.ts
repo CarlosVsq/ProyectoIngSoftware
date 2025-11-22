@@ -41,4 +41,18 @@ export class CrfService {
       usuarioReclutadorId
     });
   }
+<<<<<<< Updated upstream
+=======
+
+  guardarRespuestas(participanteId: number, respuestas: Record<string, string>): Observable<void> {
+    const usuarioEditorId = this.auth.getUserId();
+    if (!usuarioEditorId) {
+      throw new Error('No hay usuario autenticado para registrar respuestas');
+    }
+    return this.http.post<void>(`${this.API_BASE}/participantes/${participanteId}/respuestas`, {
+      usuarioEditorId,
+      respuestasMap: respuestas
+    });
+  }
+>>>>>>> Stashed changes
 }
