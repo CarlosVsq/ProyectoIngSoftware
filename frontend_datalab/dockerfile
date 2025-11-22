@@ -1,41 +1,31 @@
-# syntax=docker/dockerfile:1
+# ---------- Build stage ----------
+FROM node:22-alpine AS build
 
-ARG NODE_VERSION=25.0.0
+WORKDIR /app
 
-FROM node:${NODE_VERSION}-alpine as base
-WORKDIR /usr/src/app
+# Copiar archivos de dependencias
+COPY package*.json ./
 
-# Etapa de build - necesita TODAS las dependencias (incluyendo devDependencies)
-FROM base as build
+# Instalar dependencias
+RUN npm ci
 
-RUN --mount=type=bind,source=package.json,target=package.json \
-    --mount=type=bind,source=package-lock.json,target=package-lock.json \
-    --mount=type=cache,target=/root/.npm \
-    npm ci
-
+# Copiar código fuente
 COPY . .
 
-# Hacer el build de Angular
+# Build de producción
 RUN npm run build
 
-# Etapa final - usar nginx para servir los archivos
-FROM nginx:alpine as final
+# ---------- Runtime stage con Nginx ----------
+FROM nginx:1.25-alpine
 
-# Copiar los archivos compilados desde la etapa de build
-# Angular 17+ suele generar: dist/nombre-proyecto/browser
-COPY --from=build /usr/src/app/dist/datalab-frontend/browser /usr/share/nginx/html
+# Copiar archivos build de Angular al directorio de Nginx
+COPY --from=build /app/dist/datalab-frontend/browser /usr/share/nginx/html
 
-# Configuración de nginx para Angular (manejo de rutas)
-RUN echo 'server { \
-    listen 80; \
-    server_name localhost; \
-    root /usr/share/nginx/html; \
-    index index.html; \
-    location / { \
-        try_files $uri $uri/ /index.html; \
-    } \
-}' > /etc/nginx/conf.d/default.conf
+# Copiar configuración personalizada de Nginx para Angular (routing)
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
+# Exponer puerto 80
 EXPOSE 80
 
+# Comando de inicio
 CMD ["nginx", "-g", "daemon off;"]
