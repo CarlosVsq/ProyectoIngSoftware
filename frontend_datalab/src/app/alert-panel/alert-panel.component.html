@@ -10,16 +10,17 @@
 
     <div class="space-y-3 max-h-[320px] overflow-y-auto" *ngIf="auditorias.length">
       <div *ngFor="let a of auditorias" class="border-l-4 border-blue-400 bg-blue-50 p-3 rounded flex flex-col">
-        <p class="text-blue-600 font-semibold text-sm">
-          {{ a.accion }} en {{ a.tablaAfectada }}
-        </p>
-        <p class="text-gray-600 text-xs">
+        <div class="flex justify-between items-center">
+          <div class="text-blue-600 font-semibold text-sm">
+            {{ a.accion }} en {{ a.tablaAfectada }}
+          </div>
+          <span class="text-[11px] text-gray-500">{{ a.fechaCambio | date:'short' }}</span>
+        </div>
+        <p class="text-gray-600 text-xs mt-1">
           {{ a.detalleCambio }}
         </p>
         <span class="text-[11px] text-gray-500 mt-1">
-          {{ a.usuario?.nombreCompleto || 'Usuario' }} ·
-          {{ a.participante?.codigoParticipante || 'N/A' }} ·
-          {{ a.fechaCambio | date:'short' }}
+          {{ a.usuario || 'Usuario' }} · {{ a.participante || 'N/A' }}
         </span>
       </div>
     </div>

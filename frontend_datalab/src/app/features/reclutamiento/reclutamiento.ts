@@ -1,4 +1,4 @@
-import { Component, AfterViewInit, OnInit, ViewChild } from '@angular/core';
+import { Component, AfterViewInit, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Chart, registerables } from 'chart.js';
 import { AlertPanelComponent } from '../../alert-panel/alert-panel.component';
@@ -7,6 +7,7 @@ import { FormsModule } from '@angular/forms';
 import { CrfModalComponent } from '../crf/crf-modal.component';
 import { AuthService } from '../../shared/auth/auth.service';
 import { DashboardService, DashboardResumen } from '../../shared/dashboard/dashboard.service';
+import { CrfService } from '../crf/crf.service';
 
 Chart.register(...registerables);
 
@@ -23,10 +24,13 @@ export class ReclutamientoComponent implements OnInit, AfterViewInit {
   codigoBusqueda = '';
   resumen?: DashboardResumen;
   private chart?: Chart;
+  crfs: any[] = [];
 
-  @ViewChild('logoutPanelRef') logoutPanelRef!: LogoutPanelComponent;
-
-  constructor(public auth: AuthService, private dashboard: DashboardService) {}
+  constructor(
+    public auth: AuthService,
+    private dashboard: DashboardService,
+    private crfService: CrfService
+  ) {}
 
   ngOnInit(): void {
     this.dashboard.getResumen().subscribe({
@@ -47,6 +51,8 @@ export class ReclutamientoComponent implements OnInit, AfterViewInit {
         // deja números mock si falla
       }
     });
+
+    this.cargarCrfs();
   }
 
   abrirLogoutPanel(panel: LogoutPanelComponent) {
@@ -55,6 +61,9 @@ export class ReclutamientoComponent implements OnInit, AfterViewInit {
 
   abrirCRF() { this.crfOpen = true; }
   cerrarCRF() { this.crfOpen = false; }
+  verPdf(id: number) {
+    window.open(`http://localhost:8080/api/export/participante/${id}/pdf`, '_blank');
+  }
 
   buscarPorCodigo() {
     if (!this.codigoBusqueda.trim()) {
@@ -102,5 +111,21 @@ export class ReclutamientoComponent implements OnInit, AfterViewInit {
       },
     };
     this.chart = new Chart(ctx as any, config);
+  }
+
+  private cargarCrfs(): void {
+    this.crfService.listarCrfs(30).subscribe({
+      next: (resp) => {
+        this.crfs = (resp.data || []).map((c: any) => ({
+          ...c,
+          resumenRespuestas: c.respuestas && c.respuestas.length
+            ? c.respuestas.slice(0, 3).map((r: any) => `${r.codigoVariable}: ${r.valor}`).join(' | ')
+            : ''
+        }));
+      },
+      error: () => {
+        this.crfs = [];
+      }
+    });
   }
 }

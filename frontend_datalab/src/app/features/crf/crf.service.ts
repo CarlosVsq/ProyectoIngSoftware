@@ -41,8 +41,6 @@ export class CrfService {
       usuarioReclutadorId
     });
   }
-<<<<<<< Updated upstream
-=======
 
   guardarRespuestas(participanteId: number, respuestas: Record<string, string>): Observable<void> {
     const usuarioEditorId = this.auth.getUserId();
@@ -54,5 +52,8 @@ export class CrfService {
       respuestasMap: respuestas
     });
   }
->>>>>>> Stashed changes
+
+  listarCrfs(limit = 20): Observable<{ data: any[] }> {
+    return this.http.get<{ data: any[] }>(`${this.API_BASE}/participantes/resumen?limit=${limit}`);
+  }
 }

@@ -142,12 +142,6 @@ export class CrfModalComponent implements OnInit, OnDestroy {
 
     this.crf.crearParticipante(payload).subscribe({
       next: (res) => {
-<<<<<<< Updated upstream
-        this.crf.saveFinalLocal(codigo, { ...this.form.value, estado: 'completo', idParticipante: res.idParticipante });
-        alert('CRF guardado y participante creado');
-        this.isSubmitting = false;
-        this.close();
-=======
         const respuestas = this.buildRespuestasMap();
         this.crf.guardarRespuestas(res.idParticipante, respuestas).subscribe({
           next: () => {
@@ -162,7 +156,6 @@ export class CrfModalComponent implements OnInit, OnDestroy {
             this.isSubmitting = false;
           }
         });
->>>>>>> Stashed changes
       },
       error: (err) => {
         const msg = err?.error?.message || 'No se pudo crear el participante. Verifica los datos.';
@@ -191,8 +184,6 @@ export class CrfModalComponent implements OnInit, OnDestroy {
       });
     });
     return missing;
-<<<<<<< Updated upstream
-=======
   }
 
   private buildRespuestasMap(): Record<string, string> {
@@ -212,7 +203,6 @@ export class CrfModalComponent implements OnInit, OnDestroy {
       });
     });
     return map;
->>>>>>> Stashed changes
   }
 
   close(): void {

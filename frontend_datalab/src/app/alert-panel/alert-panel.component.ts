@@ -4,8 +4,8 @@ import { HttpClient, HttpClientModule } from '@angular/common/http';
 
 interface Auditoria {
   idAuditoria: number;
-  usuario?: { nombreCompleto: string };
-  participante?: { codigoParticipante: string };
+  usuario?: string;
+  participante?: string;
   tablaAfectada: string;
   accion: string;
   detalleCambio: string;

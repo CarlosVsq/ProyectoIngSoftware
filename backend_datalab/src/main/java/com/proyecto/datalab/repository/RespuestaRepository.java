@@ -11,4 +11,6 @@ import com.proyecto.datalab.entity.Respuesta;
 public interface RespuestaRepository extends JpaRepository<Respuesta, Integer> {
 
     Optional<Respuesta> findByParticipante_IdParticipanteAndVariable_IdVariable(Integer idParticipante, Integer idVariable);
+
+    java.util.List<Respuesta> findByParticipante_IdParticipante(Integer idParticipante);
 }

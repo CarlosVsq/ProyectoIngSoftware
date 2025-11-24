@@ -30,7 +30,7 @@ export class ExportacionesComponent implements AfterViewInit {
     const ctx = document.getElementById('exportChart') as HTMLCanvasElement;
     if (!ctx) return;
 
-    new Chart(ctx, {
+    new Chart(ctx as any, {
       type: 'doughnut',
       data: {
         labels: ['Completadas', 'En proceso', 'Pendientes'],
@@ -58,10 +58,10 @@ export class ExportacionesComponent implements AfterViewInit {
   }
 
   descargarExcel(): void {
-    window.open('http://localhost:8080/api/export/excel', '_blank');
+    window.open('http://localhost:8080/api/export/respuestas/excel', '_blank');
   }
 
   descargarPdf(): void {
-    window.open('http://localhost:8080/api/export/pdf', '_blank');
+    window.open('http://localhost:8080/api/export/respuestas/pdf', '_blank');
   }
 }

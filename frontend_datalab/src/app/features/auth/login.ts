@@ -1,11 +1,7 @@
 import { Component } from '@angular/core';
 import { FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
-<<<<<<< Updated upstream
-=======
-import { RouterModule } from '@angular/router';
->>>>>>> Stashed changes
 import { AuthService } from '../../shared/auth/auth.service';
 
 @Component({

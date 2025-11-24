@@ -4,10 +4,13 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.regex.Pattern;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -21,6 +24,8 @@ import com.proyecto.datalab.repository.ParticipanteRepository;
 import com.proyecto.datalab.repository.RespuestaRepository;
 import com.proyecto.datalab.repository.UsuarioRepository;
 import com.proyecto.datalab.repository.VariableRepository;
+import com.proyecto.datalab.web.dto.CrfListadoDTO;
+import com.proyecto.datalab.web.dto.CrfRespuestaDTO;
 
 /**
  * Servicio para gestion de participantes y sus respuestas
@@ -147,11 +152,39 @@ public class ParticipanteService {
                                         + ", Variable: " + variable.getCodigoVariable()
                         );
                 }
+
+                // marcar ficha como completa cuando tiene al menos una respuesta guardada
+                participante.setEstadoFicha(EstadoFicha.COMPLETA);
+                participanteRepository.save(participante);
         }
 
         @Transactional(readOnly = true)
         public List<Participante> obtenerTodosLosParticipantes() {
                 return participanteRepository.findAll();
+        }
+
+        @Transactional(readOnly = true)
+        public List<CrfListadoDTO> listarCrfConRespuestas(int limit) {
+                int safeLimit = Math.min(Math.max(limit, 1), 100);
+                var page = PageRequest.of(0, safeLimit, Sort.by(Sort.Direction.DESC, "fechaInclusion"));
+                return participanteRepository.findAll(page).getContent().stream()
+                        .map(p -> CrfListadoDTO.builder()
+                                .idParticipante(p.getIdParticipante())
+                                .codigoParticipante(p.getCodigoParticipante())
+                                .nombreCompleto(p.getNombreCompleto())
+                                .grupo(p.getGrupo())
+                                .estadoFicha(p.getEstadoFicha())
+                                .fechaInclusion(p.getFechaInclusion())
+                                .respuestas(p.getRespuestas() == null ? List.of() :
+                                        p.getRespuestas().stream()
+                                                .map(r -> CrfRespuestaDTO.builder()
+                                                        .codigoVariable(r.getVariable() != null ? r.getVariable().getCodigoVariable() : null)
+                                                        .enunciado(r.getVariable() != null ? r.getVariable().getEnunciado() : null)
+                                                        .valor(r.getValorIngresado())
+                                                        .build())
+                                                .collect(Collectors.toList()))
+                                .build())
+                        .collect(Collectors.toList());
         }
 
         /**

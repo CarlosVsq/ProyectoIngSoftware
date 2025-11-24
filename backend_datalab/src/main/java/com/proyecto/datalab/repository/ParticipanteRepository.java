@@ -19,4 +19,6 @@ public interface ParticipanteRepository extends JpaRepository<Participante, Inte
 
     long countByGrupo(GrupoParticipante grupo);
     long countByEstadoFicha(EstadoFicha estadoFicha);
+
+    List<Participante> findTop20ByOrderByFechaInclusionDesc();
 }

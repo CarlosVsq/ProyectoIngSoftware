@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
@@ -18,6 +19,8 @@ import com.proyecto.datalab.dto.MarcarNoCompletableRequest;
 import com.proyecto.datalab.dto.ParticipanteCreateRequest;
 import com.proyecto.datalab.entity.Participante;
 import com.proyecto.datalab.service.ParticipanteService;
+import com.proyecto.datalab.web.dto.CrfListadoDTO;
+import com.proyecto.datalab.web.dto.common.ApiResponse;
 
 import jakarta.validation.Valid;
 
@@ -32,6 +35,12 @@ public class ParticipanteController {
     @GetMapping
     public List<Participante> obtenerTodos() {
         return participanteService.obtenerTodosLosParticipantes();
+    }
+
+    @GetMapping("/resumen")
+    public ApiResponse<List<CrfListadoDTO>> obtenerResumenCrf(
+            @RequestParam(defaultValue = "20") int limit) {
+        return ApiResponse.success(participanteService.listarCrfConRespuestas(limit));
     }
 
     // --- POST (Crear Participante) ---
