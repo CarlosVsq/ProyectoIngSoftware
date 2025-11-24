@@ -103,11 +103,7 @@ public class ParticipanteService {
          * Guardar respuestas con validacion basica por tipo y reglas declaradas en la variable.
          */
         @Transactional
-<<<<<<< Updated upstream
-        public void guardarRespuestas(Integer participanteId, Map<Integer, String> respuestasMap, Integer usuarioEditorId) {
-=======
         public void guardarRespuestas(Integer participanteId, Map<String, String> respuestasMap, Integer usuarioEditorId) {
->>>>>>> Stashed changes
 
                 if (respuestasMap == null || respuestasMap.isEmpty()) {
                         throw new IllegalArgumentException("No se enviaron respuestas para guardar");
@@ -119,14 +115,6 @@ public class ParticipanteService {
                 Usuario editor = usuarioRepository.findById(usuarioEditorId)
                         .orElseThrow(() -> new RuntimeException("Usuario editor no encontrado"));
 
-<<<<<<< Updated upstream
-                for (Map.Entry<Integer, String> entry : respuestasMap.entrySet()) {
-                        Integer variableId = entry.getKey();
-                        String valor = entry.getValue();
-
-                        Variable variable = variableRepository.findById(variableId)
-                                .orElseThrow(() -> new RuntimeException("Variable no encontrada"));
-=======
                 for (Map.Entry<String, String> entry : respuestasMap.entrySet()) {
                         String variableKey = entry.getKey();
                         String valor = entry.getValue();
@@ -137,16 +125,11 @@ public class ParticipanteService {
                                 continue;
                         }
                         Variable variable = variableOpt.get();
->>>>>>> Stashed changes
 
                         validarRespuesta(variable, valor);
 
                         Optional<Respuesta> existente = respuestaRepository
-<<<<<<< Updated upstream
-                                .findByParticipante_IdParticipanteAndVariable_IdVariable(participanteId, variableId);
-=======
                                 .findByParticipante_IdParticipanteAndVariable_IdVariable(participanteId, variable.getIdVariable());
->>>>>>> Stashed changes
 
                         Respuesta respuesta = existente.orElseGet(Respuesta::new);
                         respuesta.setParticipante(participante);
@@ -161,11 +144,7 @@ public class ParticipanteService {
                                 "ACTUALIZAR",
                                 "Respuesta",
                                 "Se guardo respuesta para participante ID: " + participante.getIdParticipante()
-<<<<<<< Updated upstream
-                                        + ", Variable ID: " + variable.getIdVariable()
-=======
                                         + ", Variable: " + variable.getCodigoVariable()
->>>>>>> Stashed changes
                         );
                 }
         }
@@ -290,8 +269,6 @@ public class ParticipanteService {
                         throw new IllegalArgumentException("Regla de validacion invalida para la variable " + reglaValidacion);
                 }
         }
-<<<<<<< Updated upstream
-=======
 
         /**
          * Permite resolver variables por id numérico o por código (string).
@@ -306,5 +283,4 @@ public class ParticipanteService {
                         return variableRepository.findByCodigoVariable(variableKey);
                 }
         }
->>>>>>> Stashed changes
 }

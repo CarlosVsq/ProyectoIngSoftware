@@ -10,15 +10,8 @@ public class GuardarRespuestasRequest {
     private Integer usuarioEditorId;
 
     @NotEmpty(message = "Debe enviar al menos una respuesta")
-<<<<<<< Updated upstream
-    private Map<Integer, String> respuestasMap;
-
-    public Integer getUsuarioEditorId() { return usuarioEditorId; }
-    public Map<Integer, String> getRespuestasMap() { return respuestasMap; }
-=======
     private Map<String, String> respuestasMap;
 
     public Integer getUsuarioEditorId() { return usuarioEditorId; }
     public Map<String, String> getRespuestasMap() { return respuestasMap; }
->>>>>>> Stashed changes
 }
