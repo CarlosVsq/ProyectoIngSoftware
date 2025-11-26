@@ -19,8 +19,12 @@ Chart.register(...registerables);
   styleUrls: ['./reclutamiento.scss'],
 })
 export class ReclutamientoComponent implements OnInit, AfterViewInit {
-  usuarioNombre = 'Dra. González';
+  usuarioNombre = '';
+  usuarioRol = '';
   crfOpen = false;
+  crfRecordId: string | null = null;
+  crfPreload: any = null;
+  crfParticipantId: number | null = null;
   codigoBusqueda = '';
   resumen?: DashboardResumen;
   private chart?: Chart;
@@ -33,6 +37,8 @@ export class ReclutamientoComponent implements OnInit, AfterViewInit {
   ) {}
 
   ngOnInit(): void {
+    this.usuarioNombre = this.auth.getUserName();
+    this.usuarioRol = this.auth.getUserRole();
     this.dashboard.getResumen().subscribe({
       next: (res: { data: DashboardResumen }) => {
         this.resumen = res.data;
@@ -59,8 +65,50 @@ export class ReclutamientoComponent implements OnInit, AfterViewInit {
     panel.showPanel();
   }
 
-  abrirCRF() { this.crfOpen = true; }
-  cerrarCRF() { this.crfOpen = false; }
+  abrirCRF() { 
+    // Nueva encuesta fresca
+    this.crfRecordId = `CRF_NUEVO_${Date.now()}`;
+    this.crfParticipantId = null;
+    this.crfPreload = { grupo: 'control' };
+    this.crfOpen = true; 
+  }
+  cerrarCRF() { 
+    this.crfOpen = false; 
+    this.crfRecordId = null;
+    this.crfPreload = null;
+    this.crfParticipantId = null;
+  }
+  eliminarCRF(crf: any) {
+    if (!confirm('¿Seguro que deseas borrar este CRF?')) return;
+    if (crf.idParticipante) {
+      this.crfService.eliminarCrf(crf.idParticipante).subscribe({
+        next: () => this.cargarCrfs(),
+        error: () => alert('No se pudo eliminar el CRF')
+      });
+    }
+    // limpiar drafts relacionados
+    if (crf.codigoParticipante) {
+      localStorage.removeItem(`crf_${crf.codigoParticipante}`);
+    }
+  }
+  editarCRF(crf: any) {
+    const preload: any = {
+      grupo: crf.grupo ? crf.grupo.toLowerCase() : 'control',
+      telefono: crf.telefono || '',
+      direccion: crf.direccion || ''
+    };
+    if (crf.respuestas) {
+      crf.respuestas.forEach((r: any) => {
+        if (r.codigoVariable) {
+          preload[r.codigoVariable] = r.valor;
+        }
+      });
+    }
+    this.crfRecordId = crf.codigoParticipante || crf.idParticipante?.toString();
+    this.crfParticipantId = crf.idParticipante || null;
+    this.crfPreload = preload;
+    this.crfOpen = true;
+  }
   verPdf(id: number) {
     window.open(`http://localhost:8080/api/export/participante/${id}/pdf`, '_blank');
   }

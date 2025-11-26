@@ -56,4 +56,8 @@ export class CrfService {
   listarCrfs(limit = 20): Observable<{ data: any[] }> {
     return this.http.get<{ data: any[] }>(`${this.API_BASE}/participantes/resumen?limit=${limit}`);
   }
+
+  eliminarCrf(participanteId: number): Observable<void> {
+    return this.http.delete<void>(`${this.API_BASE}/participantes/${participanteId}`);
+  }
 }

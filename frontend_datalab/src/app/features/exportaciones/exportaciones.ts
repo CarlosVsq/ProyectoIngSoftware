@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Chart, registerables } from 'chart.js';
 import { AlertPanelComponent } from '../../alert-panel/alert-panel.component';
 import { LogoutPanelComponent } from '../../shared/logout-panel/logout-panel.component';
+import { AuthService } from '../../shared/auth/auth.service';
 
 Chart.register(...registerables);
 
@@ -14,9 +15,15 @@ Chart.register(...registerables);
   styleUrls: ['./exportaciones.scss']
 })
 export class ExportacionesComponent implements AfterViewInit {
-  usuarioNombre = 'Dra. González';
+  usuarioNombre = '';
+  usuarioRol = '';
   @ViewChild(LogoutPanelComponent)
   logoutPanel!: LogoutPanelComponent;
+
+  constructor(private auth: AuthService) {
+    this.usuarioNombre = this.auth.getUserName();
+    this.usuarioRol = this.auth.getUserRole();
+  }
 
   abrirLogoutPanel() {
     this.logoutPanel.showPanel();

@@ -8,7 +8,7 @@
       <div class="flex items-center gap-4">
         <div class="flex flex-col text-right">
           <span class="text-sm font-medium text-gray-800">{{ usuarioNombre }}</span>
-          <span class="text-xs text-gray-500">Investigadora Principal</span>
+          <span class="text-xs text-gray-500">{{ usuarioRol }}</span>
         </div>
 
         <button
@@ -133,8 +133,10 @@
           <div class="text-xs text-gray-600 mt-2 line-clamp-2">
             {{ crf.resumenRespuestas || 'Sin respuestas capturadas todavía.' }}
           </div>
-          <div class="mt-2 flex gap-2">
+          <div class="mt-2 flex gap-3">
             <button class="text-xs text-blue-600 hover:underline" (click)="verPdf(crf.idParticipante)">Previsualizar PDF</button>
+            <button class="text-xs text-purple-600 hover:underline" (click)="editarCRF(crf)">Editar CRF</button>
+            <button class="text-xs text-red-600 hover:underline" (click)="eliminarCRF(crf)">✕ Borrar</button>
           </div>
         </div>
         <div *ngIf="!crfs.length" class="text-sm text-gray-500 py-4 text-center">
@@ -144,6 +146,12 @@
     </section>
   </main>
   <app-logout-panel #logoutPanel></app-logout-panel>
-  <app-crf-modal [open]="crfOpen" (closed)="cerrarCRF()"></app-crf-modal>
+  <app-crf-modal
+    [open]="crfOpen"
+    [recordId]="crfRecordId"
+    [participantId]="crfParticipantId"
+    [preloadData]="crfPreload"
+    [fresh]="crfParticipantId == null"
+    (closed)="cerrarCRF()"></app-crf-modal>
   <app-alert-panel></app-alert-panel>
 </div>

@@ -7,7 +7,6 @@ export const CRF_DEFAULT_SCHEMA: CRFSchema = {
       title: '1. Identificacion del participante',
       fields: [
         { id: 'nombre', label: 'Nombre completo', type: 'text', required: true },
-        { id: 'codigo', label: 'Codigo del participante', type: 'text', required: true },
         { id: 'telefono', label: 'Telefono de contacto', type: 'text', required: true, validation: { pattern: '^[0-9+\\s-]{8,20}$' } },
         { id: 'fecha_inclusion', label: 'Fecha de inclusion', type: 'date', required: true }
       ]
@@ -15,12 +14,12 @@ export const CRF_DEFAULT_SCHEMA: CRFSchema = {
     {
       title: '2. Datos sociodemograficos',
       fields: [
-        { id: 'edad', label: 'Edad (anios)', type: 'number', required: true, validation: { min: 0, max: 120 } },
+        { id: 'edad', label: 'Edad (años)', type: 'number', required: true, validation: { min: 0, max: 120 } },
         { id: 'sexo', label: 'Sexo', type: 'radio', options: ['Masculino', 'Femenino'] },
         { id: 'nacionalidad', label: 'Nacionalidad', type: 'text' },
         { id: 'direccion', label: 'Direccion', type: 'text' },
         { id: 'zona', label: 'Zona', type: 'radio', options: ['Urbana', 'Rural'] },
-        { id: 'anios_residencia', label: 'Anios viviendo en la residencia actual', type: 'radio', options: ['<5', '5-10', '>10'] },
+        { id: 'anios_residencia', label: 'Años viviendo en la residencia actual', type: 'radio', options: ['<5', '5-10', '>10'] },
         { id: 'nivel_educacional', label: 'Nivel educacional', type: 'checkbox', options: ['Basico', 'Medio', 'Superior'] },
         { id: 'ocupacion', label: 'Ocupacion actual', type: 'text' }
       ]

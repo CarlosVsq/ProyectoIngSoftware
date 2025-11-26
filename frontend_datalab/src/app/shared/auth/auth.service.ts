@@ -55,6 +55,15 @@ export class AuthService {
     return user?.nombreCompleto || 'Usuario';
   }
 
+  getUserRole(): string {
+    const user = this.getUser();
+    // soporta estructuras rol: string o rol: { nombre: string }
+    if (!user) return 'Rol no asignado';
+    if (typeof user.rol === 'string') return user.rol;
+    if (user.rol?.nombre) return user.rol.nombre;
+    return 'Rol no asignado';
+  }
+
   // Helpers para roles (usado por reclutamiento.html)
   isPI(): boolean {
     const user = this.getUser();

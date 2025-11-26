@@ -18,5 +18,7 @@ public class CrfListadoDTO {
     private GrupoParticipante grupo;
     private EstadoFicha estadoFicha;
     private LocalDate fechaInclusion;
+    private String telefono;
+    private String direccion;
     private List<CrfRespuestaDTO> respuestas;
 }

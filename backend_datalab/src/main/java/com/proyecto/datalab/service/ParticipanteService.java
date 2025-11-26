@@ -120,6 +120,10 @@ public class ParticipanteService {
                 Usuario editor = usuarioRepository.findById(usuarioEditorId)
                         .orElseThrow(() -> new RuntimeException("Usuario editor no encontrado"));
 
+                // cachear respuestas existentes para medir completitud
+                Map<Integer, String> existentes = respuestaRepository.findByParticipante_IdParticipante(participanteId).stream()
+                        .collect(Collectors.toMap(r -> r.getVariable().getIdVariable(), Respuesta::getValorIngresado, (a, b) -> a));
+
                 for (Map.Entry<String, String> entry : respuestasMap.entrySet()) {
                         String variableKey = entry.getKey();
                         String valor = entry.getValue();
@@ -142,6 +146,7 @@ public class ParticipanteService {
                         respuesta.setValorIngresado(valor);
 
                         respuestaRepository.save(respuesta);
+                        existentes.put(variable.getIdVariable(), valor);
 
                         auditoriaService.registrarAccion(
                                 editor,
@@ -153,9 +158,33 @@ public class ParticipanteService {
                         );
                 }
 
-                // marcar ficha como completa cuando tiene al menos una respuesta guardada
-                participante.setEstadoFicha(EstadoFicha.COMPLETA);
+                // evaluar completitud: todas las variables obligatorias con valor no vacío
+                boolean completo = isFichaCompleta(existentes, participante.getGrupo());
+                participante.setEstadoFicha(completo ? EstadoFicha.COMPLETA : EstadoFicha.INCOMPLETA);
                 participanteRepository.save(participante);
+        }
+
+        private boolean isFichaCompleta(Map<Integer, String> respuestasActuales, GrupoParticipante grupo) {
+                List<Variable> requeridas = variableRepository.findAll().stream()
+                        .filter(Variable::isEsObligatoria)
+                        .filter(v -> aplicaAGrupo(v.getAplicaA(), grupo))
+                        .toList();
+                for (Variable v : requeridas) {
+                        String val = respuestasActuales.get(v.getIdVariable());
+                        if (val == null || val.trim().isEmpty()) {
+                                return false;
+                        }
+                }
+                return !requeridas.isEmpty(); // debe tener al menos las requeridas llenas
+        }
+
+        private boolean aplicaAGrupo(String aplicaA, GrupoParticipante grupo) {
+                if (aplicaA == null || aplicaA.isBlank()) return true; // ambos
+                String val = aplicaA.trim().toUpperCase();
+                if ("AMBOS".equals(val) || "BOTH".equals(val)) return true;
+                if ("CASO".equals(val) && grupo == GrupoParticipante.CASO) return true;
+                if ("CONTROL".equals(val) && grupo == GrupoParticipante.CONTROL) return true;
+                return false;
         }
 
         @Transactional(readOnly = true)
@@ -175,6 +204,8 @@ public class ParticipanteService {
                                 .grupo(p.getGrupo())
                                 .estadoFicha(p.getEstadoFicha())
                                 .fechaInclusion(p.getFechaInclusion())
+                                .telefono(p.getTelefono())
+                                .direccion(p.getDireccion())
                                 .respuestas(p.getRespuestas() == null ? List.of() :
                                         p.getRespuestas().stream()
                                                 .map(r -> CrfRespuestaDTO.builder()
@@ -216,6 +247,11 @@ public class ParticipanteService {
                 );
 
                 return actualizado;
+        }
+
+        @Transactional
+        public void eliminarParticipante(Integer participanteId) {
+                participanteRepository.findById(participanteId).ifPresent(participanteRepository::delete);
         }
 
         /**

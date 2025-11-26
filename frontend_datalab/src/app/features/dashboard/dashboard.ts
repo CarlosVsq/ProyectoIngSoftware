@@ -4,6 +4,7 @@ import { Chart, ChartOptions, registerables } from 'chart.js';
 import { AlertPanelComponent } from '../../alert-panel/alert-panel.component';
 import { LogoutPanelComponent } from '../../shared/logout-panel/logout-panel.component';
 import { DashboardService, DashboardResumen } from '../../shared/dashboard/dashboard.service';
+import { AuthService } from '../../shared/auth/auth.service';
 
 Chart.register(...registerables);
 
@@ -17,7 +18,8 @@ Chart.register(...registerables);
 export class DashboardComponent implements OnInit, AfterViewInit {
   menuAbierto: boolean = false;
 
-  usuarioNombre = 'Dra. González';
+  usuarioNombre = '';
+  usuarioRol = '';
   @ViewChild(LogoutPanelComponent)
   logoutPanel!: LogoutPanelComponent;
   abrirLogoutPanel() {
@@ -29,9 +31,11 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   chartSexo?: Chart;
   chartReclutamiento?: Chart;
 
-  constructor(private dashboard: DashboardService) {}
+  constructor(private dashboard: DashboardService, private auth: AuthService) {}
 
   ngOnInit(): void {
+    this.usuarioNombre = this.auth.getUserName();
+    this.usuarioRol = this.auth.getUserRole();
     this.dashboard.getResumen().subscribe({
       next: (res) => {
         this.resumen = res.data;
