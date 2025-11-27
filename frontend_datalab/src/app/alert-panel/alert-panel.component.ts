@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 
-interface Auditoria {
+export interface Auditoria {
   idAuditoria: number;
   usuario?: string;
   participante?: string;
@@ -15,7 +15,7 @@ interface Auditoria {
 @Component({
   selector: 'app-alert-panel',
   standalone: true,
-  imports: [CommonModule, HttpClientModule],
+  imports: [CommonModule], 
   templateUrl: './alert-panel.component.html',
   styleUrls: ['./alert-panel.component.scss']
 })
@@ -23,6 +23,8 @@ export class AlertPanelComponent implements OnInit {
   auditorias: Auditoria[] = [];
   limit = 10;
   loading = false;
+  
+  private readonly API_URL = 'http://localhost:8080/api/auditoria';
 
   constructor(private http: HttpClient) {}
 
@@ -32,19 +34,29 @@ export class AlertPanelComponent implements OnInit {
 
   cargarAuditoria(): void {
     this.loading = true;
-    this.http.get<{ data: Auditoria[] }>(`http://localhost:8080/api/auditoria?limit=${this.limit}`)
+    this.http.get<{ data: Auditoria[] }>(`${this.API_URL}?limit=${this.limit}`)
       .subscribe({
         next: (res) => {
-          this.auditorias = res.data;
+          this.auditorias = res.data || [];
           this.loading = false;
         },
-        error: () => { this.loading = false; }
+        error: (err) => { 
+          console.error('Error cargando alertas:', err);
+          this.loading = false; 
+        }
       });
   }
 
   verMas(): void {
-    if (this.limit >= 100) return;
-    this.limit = Math.min(this.limit + 10, 100);
+    if (this.limit >= 50) return;
+    this.limit += 10;
     this.cargarAuditoria();
+  }
+  
+  getActionColor(accion: string): string {
+    if (accion === 'LOGIN') return 'text-green-600';
+    if (accion === 'LOGOUT') return 'text-orange-500';
+    if (accion === 'ELIMINAR' || accion === 'BORRAR') return 'text-red-600';
+    return 'text-blue-600';
   }
 }

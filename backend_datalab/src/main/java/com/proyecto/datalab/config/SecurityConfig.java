@@ -38,8 +38,14 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
                 // Endpoints públicos (sin autenticación)
-                .requestMatchers("/auth/**").permitAll() //verificar
+                .requestMatchers("/auth/**").permitAll()
                 .requestMatchers("/api/auth/**").permitAll()
+                
+                // --- SEGURIDAD DE AUDITORÍA ---
+                // Se permite acceso a Administradores e Investigadoras Principales
+                .requestMatchers("/api/auditoria/**").hasAnyAuthority("Administrador", "Investigadora Principal") 
+                // --------------------------------------------------------------------------
+
                 .requestMatchers("/actuator/health").permitAll()
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 .requestMatchers("/error").permitAll()

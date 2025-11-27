@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { AuthService } from '../auth/auth.service';
 
 @Component({
   selector: 'app-logout-panel',
@@ -12,7 +13,7 @@ import { Router } from '@angular/router';
 export class LogoutPanelComponent {
   visible = false;
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, private authService: AuthService) {}
 
   showPanel() {
     this.visible = true;
@@ -23,8 +24,9 @@ export class LogoutPanelComponent {
   }
 
   logout() {
-    // Aquí puedes limpiar datos del usuario o token
     this.visible = false;
-    this.router.navigate(['/login']);
+    // Delegamos la lógica completa al servicio para asegurar 
+    // que se registre la auditoría y se borre el token correctamente.
+    this.authService.logout();
   }
 }

@@ -88,12 +88,11 @@ public class Usuario implements Serializable, UserDetails {
             return List.of();
         }
         
-        // Obtener nombre del rol formateado para Spring Security
-        String roleName = rol.getNombreRolParaSecurity();
-        
-        // Devolver con prefijo ROLE_
-        return List.of(new SimpleGrantedAuthority("ROLE_" + roleName));
+        // CORREGIDO: Usamos el nombre directo (getNombreRol) sin prefijos extra.
+        // Esto asegura que coincida con lo que pusimos en SecurityConfig.
+        return List.of(new SimpleGrantedAuthority(rol.getNombreRol()));
     }
+    
     @OneToMany(mappedBy = "reclutador", fetch = FetchType.LAZY)
     @JsonIgnore
     private List<Participante> participantesReclutados;

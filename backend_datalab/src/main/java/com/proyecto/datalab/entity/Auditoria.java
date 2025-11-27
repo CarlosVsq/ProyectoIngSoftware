@@ -31,8 +31,10 @@ public class Auditoria {
     @JoinColumn(name = "id_usuario", nullable = false)
     private Usuario usuario;
 
+    // IMPORTANTE: nullable = true 
+    // Esto permite guardar logs (Login/Logout) sin asociar un participante.
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_participante", nullable = false)
+    @JoinColumn(name = "id_participante", nullable = true)
     private Participante participante;
 
     @Column(name = "tabla_afectada", length = 100)

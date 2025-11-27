@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -11,7 +11,7 @@ import { AuthService } from '../../shared/auth/auth.service';
   templateUrl: './login.html',
   styleUrl: './login.scss'
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   loginForm: any;
   isLoading = false;
   errorMsg = '';
@@ -21,6 +21,16 @@ export class LoginComponent {
       correo: ['', [Validators.required, Validators.email]],
       contrasenia: ['', Validators.required],
     });
+  }
+
+  /**
+   * Verifica al cargar si el usuario ya tiene sesión.
+   * Si es así, lo manda directo al dashboard.
+   */
+  ngOnInit(): void {
+    if (this.auth.isAuthenticated()) {
+      this.router.navigate(['/dashboard']);
+    }
   }
 
   onSubmit() {

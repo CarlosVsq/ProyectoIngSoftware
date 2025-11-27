@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap, map } from 'rxjs';
+import { Router } from '@angular/router';
+import { Observable, tap, map, catchError, of, finalize } from 'rxjs';
 import { AuthResponse } from './auth.types';
 
 interface ApiResponse<T> {
@@ -14,7 +15,7 @@ export class AuthService {
   private readonly TOKEN_KEY = 'datalab_access_token';
   private readonly USER_KEY = 'datalab_user';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private router: Router) {}
 
   login(correo: string, contrasenia: string): Observable<AuthResponse> {
     return this.http.post<ApiResponse<AuthResponse>>(`${this.API_BASE}/auth/login`, { correo, contrasenia })
@@ -32,9 +33,27 @@ export class AuthService {
       );
   }
 
+  /**
+   * Cierra sesión notificando al backend (Auditoría) y limpiando localmente
+   */
   logout(): void {
+    this.http.post(`${this.API_BASE}/auth/logout`, {})
+      .pipe(
+        catchError(err => {
+          console.warn('Error al registrar logout en auditoría:', err);
+          return of(null);
+        }),
+        finalize(() => {
+          this.doLocalLogout();
+        })
+      )
+      .subscribe();
+  }
+
+  private doLocalLogout(): void {
     localStorage.removeItem(this.TOKEN_KEY);
     localStorage.removeItem(this.USER_KEY);
+    this.router.navigate(['/login']);
   }
 
   isAuthenticated(): boolean {
@@ -50,6 +69,7 @@ export class AuthService {
     return raw ? JSON.parse(raw) : null;
   }
 
+  // CORREGIDO: Ahora obtiene el nombre real de la BD
   getUserName(): string {
     const user = this.getUser();
     return user?.nombreCompleto || 'Usuario';
@@ -57,18 +77,18 @@ export class AuthService {
 
   getUserRole(): string {
     const user = this.getUser();
-    // soporta estructuras rol: string o rol: { nombre: string }
     if (!user) return 'Rol no asignado';
     if (typeof user.rol === 'string') return user.rol;
     if (user.rol?.nombre) return user.rol.nombre;
     return 'Rol no asignado';
   }
 
-  // Helpers para roles (usado por reclutamiento.html)
+  // Helpers para roles
   isPI(): boolean {
     const user = this.getUser();
-    const rol = user?.rol?.toLowerCase() || '';
-    return rol.includes('investigadora principal') || rol.includes('principal');
+    // Ajusta esto según el nombre exacto que viene de tu BD ("Investigadora Principal")
+    const rol = user?.rol?.nombre || (typeof user?.rol === 'string' ? user.rol : '') || '';
+    return rol.toLowerCase().includes('principal');
   }
 
   getUserId(): number | null {

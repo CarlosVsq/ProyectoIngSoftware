@@ -33,10 +33,13 @@ public class AuditoriaController {
     public ApiResponse<List<AuditoriaDTO>> listar(@RequestParam(defaultValue = "10") int limit) {
         int safeLimit = Math.min(Math.max(limit, 1), 100); // entre 1 y 100
         var page = PageRequest.of(0, safeLimit, Sort.by(Sort.Direction.DESC, "fechaCambio"));
+        
         var auditorias = auditoriaRepository.findAll(page).getContent();
+        
         List<AuditoriaDTO> dto = auditorias.stream()
                 .map(this::toDto)
                 .collect(Collectors.toList());
+        
         return ApiResponse.success(dto);
     }
 
@@ -44,6 +47,8 @@ public class AuditoriaController {
         return AuditoriaDTO.builder()
                 .idAuditoria(a.getIdAuditoria())
                 .usuario(a.getUsuario() != null ? a.getUsuario().getNombreCompleto() : null)
+                // Nota: Asegúrate de que Participante tenga el método getCodigoParticipante() o getCodigo() según tu entidad real
+                // Validamos null para evitar NullPointerException en login/logout
                 .participante(a.getParticipante() != null ? a.getParticipante().getCodigoParticipante() : null)
                 .tablaAfectada(a.getTablaAfectada())
                 .accion(a.getAccion())

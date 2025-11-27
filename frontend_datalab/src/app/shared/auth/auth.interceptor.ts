@@ -1,19 +1,22 @@
 import { HttpInterceptorFn } from '@angular/common/http';
-import { inject } from '@angular/core';
-import { AuthService } from './auth.service';
 
-// Interceptor que agrega el token JWT si existe
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
-  const auth = inject(AuthService);
-  const token = auth.getAccessToken();
+  // 1. OBTENER EL TOKEN DIRECTAMENTE
+  // Usamos localStorage directamente para evitar la Dependencia Circular:
+  // (AuthService -> HttpClient -> Interceptor -> AuthService)
+  // Asegúrate de que la clave coincida con la de tu AuthService ('datalab_access_token')
+  const token = localStorage.getItem('datalab_access_token');
 
-  if (!token) {
-    return next(req);
+  // 2. CLONAR Y PEGAR EL TOKEN
+  if (token) {
+    const cloned = req.clone({
+      setHeaders: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+    return next(cloned);
   }
 
-  const authReq = req.clone({
-    setHeaders: { Authorization: `Bearer ${token}` }
-  });
-
-  return next(authReq);
+  // 3. SI NO HAY TOKEN, PASAR LA PETICIÓN ORIGINAL
+  return next(req);
 };
