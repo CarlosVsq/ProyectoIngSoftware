@@ -42,6 +42,6 @@ public class Respuesta {
     private Variable variable;
 
     @Lob
-    @Column(name = "valor_ingresado")
+    @Column(name = "valor_ingresado", columnDefinition = "text")
     private String valorIngresado;
 }

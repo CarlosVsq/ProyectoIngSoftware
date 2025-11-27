@@ -1,7 +1,7 @@
 // src/app/features/crf/crf-modal.component.ts
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormArray } from '@angular/forms';
+import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, OnChanges, SimpleChanges } from '@angular/core';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormArray, AbstractControl, ValidatorFn } from '@angular/forms';
 import { CrfService } from './crf.service';
 import { CRFSchema, CRFSection, CRFField } from './schema';
 
@@ -11,24 +11,52 @@ import { CRFSchema, CRFSection, CRFField } from './schema';
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './crf-modal.component.html',
 })
-export class CrfModalComponent implements OnInit {
+export class CrfModalComponent implements OnInit, OnDestroy, OnChanges {
   @Input() open = false;
-  @Input() recordId: string | null = null;  // por si editas
+  @Input() recordId: string | null = null;  // identificador local de borrador
+  @Input() preloadData: any = null;
+  @Input() participantId: number | null = null;
+  @Input() fresh = false; // cuando se inicia nueva encuesta, limpiar formulario
   @Output() closed = new EventEmitter<void>();
 
   schema!: CRFSchema;
   form!: FormGroup;
   selectedGroup: 'caso' | 'control' = 'control';
+  lastAutoSaveAt = '';
+  missingRequiredLabels: string[] = [];
+  private autoSaveHandle?: ReturnType<typeof setInterval>;
+  isSubmitting = false;
 
   constructor(private fb: FormBuilder, private crf: CrfService) {}
 
   ngOnInit(): void {
     this.schema = this.crf.getSchema();
     this.buildForm();
+    this.startAutoSave();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (!this.form) return;
+    if (changes['fresh'] && this.fresh && this.open) {
+      this.clearDraft(this.getDraftKey());
+      this.resetForm();
+    }
+    if (changes['preloadData'] && this.preloadData && this.open) {
+      this.form.patchValue(this.preloadData, { emitEvent: false });
+    }
+    if (changes['open'] && this.open && this.preloadData) {
+      this.form.patchValue(this.preloadData, { emitEvent: false });
+    }
+  }
+
+  ngOnDestroy(): void {
+    if (this.autoSaveHandle) {
+      clearInterval(this.autoSaveHandle);
+    }
   }
 
   private buildForm(): void {
-    const controls: any = {};
+    const controls: Record<string, AbstractControl> = {};
 
     // base controls
     controls['grupo'] = this.fb.control(this.selectedGroup, Validators.required);
@@ -36,11 +64,11 @@ export class CrfModalComponent implements OnInit {
     // crear controles para cada campo
     this.schema.sections.forEach((s: CRFSection) => {
       s.fields.forEach((f: CRFField) => {
+        if (f.id === 'codigo') { return; } // codigo lo asigna backend
         if (f.type === 'checkbox') {
           controls[f.id] = this.fb.array([]); // array de strings
         } else {
-          const v = f.required ? [null, Validators.required] : [null];
-          controls[f.id] = this.fb.control(v[0], v[1]);
+          controls[f.id] = this.fb.control(null, this.buildValidatorsForField(f));
         }
       });
     });
@@ -51,6 +79,43 @@ export class CrfModalComponent implements OnInit {
     this.form.get('grupo')?.valueChanges.subscribe((val) => {
       this.selectedGroup = val;
     });
+
+    // precarga de borrador o datos existentes
+    const key = this.getDraftKey();
+    const isEditing = this.participantId !== null;
+
+    if (!isEditing && key) {
+      const draft = this.crf.load(key);
+      if (draft) {
+        this.form.patchValue(draft);
+        return;
+      }
+    }
+
+    if (this.preloadData) {
+      this.form.patchValue(this.preloadData);
+    }
+  }
+
+  private buildValidatorsForField(field: CRFField): ValidatorFn[] {
+    const validators: ValidatorFn[] = [];
+    if (field.required) {
+      validators.push(Validators.required);
+    }
+    if (field.type === 'number') {
+      if (field.validation?.min !== undefined) validators.push(Validators.min(field.validation.min));
+      if (field.validation?.max !== undefined) validators.push(Validators.max(field.validation.max));
+    }
+    if (field.validation?.pattern) {
+      validators.push(Validators.pattern(field.validation.pattern));
+    }
+    if (field.validation?.minLength !== undefined) {
+      validators.push(Validators.minLength(field.validation.minLength));
+    }
+    if (field.validation?.maxLength !== undefined) {
+      validators.push(Validators.maxLength(field.validation.maxLength));
+    }
+    return validators;
   }
 
   // Helpers
@@ -78,23 +143,127 @@ export class CrfModalComponent implements OnInit {
 
   // Guardados
   guardarBorrador(): void {
-    const codigo = this.form.get('codigo')?.value || 'SIN_CODIGO';
-    this.crf.saveDraft(codigo, this.form.value);
+    const key = this.getDraftKey();
+    this.crf.saveDraft(key, { ...this.form.value, estado: 'borrador' });
+    this.lastAutoSaveAt = 'Borrador guardado manualmente';
     alert('Borrador guardado');
   }
 
   guardarFinal(): void {
-    const codigo = this.form.get('codigo')?.value || 'SIN_CODIGO';
+    if (this.isSubmitting) return;
+    this.isSubmitting = true;
+    const key = this.getDraftKey();
     if (this.form.invalid) {
-      alert('Completa los campos obligatorios');
+      this.missingRequiredLabels = this.getMissingRequiredFields();
+      this.crf.saveDraft(key, { ...this.form.value, estado: 'borrador' });
+      alert(`Guardado como borrador. Faltan campos: ${this.missingRequiredLabels.join(', ')}`);
+      this.isSubmitting = false;
       return;
     }
-    this.crf.saveFinal(codigo, this.form.value);
-    alert('CRF guardado');
-    this.close();
+
+    const payload = {
+      nombreCompleto: this.form.get('nombre')?.value || '',
+      telefono: this.form.get('telefono')?.value || '',
+      direccion: this.form.get('direccion')?.value || '',
+      grupo: this.form.get('grupo')?.value || 'CONTROL'
+    };
+
+    const respuestas = this.buildRespuestasMap();
+
+    const guardarRespuestas = (idParticipante: number) => {
+      this.crf.guardarRespuestas(idParticipante, respuestas).subscribe({
+        next: () => {
+          this.crf.saveFinalLocal(key, { ...this.form.value, estado: 'completo', idParticipante });
+          alert('CRF guardado');
+          this.isSubmitting = false;
+          this.close();
+        },
+        error: (err) => {
+          const msg = err?.error?.message || 'No se pudieron guardar las respuestas.';
+          alert(msg);
+          this.isSubmitting = false;
+        }
+      });
+    };
+
+    // Si ya existe participante, solo guardamos respuestas
+    if (this.participantId) {
+      guardarRespuestas(this.participantId);
+      return;
+    }
+
+    // Crear participante si no existe
+    this.crf.crearParticipante(payload).subscribe({
+      next: (res) => guardarRespuestas(res.idParticipante),
+      error: (err) => {
+        const msg = err?.error?.message || 'No se pudo crear el participante. Verifica los datos.';
+        alert(msg);
+        this.isSubmitting = false;
+      }
+    });
+  }
+
+  private startAutoSave(): void {
+    this.autoSaveHandle = setInterval(() => {
+      const key = this.getDraftKey();
+      this.crf.saveDraft(key, { ...this.form.value, estado: 'autosave' });
+      this.lastAutoSaveAt = new Date().toLocaleTimeString();
+    }, 15000); // 15 segundos
+  }
+
+  private getMissingRequiredFields(): string[] {
+    const missing: string[] = [];
+    this.schema.sections.forEach(section => {
+      section.fields.forEach(field => {
+        const control = this.form.get(field.id);
+        if (field.required && control && control.invalid) {
+          missing.push(field.label);
+        }
+      });
+    });
+    return missing;
+  }
+
+  private buildRespuestasMap(): Record<string, string> {
+    const map: Record<string, string> = {};
+    this.schema.sections.forEach(section => {
+      section.fields.forEach(field => {
+        // omite campos de control que no queremos mandar como variable
+        if (field.id === 'grupo') return;
+        const control = this.form.get(field.id);
+        if (!control) return;
+        const value = control.value;
+        if (field.type === 'checkbox' && Array.isArray(value)) {
+          if (value.length > 0) map[field.id] = value.join(',');
+        } else if (value !== null && value !== undefined && value !== '') {
+          map[field.id] = value.toString();
+        }
+      });
+    });
+    return map;
+  }
+
+  private getDraftKey(): string {
+    if (this.recordId) return this.recordId;
+    if (this.participantId) return `CRF_PART_${this.participantId}`;
+    return 'CRF_BORRADOR_LOCAL';
+  }
+
+  private resetForm(): void {
+    if (!this.form) return;
+    const defaultGroup = 'control';
+    this.form.reset({ grupo: defaultGroup });
+    this.selectedGroup = defaultGroup as 'control' | 'caso';
+  }
+
+  private clearDraft(key: string): void {
+    localStorage.removeItem(`crf_${key}`);
   }
 
   close(): void {
+    if (this.autoSaveHandle) {
+      clearInterval(this.autoSaveHandle);
+    }
     this.open = false;
     this.closed.emit();
   }

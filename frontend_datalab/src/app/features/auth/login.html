@@ -6,25 +6,29 @@
 
     <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-4 text-left">
       <div>
-        <label class="text-sm font-medium text-primary">Usuario</label>
-        <input formControlName="username" placeholder="Ingrese su usuario"
+        <label class="text-sm font-medium text-primary">Correo</label>
+        <input formControlName="correo" placeholder="correo@datalab.com" type="email"
           class="w-full border rounded-md p-2 focus:ring-2 focus:ring-primary outline-none" />
       </div>
 
       <div>
         <label class="text-sm font-medium text-primary">Contraseña</label>
-        <input type="password" formControlName="password" placeholder="Ingrese su contraseña"
+        <input type="password" formControlName="contrasenia" placeholder="Ingrese su contraseña"
           class="w-full border rounded-md p-2 focus:ring-2 focus:ring-primary outline-none" />
       </div>
 
+      <div *ngIf="errorMsg" class="text-sm text-red-600">{{ errorMsg }}</div>
+
       <button type="submit"
-        class="w-full bg-gradient-to-r from-primary to-secondary text-white py-2 rounded-md hover:opacity-90 transition">
-        Ingresar
+        class="w-full bg-gradient-to-r from-primary to-secondary text-white py-2 rounded-md hover:opacity-90 transition disabled:opacity-60"
+        [disabled]="isLoading">
+        {{ isLoading ? 'Ingresando...' : 'Ingresar' }}
       </button>
     </form>
 
-    <a routerLink="/recover" class="text-sm text-secondary block mt-4 hover:underline">
-      ¿Olvidaste tu contraseña?
-    </a>
+    <div class="flex justify-between mt-4 text-sm">
+      <a routerLink="/recover" class="text-secondary hover:underline">¿Olvidaste tu contraseña?</a>
+      <a routerLink="/register" class="text-secondary hover:underline">Crear cuenta</a>
+    </div>
   </div>
 </div>

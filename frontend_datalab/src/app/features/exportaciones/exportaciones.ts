@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Chart, registerables } from 'chart.js';
 import { AlertPanelComponent } from '../../alert-panel/alert-panel.component';
 import { LogoutPanelComponent } from '../../shared/logout-panel/logout-panel.component';
+import { AuthService } from '../../shared/auth/auth.service';
 
 Chart.register(...registerables);
 
@@ -14,14 +15,20 @@ Chart.register(...registerables);
   styleUrls: ['./exportaciones.scss']
 })
 export class ExportacionesComponent implements AfterViewInit {
-   usuarioNombre = 'Dra. González';
+  usuarioNombre = '';
+  usuarioRol = '';
   @ViewChild(LogoutPanelComponent)
   logoutPanel!: LogoutPanelComponent;
+
+  constructor(private auth: AuthService) {
+    this.usuarioNombre = this.auth.getUserName();
+    this.usuarioRol = this.auth.getUserRole();
+  }
+
   abrirLogoutPanel() {
     this.logoutPanel.showPanel();
   }
   
-
   ngAfterViewInit(): void {
     this.renderExportChart();
   }
@@ -30,7 +37,7 @@ export class ExportacionesComponent implements AfterViewInit {
     const ctx = document.getElementById('exportChart') as HTMLCanvasElement;
     if (!ctx) return;
 
-    new Chart(ctx, {
+    new Chart(ctx as any, {
       type: 'doughnut',
       data: {
         labels: ['Completadas', 'En proceso', 'Pendientes'],
@@ -55,5 +62,13 @@ export class ExportacionesComponent implements AfterViewInit {
         }
       }
     });
+  }
+
+  descargarExcel(): void {
+    window.open('http://localhost:8080/api/export/respuestas/excel', '_blank');
+  }
+
+  descargarPdf(): void {
+    window.open('http://localhost:8080/api/export/respuestas/pdf', '_blank');
   }
 }

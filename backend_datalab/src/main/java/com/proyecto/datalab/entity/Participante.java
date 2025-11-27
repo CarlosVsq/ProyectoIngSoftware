@@ -43,7 +43,7 @@ public class Participante {
     @JoinColumn(name = "id_reclutador", nullable = false)
     private Usuario reclutador;
 
-    @Column(name = "codigo_participante", nullable = false, unique = true, length = 50)
+    @Column(name = "codigo_participante", unique = true, length = 50)
     private String codigoParticipante;
 
     @Column(name = "nombre_completo", length = 255)
@@ -67,7 +67,7 @@ public class Participante {
     private LocalDate fechaInclusion;
 
     @Lob
-    @Column(name = "observacion")
+    @Column(name = "observacion", columnDefinition = "text")
     private String observacion;
 
     @OneToMany(

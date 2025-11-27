@@ -37,7 +37,7 @@ CREATE TABLE `Participante` (
   `telefono` varchar(20) DEFAULT NULL,
   `direccion` varchar(255) DEFAULT NULL,
   `grupo` enum('CASO','CONTROL') NOT NULL,
-  `estado_ficha` enum('COMPLETA','INCOMPLETA','NO COMPLETABLE') NOT NULL DEFAULT 'INCOMPLETA',
+  `estado_ficha` enum('COMPLETA','INCOMPLETA','NO_COMPLETABLE') NOT NULL DEFAULT 'INCOMPLETA',
   `fecha_inclusion` date NOT NULL,
   `observacion` text DEFAULT NULL,
   PRIMARY KEY (`id_participante`),

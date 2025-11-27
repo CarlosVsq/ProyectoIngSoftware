@@ -1,46 +1,47 @@
 import { Component } from '@angular/core';
 import { FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { AuthService } from '../../shared/auth/auth.service';
 
 @Component({
-  selector: 'app-login',
+  selector: 'app-register',
   standalone: true,
   imports: [ReactiveFormsModule, CommonModule, RouterModule],
-  templateUrl: './login.html',
-  styleUrl: './login.scss'
+  templateUrl: './register.html',
+  styleUrl: './register.scss'
 })
-export class LoginComponent {
-  loginForm: any;
+export class RegisterComponent {
+  registerForm: any;
   isLoading = false;
   errorMsg = '';
 
   constructor(private fb: FormBuilder, private router: Router, private auth: AuthService) {
-    this.loginForm = this.fb.group({
+    this.registerForm = this.fb.group({
+      nombreCompleto: ['', Validators.required],
       correo: ['', [Validators.required, Validators.email]],
-      contrasenia: ['', Validators.required],
+      contrasenia: ['', [Validators.required, Validators.minLength(6)]],
+      rolId: [1, Validators.required] // placeholder: Admin/PI
     });
   }
 
   onSubmit() {
-    if (this.loginForm.invalid) {
-      this.errorMsg = 'Por favor, completa los campos requeridos.';
+    if (this.registerForm.invalid) {
+      this.errorMsg = 'Completa los campos requeridos.';
       return;
     }
-
     this.errorMsg = '';
     this.isLoading = true;
-    const { correo, contrasenia } = this.loginForm.value;
-
-    this.auth.login(correo, contrasenia).subscribe({
+    const { nombreCompleto, correo, contrasenia, rolId } = this.registerForm.value;
+    this.auth.register(nombreCompleto, correo, contrasenia, rolId).subscribe({
       next: () => {
         this.isLoading = false;
         this.router.navigate(['/dashboard']);
       },
       error: (err) => {
         this.isLoading = false;
-        this.errorMsg = err?.error?.message || 'Credenciales incorrectas o servidor no disponible.';
+        this.errorMsg = err?.error?.message || 'Error al registrar.';
       }
     });
   }

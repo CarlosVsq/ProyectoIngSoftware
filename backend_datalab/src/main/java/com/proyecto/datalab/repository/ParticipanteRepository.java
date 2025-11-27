@@ -16,4 +16,9 @@ public interface ParticipanteRepository extends JpaRepository<Participante, Inte
     List<Participante> findByGrupo(GrupoParticipante grupo);
     List<Participante> findByEstadoFicha(EstadoFicha estadoFicha);
     List<Participante> findByReclutador(Usuario reclutador);
+
+    long countByGrupo(GrupoParticipante grupo);
+    long countByEstadoFicha(EstadoFicha estadoFicha);
+
+    List<Participante> findTop20ByOrderByFechaInclusionDesc();
 }

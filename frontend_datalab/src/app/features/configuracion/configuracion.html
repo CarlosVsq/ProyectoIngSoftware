@@ -9,7 +9,7 @@
   <div class="flex items-center gap-4">
     <div class="flex flex-col text-right">
       <span class="text-sm font-medium text-gray-800">{{ usuarioNombre }}</span>
-      <span class="text-xs text-gray-500">Investigadora Principal</span>
+      <span class="text-xs text-gray-500">{{ usuarioRol }}</span>
     </div>
 
     <button
@@ -29,8 +29,8 @@
         <div class="space-y-3">
           <div class="flex items-center justify-between bg-green-50 px-4 py-3 rounded-lg">
             <div>
-              <p class="font-medium text-gray-800">Dra. González</p>
-              <p class="text-xs text-gray-500">Investigadora Principal</p>
+              <p class="font-medium text-gray-800">{{ usuarioNombre }}</p>
+              <p class="text-xs text-gray-500">{{ usuarioRol }}</p>
             </div>
             <span class="bg-green-100 text-green-700 text-xs px-3 py-1 rounded-full font-semibold">
               Activo
@@ -118,7 +118,7 @@
         </thead>
         <tbody>
           <tr class="border-b hover:bg-gray-50">
-            <td class="py-2 font-medium">Investigadora Principal</td>
+            <td class="py-2 font-medium">{{ usuarioRol }}</td>
             <td class="text-center">✓</td>
             <td class="text-center">✓</td>
             <td class="text-center">✓</td>

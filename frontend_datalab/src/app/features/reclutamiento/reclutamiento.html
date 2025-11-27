@@ -2,29 +2,27 @@
   <!-- CONTENIDO PRINCIPAL -->
   <main class="flex-1 p-6 max-w-[1200px] mx-auto">
     <!-- ENCABEZADO -->
-   <header class="flex justify-between items-center mb-8">
-  <h2 class="text-2xl font-semibold text-primary">Auditoría</h2>
+    <header class="flex justify-between items-center mb-8">
+      <h2 class="text-2xl font-semibold text-primary">Reclutamiento</h2>
 
-  <div class="flex items-center gap-4">
-    <div class="flex flex-col text-right">
-      <span class="text-sm font-medium text-gray-800">{{ usuarioNombre }}</span>
-      <span class="text-xs text-gray-500">Investigadora Principal</span>
-    </div>
+      <div class="flex items-center gap-4">
+        <div class="flex flex-col text-right">
+          <span class="text-sm font-medium text-gray-800">{{ usuarioNombre }}</span>
+          <span class="text-xs text-gray-500">{{ usuarioRol }}</span>
+        </div>
 
-    <button
-     (click)="abrirLogoutPanel()"
-  class="flex items-center gap-1 text-gray-600 hover:text-red-600 transition"
->
-  <span class="material-icons text-base">logout</span>
-  <span class="text-sm font-medium">Cerrar Sesión</span>
-</button>
-  </div>
-</header>
+        <button
+          (click)="abrirLogoutPanel(logoutPanel)"
+          class="flex items-center gap-1 text-gray-600 hover:text-red-600 transition">
+          <span class="material-icons text-base">logout</span>
+          <span class="text-sm font-medium">Cerrar Sesión</span>
+        </button>
+      </div>
+    </header>
 
     <!-- TARJETAS DE MÉTRICAS -->
     <section class="grid grid-cols-4 gap-6 mb-8">
-      <div
-        class="bg-white p-6 rounded-xl border-l-4 border-blue-400 shadow-sm flex flex-col justify-between">
+      <div class="bg-white p-6 rounded-xl border-l-4 border-blue-400 shadow-sm flex flex-col justify-between">
         <div>
           <h3 class="text-gray-500 text-sm font-semibold mb-1">Meta Mensual</h3>
           <p class="text-3xl font-semibold text-blue-700">85</p>
@@ -32,29 +30,26 @@
         <p class="text-xs text-gray-400 mt-2">Participantes objetivo</p>
       </div>
 
-      <div
-        class="bg-white p-6 rounded-xl border-l-4 border-green-400 shadow-sm flex flex-col justify-between">
+      <div class="bg-white p-6 rounded-xl border-l-4 border-green-400 shadow-sm flex flex-col justify-between">
         <div>
           <h3 class="text-gray-500 text-sm font-semibold mb-1">Reclutados</h3>
-          <p class="text-3xl font-semibold text-green-600">67</p>
+          <p class="text-3xl font-semibold text-green-600">{{ resumen?.total || 67 }}</p>
         </div>
         <p class="text-xs text-gray-400 mt-2">Este mes</p>
       </div>
 
-      <div
-        class="bg-white p-6 rounded-xl border-l-4 border-orange-400 shadow-sm flex flex-col justify-between">
+      <div class="bg-white p-6 rounded-xl border-l-4 border-orange-400 shadow-sm flex flex-col justify-between">
         <div>
-          <h3 class="text-gray-500 text-sm font-semibold mb-1">Tasa de Éxito</h3>
-          <p class="text-3xl font-semibold text-orange-500">79%</p>
+          <h3 class="text-gray-500 text-sm font-semibold mb-1">Completas</h3>
+          <p class="text-3xl font-semibold text-orange-500">{{ resumen?.completas || 0 }}</p>
         </div>
         <p class="text-xs text-gray-400 mt-2">Aceptación</p>
       </div>
 
-      <div
-        class="bg-white p-6 rounded-xl border-l-4 border-purple-400 shadow-sm flex flex-col justify-between">
+      <div class="bg-white p-6 rounded-xl border-l-4 border-purple-400 shadow-sm flex flex-col justify-between">
         <div>
-          <h3 class="text-gray-500 text-sm font-semibold mb-1">Pendientes</h3>
-          <p class="text-3xl font-semibold text-purple-600">23</p>
+          <h3 class="text-gray-500 text-sm font-semibold mb-1">Incompletas</h3>
+          <p class="text-3xl font-semibold text-purple-600">{{ resumen?.incompletas || 0 }}</p>
         </div>
         <p class="text-xs text-gray-400 mt-2">En proceso</p>
       </div>
@@ -66,14 +61,14 @@
       <div class="bg-white p-6 rounded-xl shadow-sm">
         <h3 class="text-primary font-semibold mb-4">Progreso Mensual de Reclutamiento</h3>
         <div class="flex gap-3">
-  <button (click)="abrirCRF()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2">
-    <span class="material-icons text-sm">assignment</span> Empezar encuesta
-  </button>
+          <button (click)="abrirCRF()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2">
+            <span class="material-icons text-sm">assignment</span> Empezar encuesta
+          </button>
 
-  <button *ngIf="auth.isPI()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg flex items-center gap-2">
-    <span class="material-icons text-sm">tune</span> Personalizar formulario
-  </button>
-</div>
+          <button *ngIf="auth.isPI()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg flex items-center gap-2">
+            <span class="material-icons text-sm">tune</span> Personalizar formulario
+          </button>
+        </div>
 
         <canvas id="progresoChart" class="h-72"></canvas>
       </div>
@@ -88,7 +83,7 @@
               <span class="material-icons text-green-600 text-lg">groups</span>
               Participantes Activos
             </span>
-            <span class="text-green-700 font-semibold text-sm">275</span>
+            <span class="text-green-700 font-semibold text-sm">{{ resumen?.casos || 0 }}</span>
           </div>
 
           <div class="flex justify-between items-center bg-yellow-50 px-4 py-3 rounded-lg">
@@ -96,7 +91,7 @@
               <span class="material-icons text-yellow-600 text-lg">hourglass_empty</span>
               Consentimiento Pendiente
             </span>
-            <span class="text-yellow-700 font-semibold text-sm">23</span>
+            <span class="text-yellow-700 font-semibold text-sm">{{ resumen?.controles || 0 }}</span>
           </div>
 
           <div class="flex justify-between items-center bg-blue-50 px-4 py-3 rounded-lg">
@@ -117,9 +112,46 @@
         </div>
       </div>
     </section>
+
+    <!-- CRF Guardados -->
+    <section class="bg-white p-6 rounded-xl shadow-sm mt-6">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-primary font-semibold">CRF guardados (últimos)</h3>
+        <span class="text-xs text-gray-500">Actualizado en tiempo real</span>
+      </div>
+      <div class="max-h-72 overflow-y-auto divide-y">
+        <div *ngFor="let crf of crfs" class="py-3 flex flex-col">
+          <div class="flex justify-between text-sm font-semibold text-gray-800">
+            <span>{{ crf.codigoParticipante }} · {{ crf.nombreCompleto || 'Sin nombre' }}</span>
+            <span class="text-xs text-gray-500">{{ crf.fechaInclusion | date:'shortDate' }}</span>
+          </div>
+          <div class="flex gap-3 text-xs text-gray-500 mt-1 flex-wrap">
+            <span class="px-2 py-1 bg-blue-50 rounded-lg">Grupo: {{ crf.grupo }}</span>
+            <span class="px-2 py-1 bg-green-50 rounded-lg">Estado: {{ crf.estadoFicha }}</span>
+            <span class="px-2 py-1 bg-gray-100 rounded-lg">Respuestas: {{ crf.respuestas?.length || 0 }}</span>
+          </div>
+          <div class="text-xs text-gray-600 mt-2 line-clamp-2">
+            {{ crf.resumenRespuestas || 'Sin respuestas capturadas todavía.' }}
+          </div>
+          <div class="mt-2 flex gap-3">
+            <button class="text-xs text-blue-600 hover:underline" (click)="verPdf(crf.idParticipante)">Previsualizar PDF</button>
+            <button class="text-xs text-purple-600 hover:underline" (click)="editarCRF(crf)">Editar CRF</button>
+            <button class="text-xs text-red-600 hover:underline" (click)="eliminarCRF(crf)">✕ Borrar</button>
+          </div>
+        </div>
+        <div *ngIf="!crfs.length" class="text-sm text-gray-500 py-4 text-center">
+          No hay CRF guardados aún.
+        </div>
+      </div>
+    </section>
   </main>
-<app-logout-panel></app-logout-panel>
-<app-crf-modal (closed)="cerrarCRF()"></app-crf-modal>
-  <!-- PANEL DE ALERTAS -->
+  <app-logout-panel #logoutPanel></app-logout-panel>
+  <app-crf-modal
+    [open]="crfOpen"
+    [recordId]="crfRecordId"
+    [participantId]="crfParticipantId"
+    [preloadData]="crfPreload"
+    [fresh]="crfParticipantId == null"
+    (closed)="cerrarCRF()"></app-crf-modal>
   <app-alert-panel></app-alert-panel>
 </div>
