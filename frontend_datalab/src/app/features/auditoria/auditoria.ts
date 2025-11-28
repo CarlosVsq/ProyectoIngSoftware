@@ -1,12 +1,11 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms'; // Necesario para los filtros
+import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { AlertPanelComponent } from '../../alert-panel/alert-panel.component';
 import { LogoutPanelComponent } from '../../shared/logout-panel/logout-panel.component';
 import { AuthService } from '../../shared/auth/auth.service';
 
-// Interfaces para los datos que vienen del backend
 interface Auditoria {
   idAuditoria: number;
   usuario: string;
@@ -17,10 +16,12 @@ interface Auditoria {
   fechaCambio: string;
 }
 
+// Interfaz actualizada para los nuevos KPIs
 interface Stats {
-  accesosHoy: number;
-  eventosHoy: number;
-  errores24h: number;
+  accesos: number;    // Login 24h
+  actividad: number;  // Total eventos 24h
+  cierres: number;    // Logout 24h (Nuevo)
+  alertas: number;
 }
 
 @Component({
@@ -31,21 +32,18 @@ interface Stats {
   styleUrls: ['./auditoria.scss']
 })
 export class AuditoriaComponent implements OnInit {
-  // Datos del Usuario (Header)
   usuarioNombre = '';
   usuarioRol = '';
 
-  // Datos de Auditoría (Backend)
   registros: Auditoria[] = [];
-  stats: Stats = { accesosHoy: 0, eventosHoy: 0, errores24h: 0 };
+  // Inicializamos con los nuevos campos
+  stats: Stats = { accesos: 0, actividad: 0, cierres: 0, alertas: 0 };
 
-  // Filtros
   filtroUsuario: string = '';
   filtroEvento: string = '';
   filtroFechaInicio: string = '';
   filtroFechaFin: string = '';
 
-  // Paginación y Estado
   loading = false;
   page = 0;
   totalPages = 0;
@@ -68,8 +66,6 @@ export class AuditoriaComponent implements OnInit {
     this.logoutPanel.showPanel();
   }
 
-  // --- LÓGICA DE DATOS ---
-
   cargarStats() {
     this.http.get<{ data: Stats }>(`${this.API_BASE}/stats`).subscribe({
       next: (res) => this.stats = res.data,
@@ -79,18 +75,11 @@ export class AuditoriaComponent implements OnInit {
 
   buscarEventos() {
     this.loading = true;
-    
-    // Construir parámetros de consulta
-    let params: any = {
-      page: this.page,
-      size: 10
-    };
+    let params: any = { page: this.page, size: 10 };
 
-    // Filtros opcionales
     if (this.filtroEvento && this.filtroEvento !== 'Todos los eventos') {
       params.accion = this.filtroEvento;
     }
-    // (Aquí podrías agregar lógica para filtroUsuario si tuvieras el ID)
     if (this.filtroFechaInicio) params.fechaInicio = this.filtroFechaInicio;
     if (this.filtroFechaFin) params.fechaFin = this.filtroFechaFin;
 
@@ -108,8 +97,6 @@ export class AuditoriaComponent implements OnInit {
       });
   }
 
-  // --- HELPERS VISUALES ---
-
   getIconForAction(accion: string): string {
     if (accion === 'LOGIN') return 'login';
     if (accion === 'LOGOUT') return 'logout';
@@ -120,7 +107,6 @@ export class AuditoriaComponent implements OnInit {
   }
 
   getClassForAction(accion: string): string {
-    // Retorna clases de Tailwind para colores según la acción
     if (accion === 'LOGIN') return 'text-green-700 bg-green-50 border-green-200';
     if (accion === 'LOGOUT') return 'text-orange-700 bg-orange-50 border-orange-200';
     if (accion.includes('ERROR') || accion.includes('DENEGADO')) return 'text-red-700 bg-red-50 border-red-200';
