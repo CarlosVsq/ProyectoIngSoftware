@@ -6,6 +6,8 @@ import com.proyecto.datalab.entity.Variable;
 import com.proyecto.datalab.repository.VariableRepository;
 
 import jakarta.transaction.Transactional;
+import java.util.List;
+import org.springframework.data.domain.Sort;
 
 @Service
 public class VariableService {
@@ -31,5 +33,15 @@ public class VariableService {
         variable.setReglaValidacion(request.getReglaValidacion());
 
         return variableRepository.save(variable);
+    }
+
+    @Transactional
+    public List<Variable> listarVariables() {
+        Sort sort = Sort.by(
+            Sort.Order.asc("seccion"),
+            Sort.Order.asc("ordenEnunciado"),
+            Sort.Order.asc("idVariable")
+        );
+        return variableRepository.findAll(sort);
     }
 }

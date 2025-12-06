@@ -4,6 +4,7 @@ import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, OnChanges, S
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormArray, AbstractControl, ValidatorFn } from '@angular/forms';
 import { CrfService } from './crf.service';
 import { CRFSchema, CRFSection, CRFField } from './schema';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-crf-modal',
@@ -26,13 +27,16 @@ export class CrfModalComponent implements OnInit, OnDestroy, OnChanges {
   missingRequiredLabels: string[] = [];
   private autoSaveHandle?: ReturnType<typeof setInterval>;
   isSubmitting = false;
+  private schemaSub?: Subscription;
 
   constructor(private fb: FormBuilder, private crf: CrfService) {}
 
   ngOnInit(): void {
-    this.schema = this.crf.getSchema();
-    this.buildForm();
-    this.startAutoSave();
+    this.schemaSub = this.crf.getSchema().subscribe((schema) => {
+      this.schema = schema;
+      this.buildForm();
+      this.startAutoSave();
+    });
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -53,6 +57,9 @@ export class CrfModalComponent implements OnInit, OnDestroy, OnChanges {
     if (this.autoSaveHandle) {
       clearInterval(this.autoSaveHandle);
     }
+    if (this.schemaSub) {
+      this.schemaSub.unsubscribe();
+    }
   }
 
   private buildForm(): void {
@@ -61,12 +68,14 @@ export class CrfModalComponent implements OnInit, OnDestroy, OnChanges {
     // base controls
     controls['grupo'] = this.fb.control(this.selectedGroup, Validators.required);
 
+
     // crear controles para cada campo
     this.schema.sections.forEach((s: CRFSection) => {
       s.fields.forEach((f: CRFField) => {
         if (f.id === 'codigo') { return; } // codigo lo asigna backend
         if (f.type === 'checkbox') {
-          controls[f.id] = this.fb.array([]); // array de strings
+          const validators = f.required ? [Validators.required, Validators.minLength(1)] : [];
+          controls[f.id] = this.fb.array([], validators);
         } else {
           controls[f.id] = this.fb.control(null, this.buildValidatorsForField(f));
         }
@@ -95,6 +104,8 @@ export class CrfModalComponent implements OnInit, OnDestroy, OnChanges {
     if (this.preloadData) {
       this.form.patchValue(this.preloadData);
     }
+    console.log('Controles creados', this.form.controls);
+
   }
 
   private buildValidatorsForField(field: CRFField): ValidatorFn[] {
@@ -150,6 +161,9 @@ export class CrfModalComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   guardarFinal(): void {
+    console.warn('Form invalid', this.form.value, this.form);
+    console.warn('Requeridos faltantes', this.missingRequiredLabels);
+
     if (this.isSubmitting) return;
     this.isSubmitting = true;
     const key = this.getDraftKey();
@@ -162,10 +176,10 @@ export class CrfModalComponent implements OnInit, OnDestroy, OnChanges {
     }
 
     const payload = {
-      nombreCompleto: this.form.get('nombre')?.value || '',
+      nombreCompleto: this.form.get('nombre_completo')?.value || '',
       telefono: this.form.get('telefono')?.value || '',
       direccion: this.form.get('direccion')?.value || '',
-      grupo: this.form.get('grupo')?.value || 'CONTROL'
+      grupo: (this.form.get('grupo')?.value || 'CONTROL').toString().toUpperCase()
     };
 
     const respuestas = this.buildRespuestasMap();
@@ -213,11 +227,30 @@ export class CrfModalComponent implements OnInit, OnDestroy, OnChanges {
 
   private getMissingRequiredFields(): string[] {
     const missing: string[] = [];
+
+    // Controles base (no vienen en el schema)
+    const baseRequired: Array<{ id: string; label: string }> = [
+      { id: 'grupo', label: 'Grupo' },
+    ];
+    baseRequired.forEach(({ id, label }) => {
+      const control = this.form.get(id);
+      if (control && control.invalid) {
+        missing.push(label);
+      }
+    });
+
+    // Controles dinámicos del schema
     this.schema.sections.forEach(section => {
       section.fields.forEach(field => {
         const control = this.form.get(field.id);
-        if (field.required && control && control.invalid) {
-          missing.push(field.label);
+        if (field.required && control) {
+          const isArray = control instanceof FormArray;
+          const isMissing = isArray
+            ? (control.value || []).length === 0
+            : control.invalid;
+          if (isMissing) {
+            missing.push(field.label);
+          }
         }
       });
     });

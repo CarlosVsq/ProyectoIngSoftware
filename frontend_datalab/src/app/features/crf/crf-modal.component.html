@@ -47,18 +47,25 @@
 
                 <!-- radio -->
                 <div *ngIf="f.type==='radio'">
-                  <label class="text-sm text-gray-700 mb-1 block">{{ f.label }}</label>
+                  <label class="text-sm text-gray-700 mb-1 block">
+                    {{ f.label }} <span *ngIf="f.required" class="text-red-500">*</span>
+                  </label>
                   <div class="flex flex-wrap gap-4">
                     <label class="inline-flex items-center gap-2" *ngFor="let o of f.options">
                       <input type="radio" [value]="o" [formControlName]="f.id" />
                       <span>{{ o }}</span>
                     </label>
                   </div>
+                  <p class="text-xs text-red-600 mt-1" *ngIf="f.required && form.get(f.id)?.invalid && (form.get(f.id)?.touched || form.get(f.id)?.dirty || isSubmitting)">
+                    Campo obligatorio.
+                  </p>
                 </div>
 
                 <!-- checkbox (FormArray) -->
                 <div *ngIf="f.type==='checkbox'">
-                  <label class="text-sm text-gray-700 mb-1 block">{{ f.label }}</label>
+                  <label class="text-sm text-gray-700 mb-1 block">
+                    {{ f.label }} <span *ngIf="f.required" class="text-red-500">*</span>
+                  </label>
                   <div class="flex flex-wrap gap-4">
                     <label class="inline-flex items-center gap-2" *ngFor="let o of f.options">
                       <input
@@ -69,15 +76,23 @@
                       <span>{{ o }}</span>
                     </label>
                   </div>
+                  <p class="text-xs text-red-600 mt-1" *ngIf="f.required && form.get(f.id)?.invalid && (form.get(f.id)?.touched || form.get(f.id)?.dirty || isSubmitting)">
+                    Campo obligatorio.
+                  </p>
                 </div>
 
                 <!-- select (opcional si lo usas) -->
                 <div *ngIf="f.type==='select'">
-                  <label class="text-sm text-gray-700 mb-1 block">{{ f.label }}</label>
+                  <label class="text-sm text-gray-700 mb-1 block">
+                    {{ f.label }} <span *ngIf="f.required" class="text-red-500">*</span>
+                  </label>
                   <select class="border rounded-md px-3 py-2 w-full" [formControlName]="f.id">
                     <option [ngValue]="null">Seleccione...</option>
                     <option *ngFor="let o of f.options" [value]="o">{{ o }}</option>
                   </select>
+                  <p class="text-xs text-red-600 mt-1" *ngIf="f.required && form.get(f.id)?.invalid && (form.get(f.id)?.touched || form.get(f.id)?.dirty || isSubmitting)">
+                    Campo obligatorio.
+                  </p>
                 </div>
               </ng-container>
             </ng-container>
