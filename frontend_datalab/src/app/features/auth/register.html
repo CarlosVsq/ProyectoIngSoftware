@@ -1,0 +1,47 @@
+<div class="h-screen flex items-center justify-center bg-accent">
+  <div class="bg-white rounded-2xl shadow-2xl p-10 w-[420px] text-center">
+    <img src="/imagenes/logo.png" alt="DATALAB" class="mx-auto mb-4 h-16">
+    <h1 class="text-xl font-semibold text-primary">Crear cuenta</h1>
+    <p class="text-gray-500 mb-6">Registro de usuario</p>
+
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="space-y-4 text-left">
+      <div>
+        <label class="text-sm font-medium text-primary">Nombre completo</label>
+        <input formControlName="nombreCompleto" placeholder="Nombre completo"
+          class="w-full border rounded-md p-2 focus:ring-2 focus:ring-primary outline-none" />
+      </div>
+      <div>
+        <label class="text-sm font-medium text-primary">Correo</label>
+        <input formControlName="correo" type="email" placeholder="correo@datalab.com"
+          class="w-full border rounded-md p-2 focus:ring-2 focus:ring-primary outline-none" />
+      </div>
+      <div>
+        <label class="text-sm font-medium text-primary">Contraseña</label>
+        <input type="password" formControlName="contrasenia" placeholder="Mínimo 6 caracteres"
+          class="w-full border rounded-md p-2 focus:ring-2 focus:ring-primary outline-none" />
+      </div>
+      <div>
+        <label class="text-sm font-medium text-primary">Rol</label>
+        <select formControlName="rolId" class="w-full border rounded-md p-2 focus:ring-2 focus:ring-primary outline-none">
+          <option [value]="1">Investigadora Principal/Administrador (id=1)</option>
+          <option [value]="2">Médico (id=2)</option>
+          <option [value]="3">Investigador que recluta (id=3)</option>
+          <option [value]="4">Investigador sin reclutamiento (id=4)</option>
+          <option [value]="5">Estudiante (id=5)</option>
+        </select>
+      </div>
+
+      <div *ngIf="errorMsg" class="text-sm text-red-600">{{ errorMsg }}</div>
+
+      <button type="submit"
+        class="w-full bg-gradient-to-r from-primary to-secondary text-white py-2 rounded-md hover:opacity-90 transition disabled:opacity-60"
+        [disabled]="isLoading">
+        {{ isLoading ? 'Registrando...' : 'Registrarse' }}
+      </button>
+    </form>
+
+    <a routerLink="/login" class="text-sm text-secondary block mt-4 hover:underline">
+      ¿Ya tienes cuenta? Inicia sesión
+    </a>
+  </div>
+</div>

@@ -17,11 +17,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "Respuesta",
-    uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"id_participante", "id_variable"})
-    }
-)
+@Table(name = "Respuesta", uniqueConstraints = {
+        @UniqueConstraint(columnNames = { "id_participante", "id_variable" })
+})
 @Data
 @NoArgsConstructor
 public class Respuesta {
@@ -36,12 +34,17 @@ public class Respuesta {
     @JsonIgnore
     private Participante participante;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "id_variable", nullable = false)
     @JsonIgnore
     private Variable variable;
 
     @Lob
-    @Column(name = "valor_ingresado")
+    @Column(name = "valor_ingresado", columnDefinition = "text")
     private String valorIngresado;
+
+    @com.fasterxml.jackson.annotation.JsonProperty("codigoVariable")
+    public String getCodigoVariable() {
+        return variable != null ? variable.getCodigoVariable() : null;
+    }
 }

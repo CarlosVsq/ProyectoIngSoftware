@@ -58,34 +58,37 @@ public class Rol implements Serializable {
     public static final String ESTUDIANTE = "Estudiante";
     public static final String ADMINISTRADOR = "Administrador";
 
-    // Métodos de utilidad para permisos
+    @Column(name = "permiso_ver_datos", nullable = false)
+    private boolean permisoVerDatos;
+
+    @Column(name = "permiso_modificar", nullable = false)
+    private boolean permisoModificar;
+
+    @Column(name = "permiso_exportar", nullable = false)
+    private boolean permisoExportar;
+
+    @Column(name = "permiso_administrar", nullable = false)
+    private boolean permisoAdministrar;
+
+    // Métodos de utilidad para permisos (Delegados a los campos)
     public boolean puedeCrudCrf() {
-        return INVESTIGADORA_PRINCIPAL.equals(nombreRol) ||
-               MEDICO.equals(nombreRol) ||
-               INVESTIGADOR_RECLUTA.equals(nombreRol) ||
-               ESTUDIANTE.equals(nombreRol);
+        return this.permisoModificar;
     }
 
     public boolean puedeExportar() {
-        return INVESTIGADORA_PRINCIPAL.equals(nombreRol) ||
-               INVESTIGADOR_SIN_RECLUTA.equals(nombreRol) ||
-               ADMINISTRADOR.equals(nombreRol);
+        return this.permisoExportar;
     }
 
     public boolean puedeReclutar() {
-        return INVESTIGADORA_PRINCIPAL.equals(nombreRol) ||
-               MEDICO.equals(nombreRol) ||
-               INVESTIGADOR_RECLUTA.equals(nombreRol);
+        return this.permisoModificar; // Asumiendo que reclutar es parte de modificar/crear
     }
 
     public boolean puedeAdministrarUsuarios() {
-        return INVESTIGADORA_PRINCIPAL.equals(nombreRol) ||
-               ADMINISTRADOR.equals(nombreRol);
+        return this.permisoAdministrar;
     }
 
     public boolean puedeVerAuditoria() {
-        return INVESTIGADORA_PRINCIPAL.equals(nombreRol) ||
-               ADMINISTRADOR.equals(nombreRol);
+        return this.permisoAdministrar;
     }
 
     /**
@@ -93,22 +96,25 @@ public class Rol implements Serializable {
      * Ejemplo: "Investigadora Principal" → "INVESTIGADORA_PRINCIPAL"
      */
     public String getNombreRolParaSecurity() {
-        if (nombreRol == null) return "";
+        if (nombreRol == null)
+            return "";
         return nombreRol
-            .toUpperCase()
-            .replace(" ", "_")
-            .replace("Á", "A")
-            .replace("É", "E")
-            .replace("Í", "I")
-            .replace("Ó", "O")
-            .replace("Ú", "U")
-            .replace("Ñ", "N");
+                .toUpperCase()
+                .replace(" ", "_")
+                .replace("Á", "A")
+                .replace("É", "E")
+                .replace("Í", "I")
+                .replace("Ó", "O")
+                .replace("Ú", "U")
+                .replace("Ñ", "N");
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Rol)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof Rol))
+            return false;
         Rol rol = (Rol) o;
         return idRol != null && idRol.equals(rol.idRol);
     }

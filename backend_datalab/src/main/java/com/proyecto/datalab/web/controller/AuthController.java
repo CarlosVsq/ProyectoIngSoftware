@@ -10,7 +10,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.proyecto.datalab.entity.Usuario;
+import com.proyecto.datalab.repository.UsuarioRepository; 
 import com.proyecto.datalab.service.auth.AuthService;
+import com.proyecto.datalab.service.AuditoriaService;
 import com.proyecto.datalab.web.dto.auth.AuthResponse;
 import com.proyecto.datalab.web.dto.auth.LoginRequest;
 import com.proyecto.datalab.web.dto.auth.RegisterRequest;
@@ -27,6 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * Controller de Autenticación
  * HU-40: Mantener sesión iniciada
+ * HU-11: Auditoría de sesiones
  */
 @RestController
 @RequestMapping("/auth")
@@ -36,7 +39,9 @@ import lombok.extern.slf4j.Slf4j;
 public class AuthController {
 
     private final AuthService authService;
-    
+    private final AuditoriaService auditoriaService;
+    private final UsuarioRepository usuarioRepository; 
+
     /**
      * Login de usuario - HU-40
      */
@@ -47,6 +52,32 @@ public class AuthController {
         
         try {
             AuthResponse response = authService.login(request);
+            
+            // --- AUDITORÍA DE LOGIN ---
+            try {
+                // Buscamos la entidad Usuario real usando el ID del DTO para tener la referencia completa
+                if (response.getUsuario() != null) {
+                    Usuario usuarioEntity = usuarioRepository.findById(response.getUsuario().getIdUsuario())
+                                            .orElse(null);
+                    
+                    if (usuarioEntity != null) {
+                        // Registramos la acción LOGIN en la tabla SESION
+                        // Importante: Enviamos null en participante porque es un evento de sistema
+                        auditoriaService.registrarAccion(
+                            usuarioEntity, 
+                            null, 
+                            "LOGIN", 
+                            "SESION", 
+                            "Inicio de sesión exitoso desde web"
+                        );
+                    }
+                }
+            } catch (Exception ex) {
+                // Logueamos el error pero no detenemos el login para no afectar al usuario
+                log.error("No se pudo registrar auditoría de login: {}", ex.getMessage());
+            }
+            // --------------------------
+
             return ResponseEntity.ok(
                 ApiResponse.success("Login exitoso", response)
             );
@@ -57,8 +88,31 @@ public class AuthController {
         }
     }
 
+    /**
+     * Logout de usuario (Para auditoría)
+     */
+    @PostMapping("/logout")
+    @Operation(summary = "Logout de usuario", description = "Registra la salida del usuario en auditoría")
+    public ResponseEntity<ApiResponse<Boolean>> logout(@AuthenticationPrincipal Usuario usuario) {
+        if (usuario != null) {
+            log.info("POST /auth/logout - Usuario: {}", usuario.getCorreo());
+            try {
+                // --- AUDITORÍA DE LOGOUT ---
+                auditoriaService.registrarAccion(
+                    usuario, 
+                    null, 
+                    "LOGOUT", 
+                    "SESION", 
+                    "Cierre de sesión manual"
+                );
+            } catch (Exception e) {
+                log.error("Error registrando logout: {}", e.getMessage());
+            }
+        }
+        return ResponseEntity.ok(ApiResponse.success(true));
+    }
+
     @PostMapping("/register")
-    //@PreAuthorize("hasAnyRole('ADMINISTRADOR', 'INVESTIGADORA_PRINCIPAL')")
     @Operation(summary = "Registro de usuario", description = "Registra un nuevo usuario")
     public ResponseEntity<ApiResponse<AuthResponse>> register(@Valid @RequestBody RegisterRequest request) {
         log.info("POST /auth/register - Correo: {}", request.getCorreo());
@@ -78,9 +132,6 @@ public class AuthController {
         }
     }
     
-    /**
-     * Obtener perfil del usuario autenticado
-    */
     @GetMapping("/me")
     @Operation(summary = "Obtener perfil", description = "Obtiene el perfil del usuario autenticado")
     public ResponseEntity<ApiResponse<UsuarioDTO>> getProfile(@AuthenticationPrincipal Usuario usuario) {
@@ -104,13 +155,9 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.success(usuarioDTO));
     }
 
-    /**
-     * Validar token (útil para el frontend)
-     */
     @GetMapping("/validate")
     @Operation(summary = "Validar token", description = "Valida si el token es válido")
     public ResponseEntity<ApiResponse<Boolean>> validateToken(@AuthenticationPrincipal Usuario usuario) {
-        log.debug("GET /auth/validate - Usuario: {}", usuario.getCorreo());
         return ResponseEntity.ok(ApiResponse.success(true));
     }
 }

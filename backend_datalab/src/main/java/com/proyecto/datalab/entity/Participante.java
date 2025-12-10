@@ -26,12 +26,15 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 @Entity
 @Table(name = "Participante")
 @Data
 @NoArgsConstructor
 @Getter
 @Setter
+@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
 public class Participante {
 
     @Id
@@ -39,11 +42,12 @@ public class Participante {
     @Column(name = "id_participante")
     private Integer idParticipante;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "id_reclutador", nullable = false)
+    @JsonIgnore
     private Usuario reclutador;
 
-    @Column(name = "codigo_participante", nullable = false, unique = true, length = 50)
+    @Column(name = "codigo_participante", unique = true, length = 50)
     private String codigoParticipante;
 
     @Column(name = "nombre_completo", length = 255)
@@ -67,24 +71,14 @@ public class Participante {
     private LocalDate fechaInclusion;
 
     @Lob
-    @Column(name = "observacion")
+    @Column(name = "observacion", columnDefinition = "text")
     private String observacion;
 
-    @OneToMany(
-        mappedBy = "participante", 
-        cascade = CascadeType.ALL,
-        orphanRemoval = true,
-        fetch = FetchType.LAZY
-    )
-    @JsonIgnore
+    @OneToMany(mappedBy = "participante", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    // @JsonIgnore - Removed to allow frontend to receive answers
     private List<Respuesta> respuestas;
 
-    @OneToMany(
-        mappedBy = "participante", 
-        cascade = CascadeType.ALL,
-        orphanRemoval = true,
-        fetch = FetchType.LAZY
-    )
+    @OneToMany(mappedBy = "participante", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonIgnore
     private List<Auditoria> auditorias;
 }

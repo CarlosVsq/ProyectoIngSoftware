@@ -1,13 +1,11 @@
 <aside
   class="fixed top-0 left-0 h-screen w-64 bg-white shadow-md flex flex-col justify-between border-r border-gray-200 z-40 transform transition-transform duration-200"
-  [class.-translate-x-full]="!open"
-  aria-label="Barra lateral de navegación">
+  [class.-translate-x-full]="!open" aria-label="Barra lateral de navegación">
 
   <!-- Botón cerrar/plegar (visible en escritorio) -->
-  <button type="button"
-          aria-label="Ocultar menú lateral"
-          class="hidden lg:flex items-center justify-center absolute -right-3 top-4 w-7 h-7 rounded-full border bg-white shadow hover:bg-gray-50"
-          (click)="close()">
+  <button type="button" aria-label="Ocultar menú lateral"
+    class="hidden lg:flex items-center justify-center absolute -right-3 top-4 w-7 h-7 rounded-full border bg-white shadow hover:bg-gray-50"
+    (click)="close()">
     <span class="material-icons text-[20px]">chevron_left</span>
   </button>
   <!-- LOGO -->
@@ -15,59 +13,53 @@
     <div class="flex items-center gap-2 px-6 py-4 border-b border-gray-100">
       <img src="/imagenes/logo-sin-letra.png" alt="DATALAB" class="h-8 w-8" />
       <div>
-        <h1 class="font-bold text-blue-700 text-lg">DATALAB</h1>
+        <h1 class="font-bold text-primary text-lg">DATALAB</h1>
         <p class="text-xs text-gray-500">Investigación Biomédica</p>
       </div>
     </div>
 
     <!-- NAVEGACIÓN -->
     <nav class="mt-4 flex flex-col">
-      <a
-        routerLink="/dashboard"
-        routerLinkActive="bg-blue-50 text-blue-600 font-semibold"
-        class="flex items-center gap-3 px-6 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition">
+      <a routerLink="/dashboard" routerLinkActive="bg-blue-50 text-primary font-semibold"
+        class="flex items-center gap-3 px-6 py-3 text-gray-600 hover:bg-blue-50 hover:text-primary transition">
         <span class="material-icons text-[20px]">home</span>
-        Inicio / Dashboard
+        <span *ngIf="open">Inicio / Dashboard</span>
       </a>
 
-      <a
-        routerLink="/reclutamiento"
-        routerLinkActive="bg-blue-50 text-blue-600 font-semibold"
-        class="flex items-center gap-3 px-6 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition">
+      <a routerLink="/lista-participantes" routerLinkActive="bg-blue-50 text-primary font-semibold"
+        class="flex items-center gap-3 px-6 py-3 text-gray-600 hover:bg-blue-50 hover:text-primary transition">
+        <span class="material-icons text-[20px]">people</span>
+        <span *ngIf="open">Listado de Participantes</span>
+      </a>
+
+      <a routerLink="/reclutamiento" routerLinkActive="bg-blue-50 text-primary font-semibold"
+        class="flex items-center gap-3 px-6 py-3 text-gray-600 hover:bg-blue-50 hover:text-primary transition">
         <span class="material-icons text-[20px]">timeline</span>
-        Progreso de Reclutamiento
+        <span *ngIf="open">Progreso de Reclutamiento</span>
       </a>
 
-      <a
-        routerLink="/estadisticas"
-        routerLinkActive="bg-blue-50 text-blue-600 font-semibold"
-        class="flex items-center gap-3 px-6 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition">
+      <a routerLink="/estadisticas" routerLinkActive="bg-blue-50 text-primary font-semibold"
+        class="flex items-center gap-3 px-6 py-3 text-gray-600 hover:bg-blue-50 hover:text-primary transition">
         <span class="material-icons text-[20px]">science</span>
-        Estadísticas Clínicas y Genéticas
+        <span *ngIf="open">Estadísticas Clínicas</span>
       </a>
 
-      <a
-        routerLink="/exportaciones"
-        routerLinkActive="bg-blue-50 text-blue-600 font-semibold"
-        class="flex items-center gap-3 px-6 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition">
+      <a routerLink="/exportaciones" routerLinkActive="bg-blue-50 text-primary font-semibold"
+        class="flex items-center gap-3 px-6 py-3 text-gray-600 hover:bg-blue-50 hover:text-primary transition">
         <span class="material-icons text-[20px]">download</span>
-        Exportaciones
+        <span *ngIf="open">Exportaciones</span>
       </a>
 
-      <a
-        routerLink="/auditoria"
-        routerLinkActive="bg-blue-50 text-blue-600 font-semibold"
-        class="flex items-center gap-3 px-6 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition">
+      <a routerLink="/auditoria" routerLinkActive="bg-blue-50 text-primary font-semibold"
+        class="flex items-center gap-3 px-6 py-3 text-gray-600 hover:bg-blue-50 hover:text-primary transition">
         <span class="material-icons text-[20px]">shield</span>
-        Auditoría
+        <span *ngIf="open">Auditoría</span>
       </a>
 
-      <a
-        routerLink="/configuracion"
-        routerLinkActive="bg-blue-50 text-blue-600 font-semibold"
-        class="flex items-center gap-3 px-6 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition">
+      <a routerLink="/configuracion" routerLinkActive="bg-blue-50 text-primary font-semibold"
+        class="flex items-center gap-3 px-6 py-3 text-gray-600 hover:bg-blue-50 hover:text-primary transition">
         <span class="material-icons text-[20px]">settings</span>
-        Configuración / Roles
+        <span *ngIf="open">Configuración</span>
       </a>
     </nav>
   </div>

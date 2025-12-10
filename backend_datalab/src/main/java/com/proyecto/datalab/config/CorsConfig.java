@@ -21,9 +21,10 @@ public class CorsConfig {
         
         // Orígenes permitidos
         configuration.setAllowedOrigins(Arrays.asList(
+            "http://localhost",       // nginx default
+            "http://localhost:80",    // nginx en Docker
             "http://localhost:4200",  // Angular dev
-            "http://localhost:8080",  // Frontend en Docker
-            "http://localhost:80"     // Frontend en Docker (puerto 80)
+            "http://localhost:8080"   // Backend
         ));
         
         // Métodos permitidos

@@ -4,61 +4,48 @@
 
     <!-- ENCABEZADO -->
     <header class="flex justify-between items-center mb-8">
-  <h2 class="text-2xl font-semibold text-primary">Auditoría</h2>
+      <h2 class="text-2xl font-semibold text-primary">Auditoría</h2>
 
-  <div class="flex items-center gap-4">
-    <div class="flex flex-col text-right">
-      <span class="text-sm font-medium text-gray-800">{{ usuarioNombre }}</span>
-      <span class="text-xs text-gray-500">Investigadora Principal</span>
-    </div>
+      <div class="flex items-center gap-4">
+        <div class="flex flex-col text-right">
+          <span class="text-sm font-medium text-gray-800">{{ usuarioNombre }}</span>
+          <span class="text-xs text-gray-500">{{ usuarioRol }}</span>
+        </div>
 
-    <button
-  (click)="abrirLogoutPanel()"
-  class="flex items-center gap-1 text-gray-600 hover:text-red-600 transition"
->
-  <span class="material-icons text-base">logout</span>
-  <span class="text-sm font-medium">Cerrar Sesión</span>
-</button>
-  </div>
-</header>
+        <button (click)="abrirLogoutPanel()"
+          class="flex items-center gap-1 text-gray-600 hover:text-red-600 transition">
+          <span class="material-icons text-base">logout</span>
+          <span class="text-sm font-medium">Cerrar Sesión</span>
+        </button>
+      </div>
+    </header>
     <!-- GESTIÓN DE USUARIOS -->
     <section class="grid grid-cols-2 gap-6 mb-8">
       <div class="bg-white p-6 rounded-xl shadow">
         <h3 class="text-primary font-semibold mb-4">Gestión de Usuarios</h3>
 
-        <div class="space-y-3">
-          <div class="flex items-center justify-between bg-green-50 px-4 py-3 rounded-lg">
+        <div class="space-y-3 max-h-64 overflow-y-auto">
+          <div *ngFor="let u of usuarios" class="flex items-center justify-between px-4 py-3 rounded-lg"
+            [ngClass]="u.estado === 'ACTIVO' ? 'bg-green-50' : 'bg-red-50'">
             <div>
-              <p class="font-medium text-gray-800">Dra. González</p>
-              <p class="text-xs text-gray-500">Investigadora Principal</p>
+              <p class="font-medium text-gray-800">{{ u.nombreCompleto }}</p>
+              <p class="text-xs text-gray-500">{{ u.rol.nombreRol }} | {{ u.correo }}</p>
             </div>
-            <span class="bg-green-100 text-green-700 text-xs px-3 py-1 rounded-full font-semibold">
-              Activo
-            </span>
-          </div>
-
-          <div class="flex items-center justify-between bg-green-50 px-4 py-3 rounded-lg">
-            <div>
-              <p class="font-medium text-gray-800">Dr. Martínez</p>
-              <p class="text-xs text-gray-500">Investigador</p>
+            <div class="flex items-center gap-2">
+              <span class="text-xs px-3 py-1 rounded-full font-semibold"
+                [ngClass]="u.estado === 'ACTIVO' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'">
+                {{ u.estado === 'ACTIVO' ? 'Activo' : 'Inactivo' }}
+              </span>
+              <button *ngIf="usuarioRol === 'Investigadora Principal' || usuarioRol === 'Administrador'"
+                (click)="eliminarUsuario(u.idUsuario!)" class="text-red-500 hover:text-red-700">
+                <span class="material-icons text-sm">delete</span>
+              </button>
             </div>
-            <span class="bg-green-100 text-green-700 text-xs px-3 py-1 rounded-full font-semibold">
-              Activo
-            </span>
-          </div>
-
-          <div class="flex items-center justify-between bg-yellow-50 px-4 py-3 rounded-lg">
-            <div>
-              <p class="font-medium text-gray-800">Enf. López</p>
-              <p class="text-xs text-gray-500">Coordinadora</p>
-            </div>
-            <span class="bg-yellow-100 text-yellow-700 text-xs px-3 py-1 rounded-full font-semibold">
-              Pendiente
-            </span>
           </div>
         </div>
 
-        <button
+        <button *ngIf="usuarioRol === 'Investigadora Principal' || usuarioRol === 'Administrador'"
+          (click)="abrirModalUsuario()"
           class="w-full mt-4 bg-blue-700 text-white py-2 rounded-md hover:bg-blue-800 transition flex items-center justify-center gap-2">
           <span class="material-icons text-sm">person_add</span> Agregar Usuario
         </button>
@@ -117,38 +104,66 @@
           </tr>
         </thead>
         <tbody>
-          <tr class="border-b hover:bg-gray-50">
-            <td class="py-2 font-medium">Investigadora Principal</td>
-            <td class="text-center">✓</td>
-            <td class="text-center">✓</td>
-            <td class="text-center">✓</td>
-            <td class="text-center">✓</td>
-          </tr>
-          <tr class="border-b hover:bg-gray-50">
-            <td class="py-2 font-medium">Investigador</td>
-            <td class="text-center">✓</td>
-            <td class="text-center">✓</td>
-            <td class="text-center">✓</td>
-            <td class="text-center">-</td>
-          </tr>
-          <tr class="border-b hover:bg-gray-50">
-            <td class="py-2 font-medium">Coordinadora</td>
-            <td class="text-center">✓</td>
-            <td class="text-center">✓</td>
-            <td class="text-center">-</td>
-            <td class="text-center">-</td>
-          </tr>
-          <tr class="hover:bg-gray-50">
-            <td class="py-2 font-medium">Analista</td>
-            <td class="text-center">✓</td>
-            <td class="text-center">-</td>
-            <td class="text-center">-</td>
-            <td class="text-center">-</td>
+          <tr *ngFor="let role of roles" class="border-b hover:bg-gray-50">
+            <td class="py-2 font-medium">{{ role.nombreRol }}</td>
+            <td class="text-center">
+              <input type="checkbox" [checked]="role.permisoVerDatos" (change)="togglePermiso(role, 'permisoVerDatos')"
+                class="accent-blue-600 cursor-pointer">
+            </td>
+            <td class="text-center">
+              <input type="checkbox" [checked]="role.permisoModificar"
+                (change)="togglePermiso(role, 'permisoModificar')" class="accent-blue-600 cursor-pointer">
+            </td>
+            <td class="text-center">
+              <input type="checkbox" [checked]="role.permisoExportar" (change)="togglePermiso(role, 'permisoExportar')"
+                class="accent-blue-600 cursor-pointer">
+            </td>
+            <td class="text-center">
+              <input type="checkbox" [checked]="role.permisoAdministrar"
+                (change)="togglePermiso(role, 'permisoAdministrar')" class="accent-blue-600 cursor-pointer">
+            </td>
           </tr>
         </tbody>
       </table>
     </section>
   </main>
+
+  <!-- MODAL AGREGAR USUARIO -->
+  <div *ngIf="showUserModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
+      <h3 class="text-xl font-bold mb-4 text-gray-800">Nuevo Usuario</h3>
+      <form [formGroup]="userForm" (ngSubmit)="guardarUsuario()" class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Nombre Completo</label>
+          <input formControlName="nombre" type="text" class="w-full border rounded px-3 py-2 mt-1">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Correo</label>
+          <input formControlName="correo" type="email" class="w-full border rounded px-3 py-2 mt-1">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Contraseña</label>
+          <input formControlName="contrasena" type="password" class="w-full border rounded px-3 py-2 mt-1">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Rol</label>
+          <select formControlName="rolId" class="w-full border rounded px-3 py-2 mt-1">
+            <option *ngFor="let r of roles" [value]="r.idRol">{{ r.nombreRol }}</option>
+          </select>
+        </div>
+        <div class="flex justify-end gap-3 mt-6">
+          <button type="button" (click)="cerrarModalUsuario()"
+            class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded">Cancelar</button>
+          <button type="submit" [disabled]="isSubmitting || userForm.invalid"
+            class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-2">
+            <span *ngIf="isSubmitting" class="material-icons animate-spin text-sm">refresh</span>
+            Guardar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <app-logout-panel></app-logout-panel>
   <!-- PANEL DE ALERTAS -->
   <app-alert-panel></app-alert-panel>

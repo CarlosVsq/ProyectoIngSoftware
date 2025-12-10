@@ -1,58 +1,53 @@
 <div class="flex min-h-screen bg-accent text-gray-800">
-  <!-- CONTENIDO PRINCIPAL -->
   <main class="flex-1 p-6 max-w-[1200px] mx-auto">
-    <!-- HEADER SUPERIOR -->
-     <!-- BOTÓN MENÚ SUPERIOR (solo visible en móvil) -->
-<div class="md:hidden flex items-center justify-between p-4 bg-white border-b">
-  <h2 class="text-lg font-semibold text-primary">Auditoría</h2>
-  <button
-    class="text-gray-700 bg-blue-100 px-3 py-1.5 rounded-md shadow-sm hover:bg-blue-200 transition"
-    (click)="menuAbierto = true"
-  >
-    ☰ Menú
-  </button>
-</div>
-    <header class="flex justify-between items-center mb-8">
-  <h2 class="text-2xl font-semibold text-primary">Auditoría</h2>
-
-  <div class="flex items-center gap-4">
-    <div class="flex flex-col text-right">
-      <span class="text-sm font-medium text-gray-800">{{ usuarioNombre }}</span>
-      <span class="text-xs text-gray-500">Investigadora Principal</span>
+    <div class="md:hidden flex items-center justify-between p-4 bg-white border-b">
+      <h2 class="text-lg font-semibold text-primary">Dashboard</h2>
+      <button
+        class="text-gray-700 bg-blue-100 px-3 py-1.5 rounded-md shadow-sm hover:bg-blue-200 transition"
+        (click)="menuAbierto = true"
+      >
+        ☰ Menú
+      </button>
     </div>
+    <header class="flex justify-between items-center mb-8">
+      <h2 class="text-2xl font-semibold text-primary">Dashboard</h2>
 
-    <button
-  (click)="abrirLogoutPanel()"
-  class="flex items-center gap-1 text-gray-600 hover:text-red-600 transition"
->
-  <span class="material-icons text-base">logout</span>
-  <span class="text-sm font-medium">Cerrar Sesión</span>
-</button>
-  </div>
-</header>
+      <div class="flex items-center gap-4">
+        <div class="flex flex-col text-right">
+          <span class="text-sm font-medium text-gray-800">{{ usuarioNombre }}</span>
+          <span class="text-xs text-gray-500">{{ usuarioRol }}</span>
+        </div>
 
-    <!-- TARJETAS DE MÉTRICAS -->
+        <button
+          (click)="abrirLogoutPanel()"
+          class="flex items-center gap-1 text-gray-600 hover:text-red-600 transition"
+        >
+          <span class="material-icons text-base">logout</span>
+          <span class="text-sm font-medium">Cerrar sesión</span>
+        </button>
+      </div>
+    </header>
+
     <section class="grid grid-cols-3 gap-4 mb-6">
       <div class="bg-white p-6 rounded-xl shadow">
         <h3 class="text-gray-500 text-sm font-semibold">Casos Registrados</h3>
-        <p class="text-3xl font-semibold text-primary">156</p>
-        <p class="text-xs text-gray-400">+12 esta semana</p>
+        <p class="text-3xl font-semibold text-primary">{{ resumen?.casos ?? 0 }}</p>
+        <p class="text-xs text-gray-400">Actualizado desde backend</p>
       </div>
 
       <div class="bg-white p-6 rounded-xl shadow">
         <h3 class="text-gray-500 text-sm font-semibold">Controles Registrados</h3>
-        <p class="text-3xl font-semibold text-secondary">144</p>
-        <p class="text-xs text-gray-400">+8 esta semana</p>
+        <p class="text-3xl font-semibold text-secondary">{{ resumen?.controles ?? 0 }}</p>
+        <p class="text-xs text-gray-400">Actualizado desde backend</p>
       </div>
 
       <div class="bg-white p-6 rounded-xl shadow">
         <h3 class="text-gray-500 text-sm font-semibold">Total Participantes</h3>
-        <p class="text-3xl font-semibold text-orange-500">300</p>
-        <p class="text-xs text-gray-400">Meta: 500 participantes</p>
+        <p class="text-3xl font-semibold text-orange-500">{{ resumen?.total ?? 0 }}</p>
+        <p class="text-xs text-gray-400">Meta: {{ resumen?.meta ?? 0 }} participantes</p>
       </div>
     </section>
 
-    <!-- GRÁFICOS -->
     <section class="grid grid-cols-2 gap-4 mb-6">
       <div class="bg-white p-4 rounded-xl shadow">
         <h3 class="text-primary font-semibold mb-2">Distribución por Edad</h3>
@@ -65,7 +60,6 @@
       </div>
     </section>
 
-    <!-- EVOLUCIÓN -->
     <section class="bg-white p-4 rounded-xl shadow">
       <h3 class="text-primary font-semibold mb-2">Evolución del Reclutamiento</h3>
       <canvas id="reclutamientoChart"></canvas>

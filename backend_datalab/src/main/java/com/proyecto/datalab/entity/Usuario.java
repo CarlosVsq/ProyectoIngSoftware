@@ -1,6 +1,5 @@
 package com.proyecto.datalab.entity;
 
-
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Collection;
@@ -42,6 +41,8 @@ import lombok.ToString;
  * HU-28: Bloquear/activar usuario
  */
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 @Entity
 @Table(name = "Usuario")
 @Getter
@@ -50,12 +51,13 @@ import lombok.ToString;
 @AllArgsConstructor
 @Builder
 @ToString(exclude = "contrasenia")
+@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
 public class Usuario implements Serializable, UserDetails {
 
     private static final long serialVersionUID = 1L; // Agregado para la interfaz Serializable
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) 
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_usuario")
     private Integer idUsuario;
 
@@ -87,13 +89,12 @@ public class Usuario implements Serializable, UserDetails {
         if (rol == null) {
             return List.of();
         }
-        
-        // Obtener nombre del rol formateado para Spring Security
-        String roleName = rol.getNombreRolParaSecurity();
-        
-        // Devolver con prefijo ROLE_
-        return List.of(new SimpleGrantedAuthority("ROLE_" + roleName));
+
+        // CORREGIDO: Usamos el nombre directo (getNombreRol) sin prefijos extra.
+        // Esto asegura que coincida con lo que pusimos en SecurityConfig.
+        return List.of(new SimpleGrantedAuthority(rol.getNombreRol()));
     }
+
     @OneToMany(mappedBy = "reclutador", fetch = FetchType.LAZY)
     @JsonIgnore
     private List<Participante> participantesReclutados;
@@ -112,7 +113,7 @@ public class Usuario implements Serializable, UserDetails {
         }
     }
 
-    //Devuelve contraseña ya hasheada
+    // Devuelve contraseña ya hasheada
     @Override
     public String getPassword() {
         return this.contrasenia;
@@ -133,13 +134,13 @@ public class Usuario implements Serializable, UserDetails {
         return EstadoUsuario.ACTIVO.equals(this.estado);
     }
 
-    //Las credenciales no expiran nunca
+    // Las credenciales no expiran nunca
     @Override
     public boolean isCredentialsNonExpired() {
         return true;
     }
 
-    //Usuario habilitado si está Activo
+    // Usuario habilitado si está Activo
     @Override
     public boolean isEnabled() {
         return EstadoUsuario.ACTIVO.equals(this.estado);
@@ -148,57 +149,57 @@ public class Usuario implements Serializable, UserDetails {
     // MÉTODOS DE UTILIDAD
     // ====================================================================
 
-    //Verifica si el usuario tiene un rol específico
+    // Verifica si el usuario tiene un rol específico
     public boolean tieneRol(String nombreRol) {
         return rol != null && rol.getNombreRol().equals(nombreRol);
     }
 
-    //Verifica si es Investigadora Principal
+    // Verifica si es Investigadora Principal
     public boolean esInvestigadoraPrincipal() {
         return tieneRol(Rol.INVESTIGADORA_PRINCIPAL);
     }
 
-    //Verifica si es Administrador
+    // Verifica si es Administrador
     public boolean esAdministrador() {
         return tieneRol(Rol.ADMINISTRADOR);
     }
 
-    //Verifica si puede crear/editar CRF
+    // Verifica si puede crear/editar CRF
     public boolean puedeCrudCrf() {
         return rol != null && rol.puedeCrudCrf();
     }
 
-    //Verifica si puede exportar datos
+    // Verifica si puede exportar datos
     public boolean puedeExportar() {
         return rol != null && rol.puedeExportar();
     }
 
-    //Verifica si puede reclutar participantes
+    // Verifica si puede reclutar participantes
     public boolean puedeReclutar() {
         return rol != null && rol.puedeReclutar();
     }
 
-    //Verifica si puede ver auditoría
+    // Verifica si puede ver auditoría
     public boolean puedeAdministrarUsuarios() {
         return rol != null && rol.puedeAdministrarUsuarios();
     }
 
-    //Verifica si puede ver auditoría
+    // Verifica si puede ver auditoría
     public boolean puedeVerAuditoria() {
         return rol != null && rol.puedeVerAuditoria();
     }
 
-    //Activa el usuario (HU-28)
+    // Activa el usuario (HU-28)
     public void activar() {
         this.estado = EstadoUsuario.ACTIVO;
     }
 
-    //Desactiva/bloquea el usuario (HU-28)
+    // Desactiva/bloquea el usuario (HU-28)
     public void desactivar() {
         this.estado = EstadoUsuario.INACTIVO;
     }
 
-    //Verifica si el usuario está activo
+    // Verifica si el usuario está activo
     public boolean estaActivo() {
         return EstadoUsuario.ACTIVO.equals(this.estado);
     }
@@ -206,8 +207,10 @@ public class Usuario implements Serializable, UserDetails {
     // EQUALS Y HASHCODE (basados en ID)
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Usuario)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof Usuario))
+            return false;
         Usuario usuario = (Usuario) o;
         return idUsuario != null && idUsuario.equals(usuario.idUsuario);
     }
