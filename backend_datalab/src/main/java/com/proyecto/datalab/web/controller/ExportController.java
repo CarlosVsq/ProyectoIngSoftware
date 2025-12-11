@@ -6,6 +6,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -47,11 +48,7 @@ public class ExportController {
 
     // Defines the static columns for the export
     private enum StaticColumn {
-        CODIGO_PARTICIPANTE,
-        NOMBRE,
-        GRUPO,
-        ESTADO,
-        FECHA_INCLUSION;
+        CODIGO_PARTICIPANTE;
     }
 
     @GetMapping("/participante/{id}/pdf")
@@ -197,11 +194,7 @@ public class ExportController {
             Sheet sheet = workbook.createSheet("Datos Completos");
 
             // --- 1. PREPARE DATA ---
-            List<Variable> variables = variableRepository.findAll().stream()
-                    .sorted(Comparator
-                            .comparing(Variable::getOrdenEnunciado, Comparator.nullsLast(Comparator.naturalOrder()))
-                            .thenComparing(Variable::getCodigoVariable))
-                    .collect(Collectors.toList());
+            List<Variable> variables = getSafeVariables();
 
             List<Participante> participantes = participanteRepository.findAll();
 
@@ -242,11 +235,7 @@ public class ExportController {
 
                 // Static Data
                 row.createCell(colIdx++).setCellValue(safe(p.getCodigoParticipante()));
-                row.createCell(colIdx++).setCellValue(safe(p.getNombreCompleto()));
-                row.createCell(colIdx++).setCellValue(p.getGrupo() != null ? p.getGrupo().name() : "");
-                row.createCell(colIdx++).setCellValue(p.getEstadoFicha() != null ? p.getEstadoFicha().name() : "");
-                row.createCell(colIdx++)
-                        .setCellValue(p.getFechaInclusion() != null ? p.getFechaInclusion().toString() : "");
+                // No más datos del participante aparte del código
 
                 // Dynamic Data
                 for (Variable v : variables) {
@@ -272,11 +261,7 @@ public class ExportController {
     @GetMapping("/csv")
     @Transactional(readOnly = true)
     public ResponseEntity<byte[]> exportToCsv() {
-        List<Variable> variables = variableRepository.findAll().stream()
-                .sorted(Comparator
-                        .comparing(Variable::getOrdenEnunciado, Comparator.nullsLast(Comparator.naturalOrder()))
-                        .thenComparing(Variable::getCodigoVariable))
-                .collect(Collectors.toList());
+        List<Variable> variables = getSafeVariables();
 
         List<Participante> participantes = participanteRepository.findAll();
         Map<Integer, Map<String, String>> respuestasMap = respuestaRepository.findAll().stream()
@@ -303,10 +288,7 @@ public class ExportController {
             List<String> cols = new ArrayList<>();
 
             cols.add(escapeCsv(p.getCodigoParticipante()));
-            cols.add(escapeCsv(p.getNombreCompleto()));
-            cols.add(escapeCsv(p.getGrupo() != null ? p.getGrupo().name() : ""));
-            cols.add(escapeCsv(p.getEstadoFicha() != null ? p.getEstadoFicha().name() : ""));
-            cols.add(escapeCsv(p.getFechaInclusion() != null ? p.getFechaInclusion().toString() : ""));
+            // No más datos del participante aparte del código
 
             for (Variable v : variables) {
                 cols.add(escapeCsv(pRespuestas.getOrDefault(v.getCodigoVariable(), "")));
@@ -324,11 +306,7 @@ public class ExportController {
     @GetMapping("/csv-stata")
     @Transactional(readOnly = true)
     public ResponseEntity<byte[]> exportToCsvStata() {
-        List<Variable> variables = variableRepository.findAll().stream()
-                .sorted(Comparator
-                        .comparing(Variable::getOrdenEnunciado, Comparator.nullsLast(Comparator.naturalOrder()))
-                        .thenComparing(Variable::getCodigoVariable))
-                .collect(Collectors.toList());
+        List<Variable> variables = getSafeVariables();
 
         List<Participante> participantes = participanteRepository.findAll();
         Map<Integer, Map<String, String>> respuestasMap = respuestaRepository.findAll().stream()
@@ -355,10 +333,7 @@ public class ExportController {
             List<String> cols = new ArrayList<>();
 
             cols.add(escapeCsv(p.getCodigoParticipante()));
-            cols.add(escapeCsv(p.getNombreCompleto()));
-            cols.add(escapeCsv(p.getGrupo() != null ? p.getGrupo().name() : ""));
-            cols.add(escapeCsv(p.getEstadoFicha() != null ? p.getEstadoFicha().name() : ""));
-            cols.add(escapeCsv(p.getFechaInclusion() != null ? p.getFechaInclusion().toString() : ""));
+            // No más datos del participante aparte del código
 
             for (Variable v : variables) {
                 String rawVal = pRespuestas.getOrDefault(v.getCodigoVariable(), "");
@@ -420,5 +395,41 @@ public class ExportController {
         style.setFillForegroundColor(IndexedColors.DARK_BLUE.getIndex());
         style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
         return style;
+    }
+
+    /**
+     * Obtiene variables de forma determinista, eliminando duplicados y
+     * excluyendo campos sensibles que no deben exportarse.
+     */
+    private List<Variable> getSafeVariables() {
+        // Campos sensibles a excluir (minúsculas)
+        var sensitiveCodes = new LinkedHashSet<>(List.of(
+                "nombre",
+                "telefono",
+                "nombre_completo",
+                "correo_electronico",
+                "direccion"
+        ));
+
+        return variableRepository.findAll().stream()
+                .sorted(Comparator
+                        .comparing(Variable::getOrdenEnunciado, Comparator.nullsLast(Comparator.naturalOrder()))
+                        .thenComparing(Variable::getCodigoVariable))
+                // Elimina duplicados por código manteniendo el primero
+                .collect(Collectors.toMap(
+                        v -> v.getCodigoVariable() != null ? v.getCodigoVariable().toLowerCase() : "",
+                        v -> v,
+                        (a, b) -> a,
+                        LinkedHashMap::new))
+                .values().stream()
+                // Excluir sensibles y columnas estáticas
+                .filter(v -> {
+                    String code = v.getCodigoVariable();
+                    if (code == null) return false;
+                    String lower = code.toLowerCase();
+                    return !sensitiveCodes.contains(lower)
+                            && !lower.equals(StaticColumn.CODIGO_PARTICIPANTE.name().toLowerCase());
+                })
+                .collect(Collectors.toList());
     }
 }
