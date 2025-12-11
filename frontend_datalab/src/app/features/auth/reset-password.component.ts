@@ -10,7 +10,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
     imports: [CommonModule, FormsModule, RouterLink],
     template: `
     <div class="h-screen flex items-center justify-center bg-accent">
-      <div class="bg-white rounded-2xl shadow-2xl p-10 w-[420px] text-center">
+      <div class="bg-white rounded-2xl shadow-2xl p-8 sm:p-10 w-full max-w-[420px] mx-4 text-center">
         <h2 class="text-xl font-semibold text-primary mb-4">Ingresar Código</h2>
         
         <div *ngIf="success" class="mb-4">

@@ -10,7 +10,7 @@ import { RouterLink, Router } from '@angular/router';
     imports: [CommonModule, FormsModule, RouterLink],
     template: `
     <div class="h-screen flex items-center justify-center bg-accent">
-      <div class="bg-white rounded-2xl shadow-2xl p-10 w-[420px] text-center">
+      <div class="bg-white rounded-2xl shadow-2xl p-8 sm:p-10 w-full max-w-[420px] mx-4 text-center">
         <h2 class="text-xl font-semibold text-primary mb-4">Recuperar Contraseña</h2>
         <p class="text-gray-500 mb-6 text-sm">Ingresa tu correo electrónico y te enviaremos un código de recuperación.</p>
 

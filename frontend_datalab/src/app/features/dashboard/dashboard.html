@@ -1,54 +1,39 @@
 <div class="flex min-h-screen bg-accent text-gray-800">
-  <main class="flex-1 p-6 max-w-[1200px] mx-auto">
-    <div class="md:hidden flex items-center justify-between p-4 bg-white border-b">
-      <h2 class="text-lg font-semibold text-primary">Dashboard</h2>
-      <button
-        class="text-gray-700 bg-blue-100 px-3 py-1.5 rounded-md shadow-sm hover:bg-blue-200 transition"
-        (click)="menuAbierto = true"
-      >
-        ☰ Menú
-      </button>
-    </div>
-    <header class="flex justify-between items-center mb-8">
-      <h2 class="text-2xl font-semibold text-primary">Dashboard</h2>
+  <main class="flex-1 w-full max-w-screen-xl px-3 sm:px-6 py-4 md:py-6 mx-auto">
 
-      <div class="flex items-center gap-4">
-        <div class="flex flex-col text-right">
-          <span class="text-sm font-medium text-gray-800">{{ usuarioNombre }}</span>
-          <span class="text-xs text-gray-500">{{ usuarioRol }}</span>
-        </div>
+    <header class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+      <h2 class="text-2xl font-semibold text-primary text-center md:text-left">Inicio</h2>
 
-        <button
-          (click)="abrirLogoutPanel()"
-          class="flex items-center gap-1 text-gray-600 hover:text-red-600 transition"
-        >
+      <div class="flex w-full md:w-auto justify-center md:justify-end">
+        <button (click)="abrirLogoutPanel()"
+          class="flex items-center gap-1 text-gray-600 hover:text-red-600 transition">
           <span class="material-icons text-base">logout</span>
           <span class="text-sm font-medium">Cerrar sesión</span>
         </button>
       </div>
     </header>
 
-    <section class="grid grid-cols-3 gap-4 mb-6">
+    <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
       <div class="bg-white p-6 rounded-xl shadow">
         <h3 class="text-gray-500 text-sm font-semibold">Casos Registrados</h3>
         <p class="text-3xl font-semibold text-primary">{{ resumen?.casos ?? 0 }}</p>
-        <p class="text-xs text-gray-400">Actualizado desde backend</p>
+        <p class="text-sm text-gray-400">Actualizado desde backend</p>
       </div>
 
       <div class="bg-white p-6 rounded-xl shadow">
         <h3 class="text-gray-500 text-sm font-semibold">Controles Registrados</h3>
         <p class="text-3xl font-semibold text-secondary">{{ resumen?.controles ?? 0 }}</p>
-        <p class="text-xs text-gray-400">Actualizado desde backend</p>
+        <p class="text-sm text-gray-400">Actualizado desde backend</p>
       </div>
 
       <div class="bg-white p-6 rounded-xl shadow">
         <h3 class="text-gray-500 text-sm font-semibold">Total Participantes</h3>
         <p class="text-3xl font-semibold text-orange-500">{{ resumen?.total ?? 0 }}</p>
-        <p class="text-xs text-gray-400">Meta: {{ resumen?.meta ?? 0 }} participantes</p>
+        <p class="text-sm text-gray-400">Meta: {{ resumen?.meta ?? 0 }} participantes</p>
       </div>
     </section>
 
-    <section class="grid grid-cols-2 gap-4 mb-6">
+    <section class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
       <div class="bg-white p-4 rounded-xl shadow">
         <h3 class="text-primary font-semibold mb-2">Distribución por Edad</h3>
         <canvas id="edadChart"></canvas>
@@ -66,5 +51,4 @@
     </section>
   </main>
   <app-logout-panel></app-logout-panel>
-  <app-alert-panel></app-alert-panel>
 </div>

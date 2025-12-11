@@ -1,16 +1,11 @@
 <div class="flex min-h-screen bg-gray-50 text-gray-800">
   <!-- CONTENIDO PRINCIPAL -->
-  <main class="flex-1 p-6 max-w-[1200px] mx-auto">
+  <main class="flex-1 w-full max-w-screen-xl px-3 sm:px-6 py-4 md:py-6 mx-auto">
     <!-- ENCABEZADO -->
-    <header class="flex justify-between items-center mb-8">
+    <header class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
       <h2 class="text-2xl font-semibold text-primary">Reclutamiento</h2>
 
-      <div class="flex items-center gap-4">
-        <div class="flex flex-col text-right">
-          <span class="text-sm font-medium text-gray-800">{{ usuarioNombre }}</span>
-          <span class="text-xs text-gray-500">{{ usuarioRol }}</span>
-        </div>
-
+      <div class="flex w-full md:w-auto justify-center md:justify-end">
         <button (click)="abrirLogoutPanel(logoutPanel)"
           class="flex items-center gap-1 text-gray-600 hover:text-red-600 transition">
           <span class="material-icons text-base">logout</span>
@@ -20,13 +15,13 @@
     </header>
 
     <!-- TARJETAS DE MÉTRICAS -->
-    <section class="grid grid-cols-4 gap-6 mb-8">
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
       <div class="bg-white p-6 rounded-xl border-l-4 border-blue-400 shadow-sm flex flex-col justify-between">
         <div>
           <h3 class="text-gray-500 text-sm font-semibold mb-1">Meta Mensual</h3>
           <p class="text-3xl font-semibold text-blue-700">85</p>
         </div>
-        <p class="text-xs text-gray-400 mt-2">Participantes objetivo</p>
+        <p class="text-sm text-gray-400 mt-2">Participantes objetivo</p>
       </div>
 
       <div class="bg-white p-6 rounded-xl border-l-4 border-green-400 shadow-sm flex flex-col justify-between">
@@ -34,7 +29,7 @@
           <h3 class="text-gray-500 text-sm font-semibold mb-1">Reclutados</h3>
           <p class="text-3xl font-semibold text-green-600">{{ resumen?.total || 67 }}</p>
         </div>
-        <p class="text-xs text-gray-400 mt-2">Este mes</p>
+        <p class="text-sm text-gray-400 mt-2">Este mes</p>
       </div>
 
       <div class="bg-white p-6 rounded-xl border-l-4 border-orange-400 shadow-sm flex flex-col justify-between">
@@ -42,7 +37,7 @@
           <h3 class="text-gray-500 text-sm font-semibold mb-1">Completas</h3>
           <p class="text-3xl font-semibold text-orange-500">{{ resumen?.completas || 0 }}</p>
         </div>
-        <p class="text-xs text-gray-400 mt-2">Aceptación</p>
+        <p class="text-sm text-gray-400 mt-2">Aceptación</p>
       </div>
 
       <div class="bg-white p-6 rounded-xl border-l-4 border-purple-400 shadow-sm flex flex-col justify-between">
@@ -50,32 +45,32 @@
           <h3 class="text-gray-500 text-sm font-semibold mb-1">Incompletas</h3>
           <p class="text-3xl font-semibold text-purple-600">{{ resumen?.incompletas || 0 }}</p>
         </div>
-        <p class="text-xs text-gray-400 mt-2">En proceso</p>
+        <p class="text-sm text-gray-400 mt-2">En proceso</p>
       </div>
     </section>
 
     <!-- SECCIÓN PRINCIPAL: ACCIONES Y PROGRESO -->
-    <section class="grid grid-cols-2 gap-6 mt-6">
+    <section class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
 
       <!-- IZQUIERDA: ACCIONES RÁPIDAS -->
-      <div class="bg-white p-8 rounded-xl shadow-sm flex flex-col justify-center items-center gap-6 h-80">
+      <div class="bg-white p-8 rounded-xl shadow-sm flex flex-col justify-center items-center gap-6 min-h-[20rem]">
         <h3 class="text-primary font-semibold text-xl mb-2 text-center w-full">Acciones Rápidas</h3>
 
         <button (click)="abrirCRF()"
-          class="w-3/4 bg-blue-600 hover:bg-blue-700 text-white px-6 py-4 text-lg rounded-xl flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transition-all">
+          class="w-full sm:w-3/4 bg-blue-600 hover:bg-blue-700 text-white px-6 py-4 text-lg rounded-xl flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transition-all">
           <span class="material-icons text-2xl">assignment</span>
           Empezar nueva encuesta
         </button>
 
         <button *ngIf="auth.isPI()" (click)="abrirVariables()"
-          class="w-3/4 bg-purple-600 hover:bg-purple-700 text-white px-6 py-4 text-lg rounded-xl flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transition-all">
+          class="w-full sm:w-3/4 bg-purple-600 hover:bg-purple-700 text-white px-6 py-4 text-lg rounded-xl flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transition-all">
           <span class="material-icons text-2xl">tune</span>
           Personalizar formulario
         </button>
       </div>
 
       <!-- DERECHA: GRÁFICO DE RECLUTAMIENTO -->
-      <div class="bg-white p-6 rounded-xl shadow-sm h-80 flex flex-col">
+      <div class="bg-white p-6 rounded-xl shadow-sm h-80 min-h-[20rem] flex flex-col">
         <h3 class="text-primary font-semibold mb-2">Progreso Mensual de Reclutamiento</h3>
         <div class="flex-1 min-h-0 relative">
           <canvas id="progresoChart"></canvas>
@@ -93,5 +88,4 @@
 
   <!-- Modal Variables -->
   <app-variables-modal [open]="variablesOpen" (closed)="cerrarVariables()"></app-variables-modal>
-  <app-alert-panel></app-alert-panel>
 </div>
