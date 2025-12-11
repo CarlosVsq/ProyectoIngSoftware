@@ -219,7 +219,7 @@ class ParticipanteServiceTest {
                 any(Participante.class),
                 eq("CREAR"),
                 eq("Participante"),
-                contains("Se creó el participante ID:"));
+                contains("Se creo el participante ID:"));
     }
 
     // ==================== PRUEBAS GUARDAR RESPUESTAS ====================
@@ -244,7 +244,7 @@ class ParticipanteServiceTest {
         doNothing().when(auditoriaService).registrarAccion(any(Usuario.class), any(Participante.class), anyString(),
                 anyString(), anyString());
 
-        participanteService.guardarRespuestas(1, respuestasMap, 1);
+        participanteService.guardarRespuestas(1, respuestasMap, 1, null, null, null, null);
 
         verify(participanteRepository, times(1)).findById(1);
         verify(usuarioRepository, times(1)).findById(1);
@@ -264,7 +264,7 @@ class ParticipanteServiceTest {
         when(participanteRepository.findById(999)).thenReturn(Optional.empty());
 
         RuntimeException exception = assertThrows(RuntimeException.class,
-                () -> participanteService.guardarRespuestas(999, respuestasMap, 1));
+                () -> participanteService.guardarRespuestas(999, respuestasMap, 1, null, null, null, null));
 
         assertEquals("Participante no encontrado", exception.getMessage());
         verify(participanteRepository, times(1)).findById(999);
@@ -281,7 +281,7 @@ class ParticipanteServiceTest {
         when(usuarioRepository.findById(999)).thenReturn(Optional.empty());
 
         RuntimeException exception = assertThrows(RuntimeException.class,
-                () -> participanteService.guardarRespuestas(1, respuestasMap, 999));
+                () -> participanteService.guardarRespuestas(1, respuestasMap, 999, null, null, null, null));
 
         assertEquals("Usuario editor no encontrado", exception.getMessage());
         verify(participanteRepository, times(1)).findById(1);
@@ -290,7 +290,7 @@ class ParticipanteServiceTest {
     }
 
     @Test
-    @DisplayName("Lanzar excepción cuando variable no existe al guardar respuestas")
+    @DisplayName("Ignorar variable cuando no existe al guardar respuestas")
     void testGuardarRespuestas_VariableNoEncontrada() {
         Map<String, String> respuestasMap = new HashMap<>();
         respuestasMap.put("999", "valor");
@@ -299,10 +299,8 @@ class ParticipanteServiceTest {
         when(usuarioRepository.findById(1)).thenReturn(Optional.of(reclutador));
         when(variableRepository.findById(999)).thenReturn(Optional.empty());
 
-        RuntimeException exception = assertThrows(RuntimeException.class,
-                () -> participanteService.guardarRespuestas(1, respuestasMap, 1));
+        assertDoesNotThrow(() -> participanteService.guardarRespuestas(1, respuestasMap, 1, null, null, null, null));
 
-        assertEquals("Variable no encontrada", exception.getMessage());
         verify(variableRepository, times(1)).findById(999);
         verify(respuestaRepository, never()).save(any());
     }
@@ -324,7 +322,7 @@ class ParticipanteServiceTest {
         when(respuestaRepository.save(any(Respuesta.class))).thenAnswer(i -> i.getArgument(0));
         doNothing().when(auditoriaService).registrarAccion(any(), any(), anyString(), anyString(), anyString());
 
-        participanteService.guardarRespuestas(1, respuestasMap, 1);
+        participanteService.guardarRespuestas(1, respuestasMap, 1, null, null, null, null);
 
         verify(respuestaRepository, times(2)).save(any(Respuesta.class));
     }
@@ -341,14 +339,14 @@ class ParticipanteServiceTest {
         when(respuestaRepository.save(any(Respuesta.class))).thenAnswer(i -> i.getArgument(0));
         doNothing().when(auditoriaService).registrarAccion(any(), any(), anyString(), anyString(), anyString());
 
-        participanteService.guardarRespuestas(1, respuestasMap, 1);
+        participanteService.guardarRespuestas(1, respuestasMap, 1, null, null, null, null);
 
         verify(auditoriaService, times(1)).registrarAccion(
                 eq(reclutador),
                 eq(participante),
                 eq("ACTUALIZAR"),
                 eq("Respuesta"),
-                contains("Se guardó respuesta para participante ID:"));
+                contains("Se guardo respuesta para participante ID:"));
     }
 
     // ==================== PRUEBAS OBTENER PARTICIPANTES ====================
