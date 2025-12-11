@@ -52,24 +52,7 @@ export class ReclutamientoComponent implements OnInit, AfterViewInit {
   ngOnInit(): void {
     this.usuarioNombre = this.auth.getUserName();
     this.usuarioRol = this.auth.getUserRole();
-    this.dashboard.getResumen().subscribe({
-      next: (res: { data: DashboardResumen }) => {
-        this.resumen = res.data;
-        if (this.chart) {
-          this.chart.data.datasets[0].data = [
-            this.resumen.casos,
-            this.resumen.controles,
-            this.resumen.completas + this.resumen.incompletas
-          ];
-          this.chart.update();
-        } else {
-          this.renderChart();
-        }
-      },
-      error: () => {
-        // deja números mock si falla
-      }
-    });
+    this.cargarResumen();
 
     // Cargar schema primero para poder validar estados
     this.crfService.getSchema().subscribe(s => {
@@ -95,6 +78,27 @@ export class ReclutamientoComponent implements OnInit, AfterViewInit {
     });
   }
 
+  cargarResumen() {
+    this.dashboard.getResumen().subscribe({
+      next: (res: { data: DashboardResumen }) => {
+        this.resumen = res.data;
+        if (this.chart) {
+          this.chart.data.datasets[0].data = [
+            this.resumen.casos,
+            this.resumen.controles,
+            this.resumen.completas + this.resumen.incompletas
+          ];
+          this.chart.update();
+        } else {
+          this.renderChart();
+        }
+      },
+      error: () => {
+        // deja números mock si falla
+      }
+    });
+  }
+
   abrirLogoutPanel(panel: LogoutPanelComponent) {
     panel.showPanel();
   }
@@ -112,6 +116,7 @@ export class ReclutamientoComponent implements OnInit, AfterViewInit {
     this.crfPreload = null;
     this.crfParticipantId = null;
     this.cargarCrfs(); // Refrescar lista al cerrar
+    this.cargarResumen(); // Refrescar metricas
   }
 
   abrirVariables() {
