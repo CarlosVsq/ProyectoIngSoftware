@@ -51,7 +51,7 @@
       <div *ngIf="!schema" class="flex justify-center py-10">
         <span class="animate-spin h-8 w-8 border-4 border-blue-500 rounded-full border-t-transparent"></span>
       </div>
-      
+
       <!-- Renderizado de Schema -->
       <ng-container *ngIf="schema">
         <ng-container *ngFor="let s of schema.sections">
@@ -64,7 +64,8 @@
             <div class="grid md:grid-cols-2 gap-x-8 gap-y-6">
               <ng-container *ngFor="let f of s.fields">
                 <ng-container *ngIf="showField(f)">
-      
+                  <!-- Wrapper del campo -->
+                  <div class="group relative">
 
 
     <!-- Footer -->
