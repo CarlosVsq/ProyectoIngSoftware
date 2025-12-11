@@ -19,5 +19,37 @@
       </button>
     </div>
 
+    <form class="p-8 space-y-10 max-h-[80vh] overflow-y-auto bg-gray-50/30 scrollbar-thin scrollbar-thumb-gray-200"
+      [formGroup]="form">
+
+      <!-- Selector de Grupo -->
+      <div class="bg-blue-50/50 p-4 rounded-xl border border-blue-100 flex flex-col md:flex-row md:items-center gap-4">
+        <span class="text-sm font-semibold text-blue-900">Asignar Grupo:</span>
+        <div class="flex gap-4">
+          <label class="cursor-pointer relative group">
+            <input type="radio" value="caso" formControlName="grupo" class="peer sr-only" />
+            <span
+              class="px-4 py-2 rounded-lg text-sm border border-transparent peer-checked:bg-white peer-checked:shadow-sm peer-checked:text-blue-700 peer-checked:font-semibold text-gray-500 hover:text-gray-700 transition-all flex items-center gap-2">
+              <span
+                class="w-2 h-2 rounded-full bg-blue-500 opacity-0 peer-checked:opacity-100 transition-opacity"></span>
+              Caso
+            </span>
+          </label>
+          <label class="cursor-pointer relative group">
+            <input type="radio" value="control" formControlName="grupo" class="peer sr-only" />
+            <span
+              class="px-4 py-2 rounded-lg text-sm border border-transparent peer-checked:bg-white peer-checked:shadow-sm peer-checked:text-purple-700 peer-checked:font-semibold text-gray-500 hover:text-gray-700 transition-all flex items-center gap-2">
+              <span
+                class="w-2 h-2 rounded-full bg-purple-500 opacity-0 peer-checked:opacity-100 transition-opacity"></span>
+              Control
+            </span>
+          </label>
+        </div>
+      </div>
+      
+
+
+
+
   </div>
 </div>
