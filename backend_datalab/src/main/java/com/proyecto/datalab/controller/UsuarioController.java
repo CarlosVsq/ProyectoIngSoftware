@@ -49,8 +49,7 @@ public class UsuarioController {
                 request.getNombre(),
                 request.getCorreo(),
                 request.getContrasena(),
-                request.getRolId()
-        );
+                request.getRolId());
     }
 
     // --- DELETE ---
@@ -62,7 +61,8 @@ public class UsuarioController {
 
     // --- PUT ---
     @PutMapping("/{id}")
-    public ResponseEntity<Usuario> actualizarUsuario(@PathVariable Integer id,@RequestBody UsuarioUpdateRequest request) {
+    public ResponseEntity<Usuario> actualizarUsuario(@PathVariable Integer id,
+            @RequestBody UsuarioUpdateRequest request) {
         try {
             Usuario usuarioActualizado = usuarioService.actualizarUsuario(id, request);
             return ResponseEntity.ok(usuarioActualizado); // 200 OK
@@ -71,6 +71,17 @@ public class UsuarioController {
                 return ResponseEntity.notFound().build(); // 404 Not Found
             }
             return ResponseEntity.badRequest().body(null); // 400 Bad Request
+        }
+    }
+
+    // --- PATCH (Toggle Estado) ---
+    @org.springframework.web.bind.annotation.PatchMapping("/{id}/estado")
+    public ResponseEntity<Usuario> cambiarEstado(@PathVariable Integer id) {
+        try {
+            Usuario usuario = usuarioService.toggleEstado(id);
+            return ResponseEntity.ok(usuario);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
         }
     }
 }

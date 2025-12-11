@@ -37,7 +37,16 @@
                 {{ u.estado === 'ACTIVO' ? 'Activo' : 'Inactivo' }}
               </span>
               <button *ngIf="usuarioRol === 'Investigadora Principal' || usuarioRol === 'Administrador'"
-                (click)="eliminarUsuario(u.idUsuario!)" class="text-red-500 hover:text-red-700">
+                (click)="toggleEstadoUsuario(u)"
+                class="text-xs px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md transition-colors"
+                title="{{ u.estado === 'ACTIVO' ? 'Bloquear Acceso' : 'Desbloquear Acceso' }}">
+                <span class="material-icons text-sm align-middle">{{ u.estado === 'ACTIVO' ? 'block' : 'check_circle'
+                  }}</span>
+              </button>
+
+              <button *ngIf="usuarioRol === 'Investigadora Principal' || usuarioRol === 'Administrador'"
+                (click)="eliminarUsuario(u.idUsuario!)" class="text-red-500 hover:text-red-700"
+                title="Eliminar Usuario">
                 <span class="material-icons text-sm">delete</span>
               </button>
             </div>
@@ -106,21 +115,35 @@
         <tbody>
           <tr *ngFor="let role of roles" class="border-b hover:bg-gray-50">
             <td class="py-2 font-medium">{{ role.nombreRol }}</td>
+
+            <!-- Logic: If role is Investigadora Principal, checkbox is checked and disabled. Else, normal behavior -->
             <td class="text-center">
-              <input type="checkbox" [checked]="role.permisoVerDatos" (change)="togglePermiso(role, 'permisoVerDatos')"
-                class="accent-blue-600 cursor-pointer">
+              <input type="checkbox"
+                [checked]="role.nombreRol === 'Investigadora Principal' ? true : role.permisoVerDatos"
+                [disabled]="role.nombreRol === 'Investigadora Principal'"
+                (change)="togglePermiso(role, 'permisoVerDatos')"
+                class="accent-blue-600 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
             </td>
             <td class="text-center">
-              <input type="checkbox" [checked]="role.permisoModificar"
-                (change)="togglePermiso(role, 'permisoModificar')" class="accent-blue-600 cursor-pointer">
+              <input type="checkbox"
+                [checked]="role.nombreRol === 'Investigadora Principal' ? true : role.permisoModificar"
+                [disabled]="role.nombreRol === 'Investigadora Principal'"
+                (change)="togglePermiso(role, 'permisoModificar')"
+                class="accent-blue-600 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
             </td>
             <td class="text-center">
-              <input type="checkbox" [checked]="role.permisoExportar" (change)="togglePermiso(role, 'permisoExportar')"
-                class="accent-blue-600 cursor-pointer">
+              <input type="checkbox"
+                [checked]="role.nombreRol === 'Investigadora Principal' ? true : role.permisoExportar"
+                [disabled]="role.nombreRol === 'Investigadora Principal'"
+                (change)="togglePermiso(role, 'permisoExportar')"
+                class="accent-blue-600 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
             </td>
             <td class="text-center">
-              <input type="checkbox" [checked]="role.permisoAdministrar"
-                (change)="togglePermiso(role, 'permisoAdministrar')" class="accent-blue-600 cursor-pointer">
+              <input type="checkbox"
+                [checked]="role.nombreRol === 'Investigadora Principal' ? true : role.permisoAdministrar"
+                [disabled]="role.nombreRol === 'Investigadora Principal'"
+                (change)="togglePermiso(role, 'permisoAdministrar')"
+                class="accent-blue-600 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
             </td>
           </tr>
         </tbody>

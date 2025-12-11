@@ -36,4 +36,8 @@ export class UsuarioService {
     borrarUsuario(id: number): Observable<void> {
         return this.http.delete<void>(`${this.apiUrl}/${id}`);
     }
+
+    cambiarEstado(id: number): Observable<Usuario> {
+        return this.http.patch<Usuario>(`${this.apiUrl}/${id}/estado`, {});
+    }
 }

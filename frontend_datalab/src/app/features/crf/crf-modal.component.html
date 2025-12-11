@@ -79,26 +79,27 @@
                       <!-- Text / Number / Date -->
                       <input *ngSwitchCase="'text'" type="text"
                         class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none placeholder-gray-300 hover:border-gray-300"
-                        [placeholder]="f.placeholder || 'Escribe aquí...'" [formControlName]="f.id" />
+                        [class.border-red-500]="isFieldInvalid(f.id)" [placeholder]="f.placeholder || 'Escribe aquí...'"
+                        [formControlName]="f.id" />
 
                       <input *ngSwitchCase="'number'" type="number"
                         class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none placeholder-gray-300 hover:border-gray-300"
-                        [formControlName]="f.id" />
+                        [class.border-red-500]="isFieldInvalid(f.id)" [formControlName]="f.id" />
 
                       <input *ngSwitchCase="'date'" type="date"
                         class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none text-gray-500 hover:border-gray-300"
-                        [formControlName]="f.id" />
+                        [class.border-red-500]="isFieldInvalid(f.id)" [formControlName]="f.id" />
 
                       <!-- Textarea -->
                       <textarea *ngSwitchCase="'textarea'" rows="3"
                         class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none placeholder-gray-300 hover:border-gray-300 resize-none"
-                        [formControlName]="f.id"></textarea>
+                        [class.border-red-500]="isFieldInvalid(f.id)" [formControlName]="f.id"></textarea>
 
                       <!-- Select -->
                       <div *ngSwitchCase="'select'" class="relative">
                         <select
                           class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none appearance-none hover:border-gray-300 cursor-pointer"
-                          [formControlName]="f.id">
+                          [class.border-red-500]="isFieldInvalid(f.id)" [formControlName]="f.id">
                           <option [ngValue]="null" class="text-gray-300">Seleccionar opción...</option>
                           <option *ngFor="let o of f.options" [value]="o">{{ o }}</option>
                         </select>
@@ -113,7 +114,8 @@
                       <label class="cursor-pointer relative" *ngFor="let o of f.options">
                         <input type="radio" [value]="o" [formControlName]="f.id" class="peer sr-only" />
                         <span
-                          class="px-3 py-1.5 rounded-lg border border-gray-200 text-sm text-gray-600 bg-white peer-checked:bg-blue-50 peer-checked:text-blue-700 peer-checked:border-blue-200 transition-all hover:bg-gray-50 inline-block">
+                          class="px-3 py-1.5 rounded-lg border border-gray-200 text-sm text-gray-600 bg-white peer-checked:bg-blue-50 peer-checked:text-blue-700 peer-checked:border-blue-200 transition-all hover:bg-gray-50 inline-block"
+                          [class.border-red-200]="isFieldInvalid(f.id)" [class.bg-red-50]="isFieldInvalid(f.id)">
                           {{ o }}
                         </span>
                       </label>
@@ -125,17 +127,21 @@
                         <input type="checkbox" [checked]="(form.get(f.id)?.value || []).includes(o)"
                           (change)="onCheckboxChange($event, f.id, o)" class="peer sr-only" />
                         <span
-                          class="px-3 py-1.5 rounded-lg border border-gray-200 text-sm text-gray-600 bg-white peer-checked:bg-blue-50 peer-checked:text-blue-700 peer-checked:border-blue-200 transition-all hover:bg-gray-50 inline-block">
+                          class="px-3 py-1.5 rounded-lg border border-gray-200 text-sm text-gray-600 bg-white peer-checked:bg-blue-50 peer-checked:text-blue-700 peer-checked:border-blue-200 transition-all hover:bg-gray-50 inline-block"
+                          [class.border-red-200]="isFieldInvalid(f.id)" [class.bg-red-50]="isFieldInvalid(f.id)">
                           {{ o }}
                         </span>
                       </label>
                     </div>
 
                     <!-- Error msg -->
-                    <p class="text-xs text-red-500 mt-1.5 flex items-center gap-1 animate-pulse"
-                      *ngIf="form.get(f.id)?.invalid && (form.get(f.id)?.touched || form.get(f.id)?.dirty || isSubmitting) && f.required">
-                      <span class="material-icons text-[10px]">error</span> Requerido
-                    </p>
+                    <div *ngIf="isFieldInvalid(f.id)"
+                      class="text-xs text-red-500 mt-1.5 flex items-center gap-1 animate-pulse">
+                      <span class="material-icons text-[10px]">error</span>
+                      <span *ngIf="form.get(f.id)?.hasError('required')">Este campo es requerido.</span>
+                      <span *ngIf="form.get(f.id)?.hasError('min')">El valor es muy bajo.</span>
+                      <span *ngIf="form.get(f.id)?.hasError('max')">El valor es muy alto.</span>
+                    </div>
                   </div>
                 </ng-container>
               </ng-container>

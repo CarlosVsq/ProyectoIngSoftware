@@ -105,6 +105,8 @@ export class CrfModalComponent implements OnInit, OnDestroy, OnChanges {
     if (this.preloadData) {
       this.hydrateForm(this.preloadData);
     }
+
+    this.setupImcCalculation();
   }
 
   private hydrateForm(data: any): void {
@@ -143,6 +145,41 @@ export class CrfModalComponent implements OnInit, OnDestroy, OnChanges {
 
     this.form.patchValue(patch);
     console.log('Form hydrated', this.form.value);
+  }
+
+  // Helper for template
+  isFieldInvalid(fieldId: string): boolean {
+    const control = this.form?.get(fieldId);
+    if (!control) return false;
+    // Show error if touched or if form was submitted
+    return control.invalid && (control.touched || this.isSubmitting);
+  }
+
+  private setupImcCalculation(): void {
+    const pesoControl = this.form.get('PESO');
+    const tallaControl = this.form.get('TALLA');
+    const imcControl = this.form.get('IMC');
+
+    if (pesoControl && tallaControl && imcControl) {
+      const calculate = () => {
+        const peso = parseFloat(pesoControl.value);
+        const talla = parseFloat(tallaControl.value);
+
+        if (!isNaN(peso) && !isNaN(talla) && talla > 0) {
+          // Talla in cm to meters
+          const tallaM = talla / 100;
+          const imc = peso / (tallaM * tallaM);
+          // Round to 2 decimals
+          imcControl.setValue(imc.toFixed(2));
+        } else {
+          // Optional: clear IMC if inputs are invalid/empty? 
+          // imcControl.setValue(''); 
+        }
+      };
+
+      pesoControl.valueChanges.subscribe(calculate);
+      tallaControl.valueChanges.subscribe(calculate);
+    }
   }
 
   private buildValidatorsForField(field: CRFField): ValidatorFn[] {

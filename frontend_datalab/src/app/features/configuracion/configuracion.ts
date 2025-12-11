@@ -91,6 +91,20 @@ export class ConfiguracionComponent implements OnInit {
     this.usuarioService.borrarUsuario(id).subscribe(() => this.loadData());
   }
 
+  toggleEstadoUsuario(user: Usuario) {
+    if (!user.idUsuario) return;
+    const action = user.estado === 'ACTIVO' ? 'bloquear' : 'desbloquear';
+    if (!confirm(`¿Estás seguro de ${action} a ${user.nombreCompleto}?`)) return;
+
+    this.usuarioService.cambiarEstado(user.idUsuario).subscribe({
+      next: () => {
+        alert(`Usuario ${action === 'bloquear' ? 'bloqueado' : 'desbloqueado'} exitosamente`);
+        this.loadData();
+      },
+      error: () => alert('Error al cambiar el estado del usuario')
+    });
+  }
+
   // Permissions Management
   togglePermiso(rol: Rol, permiso: keyof Rol) {
     // Because simple boolean toggle might not trigger change detection deeply or reference update
