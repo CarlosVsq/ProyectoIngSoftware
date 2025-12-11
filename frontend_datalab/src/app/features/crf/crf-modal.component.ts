@@ -230,27 +230,36 @@ export class CrfModalComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   // Guardados
+  // Guardados
   guardarBorrador(): void {
-    const key = this.getDraftKey();
-    this.crf.saveDraft(key, { ...this.form.value, estado: 'borrador' });
-    this.lastAutoSaveAt = 'Borrador guardado manualmente';
-    alert('Borrador guardado');
+    // Guardar como incompleto en el sistema (backend)
+    this.saveToBackend(false);
   }
 
   guardarFinal(): void {
-    console.warn('Form invalid', this.form.value, this.form);
-    console.warn('Requeridos faltantes', this.missingRequiredLabels);
+    const key = this.getDraftKey();
+    
+    // Check strict completeness (all fields)
+    const missing = this.getAllMissingFields();
+    if (missing.length > 0) {
+      console.warn('Faltan campos para finalizar', missing);
+      this.missingRequiredLabels = missing;
+      this.crf.saveDraft(key, { ...this.form.value, estado: 'borrador' });
+      alert(`No se puede finalizar. La ficha debe estar 100% completa.\nFaltan campos: ${missing.join(', ')}`);
+      
+      // Marcar controles vacíos como touched para feedback visual si tienen validadores, 
+      // o invalidar manualmente si queremos forzar el rojo.
+      this.markMissingAsTouched();
+      return;
+    }
 
+    this.saveToBackend(true);
+  }
+
+  private saveToBackend(isFinal: boolean): void {
     if (this.isSubmitting) return;
     this.isSubmitting = true;
     const key = this.getDraftKey();
-    if (this.form.invalid) {
-      this.missingRequiredLabels = this.getMissingRequiredFields();
-      this.crf.saveDraft(key, { ...this.form.value, estado: 'borrador' });
-      alert(`Guardado como borrador. Faltan campos: ${this.missingRequiredLabels.join(', ')}`);
-      this.isSubmitting = false;
-      return;
-    }
 
     const payload = {
       nombreCompleto: this.form.get('nombre_completo')?.value || '',
@@ -258,6 +267,15 @@ export class CrfModalComponent implements OnInit, OnDestroy, OnChanges {
       direccion: this.form.get('direccion')?.value || '',
       grupo: (this.form.get('grupo')?.value || 'CONTROL').toString().toUpperCase()
     };
+
+    // Validar datos mínimos para crear participante si no existe
+    if (!this.participantId) {
+      if (!payload.nombreCompleto) {
+        alert('Debes ingresar al menos el Nombre Completo para guardar.');
+        this.isSubmitting = false;
+        return;
+      }
+    }
 
     const respuestas = this.buildRespuestasMap();
 
@@ -269,10 +287,18 @@ export class CrfModalComponent implements OnInit, OnDestroy, OnChanges {
         grupo: payload.grupo
       }).subscribe({
         next: () => {
-          this.crf.saveFinalLocal(key, { ...this.form.value, estado: 'completo', idParticipante });
-          alert('CRF guardado');
+          if (isFinal) {
+            this.crf.saveFinalLocal(key, { ...this.form.value, estado: 'completo', idParticipante });
+            alert('CRF Finalizado y Guardado exitosamente.');
+            this.close();
+          } else {
+            // Actualizar estado local
+            this.participantId = idParticipante; 
+            this.crf.saveDraft(key, { ...this.form.value, estado: 'borrador', idParticipante });
+            alert('Guardado como Incompleto en el sistema.');
+            this.lastAutoSaveAt = 'Guardado en sistema: ' + new Date().toLocaleTimeString();
+          }
           this.isSubmitting = false;
-          this.close();
         },
         error: (err) => {
           const msg = err?.error?.message || 'No se pudieron guardar las respuestas.';
@@ -292,7 +318,7 @@ export class CrfModalComponent implements OnInit, OnDestroy, OnChanges {
     this.crf.crearParticipante(payload).subscribe({
       next: (res) => guardarRespuestas(res.idParticipante),
       error: (err) => {
-        const msg = err?.error?.message || 'No se pudo crear el participante. Verifica los datos.';
+        const msg = err?.error?.message || 'No se pudo crear el participante. Verifica los datos básicos.';
         alert(msg);
         this.isSubmitting = false;
       }
@@ -309,32 +335,50 @@ export class CrfModalComponent implements OnInit, OnDestroy, OnChanges {
     }, 15000); // 15 segundos
   }
 
-  private getMissingRequiredFields(): string[] {
+  // Helper para validar completitud absoluta
+  private getAllMissingFields(): string[] {
     const missing: string[] = [];
 
-    // Controles base (no vienen en el schema)
+    // Controles base
     const baseRequired: Array<{ id: string; label: string }> = [
       { id: 'grupo', label: 'Grupo' },
+      { id: 'nombre_completo', label: 'Nombre Completo' }
     ];
     baseRequired.forEach(({ id, label }) => {
       const control = this.form.get(id);
-      if (control && control.invalid) {
+      if (!control || !control.value) {
         missing.push(label);
       }
     });
 
-    // Controles dinámicos del schema
     if (this.schema && this.schema.sections) {
       this.schema.sections.forEach(section => {
+        // Skip hidden sections
+        if (!this.showSection(section)) return;
+
         section.fields.forEach(field => {
+          // Skip hidden fields
+          if (!this.showField(field)) return;
+
           const control = this.form.get(field.id);
-          if (field.required && control) {
+          // Check value emptiness regardless of Validators.required
+          if (control) {
+            const val = control.value;
             const isArray = control instanceof FormArray;
-            const isMissing = isArray
-              ? (control.value || []).length === 0
-              : control.invalid;
-            if (isMissing) {
+            
+            let isEmpty = false;
+            if (isArray) {
+              isEmpty = (val || []).length === 0;
+            } else {
+              isEmpty = (val === null || val === undefined || val === '');
+            }
+
+            if (isEmpty) {
               missing.push(field.label);
+              // Optional: set explicit error for visual feedback
+              if (!control.errors) {
+                 control.setErrors({ 'required': true }); 
+              }
             }
           }
         });
@@ -342,6 +386,18 @@ export class CrfModalComponent implements OnInit, OnDestroy, OnChanges {
     }
     return missing;
   }
+
+  private markMissingAsTouched() {
+    Object.keys(this.form.controls).forEach(key => {
+       this.form.get(key)?.markAsTouched();
+    });
+  }
+
+  // Renamed/Replaced old getMissingRequiredFields
+  private getMissingRequiredFields(): string[] {
+     return this.getAllMissingFields();
+  }
+
 
   private buildRespuestasMap(): Record<string, string> {
     const map: Record<string, string> = {};

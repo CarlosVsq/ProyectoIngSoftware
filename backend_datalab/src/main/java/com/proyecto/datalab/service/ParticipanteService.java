@@ -193,9 +193,19 @@ public class ParticipanteService {
 
         private boolean isFichaCompleta(Map<Integer, String> respuestasActuales, GrupoParticipante grupo) {
                 List<Variable> requeridas = variableRepository.findAll().stream()
-                                .filter(Variable::isEsObligatoria)
-                                .filter(v -> aplicaAGrupo(v.getAplicaA(), grupo))
+                                // .filter(Variable::isEsObligatoria) // Ahora se requieren todas para estar
+                                // COMPLETA
+                                .filter(v -> {
+                                        String codigo = v.getCodigoVariable() != null
+                                                        ? v.getCodigoVariable().toUpperCase()
+                                                        : "";
+                                        // Excluir metadatos o campos generados automaticos
+                                        if (codigo.equals("CODIGO") || codigo.equals("CODIGO_PARTICIPANTE"))
+                                                return false;
+                                        return aplicaAGrupo(v.getAplicaA(), grupo);
+                                })
                                 .toList();
+
                 for (Variable v : requeridas) {
                         String val = respuestasActuales.get(v.getIdVariable());
                         if (val == null || val.trim().isEmpty()) {
