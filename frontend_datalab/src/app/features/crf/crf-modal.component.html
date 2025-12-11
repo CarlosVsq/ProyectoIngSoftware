@@ -73,9 +73,22 @@
                     </label>
                     <!-- Inputs -->
                     <ng-container [ngSwitch]="f.type">
+                      <!-- Text / Number / Date -->
+                      <input *ngSwitchCase="'text'" type="text"
+                        class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none placeholder-gray-300 hover:border-gray-300"
+                        [class.border-red-500]="isFieldInvalid(f.id)" [placeholder]="f.placeholder || 'Escribe aquí...'"
+                        [formControlName]="f.id" />
+
+                      <input *ngSwitchCase="'number'" type="number"
+                        class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none placeholder-gray-300 hover:border-gray-300"
+                        [class.border-red-500]="isFieldInvalid(f.id)" [formControlName]="f.id" />
+
+                      <input *ngSwitchCase="'date'" type="date"
+                        class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none text-gray-500 hover:border-gray-300"
+                        [class.border-red-500]="isFieldInvalid(f.id)" [formControlName]="f.id" />
 
 
-                      
+
 
     <!-- Footer -->
       <div class="flex items-center justify-between pt-6 border-t border-gray-100 mt-4">
