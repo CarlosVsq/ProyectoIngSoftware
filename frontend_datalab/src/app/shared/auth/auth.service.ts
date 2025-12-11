@@ -15,7 +15,7 @@ export class AuthService {
   private readonly TOKEN_KEY = 'datalab_access_token';
   private readonly USER_KEY = 'datalab_user';
 
-  constructor(private http: HttpClient, private router: Router) {}
+  constructor(private http: HttpClient, private router: Router) { }
 
   login(correo: string, contrasenia: string): Observable<AuthResponse> {
     return this.http.post<ApiResponse<AuthResponse>>(`${this.API_BASE}/auth/login`, { correo, contrasenia })
@@ -99,5 +99,14 @@ export class AuthService {
   private setSession(res: AuthResponse) {
     localStorage.setItem(this.TOKEN_KEY, res.accessToken);
     localStorage.setItem(this.USER_KEY, JSON.stringify(res.usuario));
+  }
+
+  // --- Password Recovery ---
+  forgotPassword(email: string): Observable<any> {
+    return this.http.post<any>(`${this.API_BASE}/auth/forgot-password`, { email });
+  }
+
+  resetPassword(token: string, newPassword: string): Observable<any> {
+    return this.http.post<any>(`${this.API_BASE}/auth/reset-password`, { token, newPassword });
   }
 }

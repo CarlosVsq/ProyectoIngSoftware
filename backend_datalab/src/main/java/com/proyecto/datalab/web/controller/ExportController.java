@@ -138,6 +138,56 @@ public class ExportController {
         table.addCell(value);
     }
 
+    @GetMapping("/leyenda-pdf")
+    @Transactional(readOnly = true)
+    public ResponseEntity<byte[]> exportLegendPdf() {
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            com.itextpdf.text.Document document = new com.itextpdf.text.Document();
+            com.itextpdf.text.pdf.PdfWriter.getInstance(document, baos);
+            document.open();
+
+            com.itextpdf.text.Font titleFont = new com.itextpdf.text.Font(com.itextpdf.text.Font.FontFamily.HELVETICA,
+                    16, com.itextpdf.text.Font.BOLD);
+            com.itextpdf.text.Paragraph title = new com.itextpdf.text.Paragraph(
+                    "Leyenda de Variables - Diccionario de Datos",
+                    titleFont);
+            title.setAlignment(com.itextpdf.text.Element.ALIGN_CENTER);
+            document.add(title);
+            document.add(new com.itextpdf.text.Paragraph(" "));
+
+            com.itextpdf.text.pdf.PdfPTable table = new com.itextpdf.text.pdf.PdfPTable(3);
+            table.setWidthPercentage(100);
+            table.setWidths(new float[] { 2, 6, 2 }); // Relative widths
+
+            addHeaderCell(table, "Código Variable");
+            addHeaderCell(table, "Descripción / Enunciado");
+            addHeaderCell(table, "Tipo de Dato");
+
+            List<Variable> allVariables = variableRepository.findAll().stream()
+                    .sorted(Comparator.comparing(Variable::getOrdenEnunciado,
+                            Comparator.nullsLast(Comparator.naturalOrder())))
+                    .collect(Collectors.toList());
+
+            for (Variable v : allVariables) {
+                addBodyCell(table, safe(v.getCodigoVariable()));
+                addBodyCell(table, safe(v.getEnunciado()));
+                addBodyCell(table, safe(v.getTipoDato()));
+            }
+
+            document.add(table);
+            document.close();
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"leyenda_variables.pdf\"")
+                    .contentType(MediaType.APPLICATION_PDF)
+                    .body(baos.toByteArray());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
     @GetMapping("/excel")
     @Transactional(readOnly = true)
     public ResponseEntity<byte[]> exportToExcel() {

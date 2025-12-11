@@ -28,8 +28,9 @@ export class LoginComponent implements OnInit {
    * Si es así, lo manda directo al dashboard.
    */
   ngOnInit(): void {
-    // Force logout when visiting login page to ensure user sees login screen
-    this.auth.logout();
+    if (this.auth.isAuthenticated()) {
+      this.router.navigate(['/dashboard']);
+    }
   }
 
   onSubmit() {

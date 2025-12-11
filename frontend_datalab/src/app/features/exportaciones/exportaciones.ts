@@ -91,4 +91,8 @@ export class ExportacionesComponent implements AfterViewInit {
   descargarCsv(): void {
     window.open('http://localhost:8080/api/export/csv', '_blank');
   }
+
+  descargarLeyenda(): void {
+    window.open('http://localhost:8080/api/export/leyenda-pdf', '_blank');
+  }
 }

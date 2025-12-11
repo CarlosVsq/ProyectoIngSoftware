@@ -7,6 +7,7 @@ import { CRFSchema } from '../crf/schema';
 import { CrfModalComponent } from '../crf/crf-modal.component';
 import { ParticipanteService } from '../../shared/participantes/participante.service';
 import { AuthService } from '../../shared/auth/auth.service';
+import { ComentarioService } from '../../shared/comentarios/comentario.service';
 
 @Component({
     selector: 'app-lista-participantes',
@@ -38,11 +39,19 @@ export class ListaParticipantesComponent implements OnInit {
     crfPreload: any = null;
     crfParticipantId: number | null = null;
 
+    // Comentarios Logic
+    showCommentsModal = false;
+    currentParticipanteForComments: any = null;
+    comentarios: any[] = [];
+    newCommentText = '';
+    isSendingComment = false;
+
     constructor(
         private crfService: CrfService,
         public auth: AuthService,
         private router: Router,
-        private participanteService: ParticipanteService
+        private participanteService: ParticipanteService,
+        private comentarioService: ComentarioService
     ) { }
 
     ngOnInit(): void {
@@ -213,5 +222,38 @@ export class ListaParticipantesComponent implements OnInit {
                 error: () => alert('No se pudo eliminar')
             });
         }
+    }
+
+    // --- Comment Logic ---
+
+    abrirComentarios(p: any) {
+        this.currentParticipanteForComments = p;
+        this.newCommentText = '';
+        this.comentarioService.listarComentarios(p.idParticipante).subscribe(data => {
+            this.comentarios = data;
+            this.showCommentsModal = true;
+        });
+    }
+
+    cerrarComentarios() {
+        this.showCommentsModal = false;
+        this.currentParticipanteForComments = null;
+    }
+
+    enviarComentario() {
+        if (!this.newCommentText.trim()) return;
+        this.isSendingComment = true;
+        this.comentarioService.agregarComentario(this.currentParticipanteForComments.idParticipante, this.newCommentText)
+            .subscribe({
+                next: (nuevo) => {
+                    this.comentarios.unshift(nuevo); // Add to top
+                    this.newCommentText = '';
+                    this.isSendingComment = false;
+                },
+                error: () => {
+                    alert('Error al guardar comentario');
+                    this.isSendingComment = false;
+                }
+            });
     }
 }
