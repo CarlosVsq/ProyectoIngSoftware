@@ -127,10 +127,21 @@
                         </span>
                       </label>
                     </div>
-
-
-
-
+                    <!-- Error msg -->
+                    <div *ngIf="isFieldInvalid(f.id)"
+                      class="text-xs text-red-500 mt-1.5 flex items-center gap-1 animate-pulse">
+                      <span class="material-icons text-[10px]">error</span>
+                      <span *ngIf="form.get(f.id)?.hasError('required')">Este campo es requerido.</span>
+                      <span *ngIf="form.get(f.id)?.hasError('min')">El valor es muy bajo.</span>
+                      <span *ngIf="form.get(f.id)?.hasError('max')">El valor es muy alto.</span>
+                    </div>
+                  </div>
+                </ng-container>
+              </ng-container>
+            </div>
+          </section>
+        </ng-container>
+      </ng-container>
 
     <!-- Footer -->
       <div class="flex items-center justify-between pt-6 border-t border-gray-100 mt-4">
