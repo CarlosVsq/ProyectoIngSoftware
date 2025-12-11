@@ -71,6 +71,11 @@
                       class="block text-sm font-medium text-gray-700 mb-2 transition-colors group-hover:text-primary">
                       {{ f.label }} <span *ngIf="f.required" class="text-red-400 text-xs align-top">*</span>
                     </label>
+                    <!-- Inputs -->
+                    <ng-container [ngSwitch]="f.type">
+
+
+                      
 
     <!-- Footer -->
       <div class="flex items-center justify-between pt-6 border-t border-gray-100 mt-4">
