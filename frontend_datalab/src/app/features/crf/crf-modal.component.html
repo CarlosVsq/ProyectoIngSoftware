@@ -103,6 +103,18 @@
                       </div>
 
                     </ng-container>
+                    
+                     <!-- Radio -->
+                    <div *ngIf="f.type==='radio'" class="flex flex-wrap gap-2">
+                      <label class="cursor-pointer relative" *ngFor="let o of f.options">
+                        <input type="radio" [value]="o" [formControlName]="f.id" class="peer sr-only" />
+                        <span
+                          class="px-3 py-1.5 rounded-lg border border-gray-200 text-sm text-gray-600 bg-white peer-checked:bg-blue-50 peer-checked:text-blue-700 peer-checked:border-blue-200 transition-all hover:bg-gray-50 inline-block"
+                          [class.border-red-200]="isFieldInvalid(f.id)" [class.bg-red-50]="isFieldInvalid(f.id)">
+                          {{ o }}
+                        </span>
+                      </label>
+                    </div>
 
 
 
