@@ -128,7 +128,130 @@ export class CrfService {
       }
       const section = sections.get(title)!;
 
-      
+      // Filter out auto-generated or unwanted fields
+      if (codigo.toUpperCase() === 'CODIGO_PARTICIPANTE' || codigo.toUpperCase() === 'CODIGO') return;
+
+      const type = this.mapTipoDato(row.tipo_dato || row.tipoDato);
+      let options = this.parseOptions(row.opciones);
+      const groupVisibility = this.mapAplica(row.aplica_a || row.aplicaA);
+      const validation = this.parseValidation(row.regla_validacion || row.reglaValidacion);
+      const orden = this.toNumber(row.orden_enunciado ?? row.ordenEnunciado, 0);
+
+      // Force 'Otro' for SEXO if not present
+      if (codigo.toUpperCase() === 'SEXO' && options) {
+        if (!options.some(o => o.toLowerCase() === 'otro' || o.toLowerCase() === 'otros')) {
+          options.push('Otro');
+        }
+      }
+
+      section.fields.push({
+        id: codigo,
+        label: row.enunciado || codigo,
+        type,
+        required: this.toBoolean(row.es_obligatoria ?? row.esObligatoria),
+        options,
+        groupVisibility,
+        validation
+      });
+
+      // Guarda el orden más bajo por sección para ordenar las secciones
+      if (!sectionOrder.has(title) || (sectionOrder.get(title) ?? Number.MAX_SAFE_INTEGER) > orden) {
+        sectionOrder.set(title, orden);
+      }
+    });
+
+    // Inject Standard Fields if they are missing
+    const standardFields = [
+      { id: 'nombre_completo', label: 'Nombre Completo', section: 'Identificacion del participante' },
+      { id: 'telefono', label: 'Telefono', section: 'Identificacion del participante' },
+      { id: 'direccion', label: 'Direccion', section: 'Identificacion del participante' },
+      { id: 'fecha_inclusion', label: 'Fecha de inclusion', type: 'date', section: 'Identificacion del participante' }
+    ];
+
+    standardFields.forEach(std => {
+      let exists = false;
+      for (const s of sections.values()) {
+        if (s.fields.some(f => f.id.toLowerCase() === std.id.toLowerCase())) { exists = true; break; }
+      }
+      if (!exists) {
+        if (!sections.has(std.section)) {
+          sections.set(std.section, { title: std.section, fields: [] });
+          sectionOrder.set(std.section, -1);
+        }
+        sections.get(std.section)!.fields.push({
+          id: std.id,
+          label: std.label,
+          type: (std.type as CRFFieldType) || 'text',
+          required: true,
+          groupVisibility: undefined
+        });
+      }
+    });
+
+    const schemaSections = Array.from(sections.values()).sort((a, b) => {
+      const orderA = sectionOrder.get(a.title) ?? 0;
+      const orderB = sectionOrder.get(b.title) ?? 0;
+      if (orderA !== orderB) return orderA - orderB;
+      return a.title.localeCompare(b.title);
+    });
+    return schemaSections.length ? { sections: schemaSections } : CRF_DEFAULT_SCHEMA;
+  }
+
+  private mapTipoDato(tipo: string | null | undefined): CRFFieldType {
+    const normalized = (tipo || '').toLowerCase();
+    if (normalized.includes('numero')) return 'number';
+    if (normalized.includes('fecha')) return 'date';
+    if (normalized.includes('seleccionunica')) return 'radio';
+    if (normalized.includes('seleccionmultiple') || normalized.includes('checkbox')) return 'checkbox';
+    if (normalized.includes('textarea') || normalized.includes('texto_largo')) return 'textarea';
+    if (normalized.includes('select')) return 'select';
+    return 'text';
+  }
+
+  private parseOptions(raw: string | null | undefined): string[] | undefined {
+    if (!raw) return undefined;
+    return raw.split(',')
+      .map(o => o.trim())
+      .filter(o => o.length > 0);
+  }
+
+  private mapAplica(aplica: string | null | undefined): Array<'caso' | 'control'> | undefined {
+    const normalized = (aplica || 'Ambos').toLowerCase();
+    if (normalized.includes('caso')) return ['caso'];
+    if (normalized.includes('control')) return ['control'];
+    return undefined; // ambos
+  }
+
+  private parseValidation(raw: string | null | undefined) {
+    if (!raw) return undefined;
+    try {
+      const parsed = JSON.parse(raw);
+      return {
+        min: parsed.min ?? parsed.minValue,
+        max: parsed.max ?? parsed.maxValue,
+        pattern: parsed.pattern,
+        minLength: parsed.minLength,
+        maxLength: parsed.maxLength,
+      };
+    } catch {
+      // Si no es JSON legible, omite validaciones.
+      return undefined;
+    }
+  }
+
+  private toBoolean(val: any): boolean {
+    if (val === true || val === 1) return true;
+    if (typeof val === 'string') {
+      const normalized = val.trim().toLowerCase();
+      if (['1', 'true', 't', 'yes', 'y', 'si', 's'].includes(normalized)) return true;
+    }
+    return false;
+  }
+
+  private toNumber(val: any, fallback: number): number {
+    const n = Number(val);
+    return Number.isFinite(n) ? n : fallback;
+  }
 }
 
 interface VariableRow {
