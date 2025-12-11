@@ -66,7 +66,69 @@ export class CrfService {
     return this.http.post(`${this.API_BASE}/variables`, variable);
   }
 
-  
+  // Returns raw variables without schema filtering
+  listarTodasLasVariables(): Observable<VariableRow[]> {
+    return this.http.get<{ data: VariableRow[] }>(`${this.API_BASE}/variables`).pipe(
+      map(res => res.data || [])
+    );
+  }
+
+  deleteVariable(codigo: string): Observable<void> {
+    return this.http.delete<void>(`${this.API_BASE}/variables/${codigo}`);
+  }
+
+  guardarRespuestas(participanteId: number, respuestas: Record<string, string>, extra?: { nombre?: string, telefono?: string, direccion?: string, grupo?: string }): Observable<void> {
+    const usuarioEditorId = this.auth.getUserId();
+    if (!usuarioEditorId) {
+      throw new Error('No hay usuario autenticado para registrar respuestas');
+    }
+    return this.http.post<void>(`${this.API_BASE}/participantes/${participanteId}/respuestas`, {
+      usuarioEditorId,
+      respuestasMap: respuestas,
+      nombreCompleto: extra?.nombre,
+      telefono: extra?.telefono,
+      direccion: extra?.direccion,
+      grupo: extra?.grupo
+    });
+  }
+
+  listarCrfs(limit = 20): Observable<{ data: any[] }> {
+    return this.http.get<{ data: any[] }>(`${this.API_BASE}/participantes/resumen?limit=${limit}`);
+  }
+
+  eliminarCrf(participanteId: number): Observable<void> {
+    return this.http.delete<void>(`${this.API_BASE}/participantes/${participanteId}`);
+  }
+
+  // Convierte filas de la tabla Variable al CRFSchema esperado por el front.
+  private mapToSchema(rows: VariableRow[] | any): CRFSchema {
+    if (!Array.isArray(rows) || rows.length === 0) {
+      return CRF_DEFAULT_SCHEMA;
+    }
+
+    const sections = new Map<string, CRFSection>();
+    const sectionOrder = new Map<string, number>();
+
+    const sorted = [...rows].sort((a, b) => {
+      const seccionA = (a?.seccion || a?.seccionVariable || '').toString();
+      const seccionB = (b?.seccion || b?.seccionVariable || '').toString();
+      if (seccionA !== seccionB) {
+        return seccionA.localeCompare(seccionB);
+      }
+      return (a?.orden_enunciado ?? a?.ordenEnunciado ?? 0) - (b?.orden_enunciado ?? b?.ordenEnunciado ?? 0);
+    });
+
+    sorted.forEach((row) => {
+      const codigo = row?.codigo_variable || row?.codigoVariable;
+      if (!codigo) return;
+
+      const title = row.seccion || row.seccionVariable || 'Generales';
+      if (!sections.has(title)) {
+        sections.set(title, { title, fields: [] });
+      }
+      const section = sections.get(title)!;
+
+      
 }
 
 interface VariableRow {
