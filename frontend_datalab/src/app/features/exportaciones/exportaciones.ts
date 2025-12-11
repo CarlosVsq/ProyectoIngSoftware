@@ -89,7 +89,7 @@ export class ExportacionesComponent implements AfterViewInit {
   }
 
   descargarCsv(): void {
-    window.open('http://localhost:8080/api/export/csv', '_blank');
+    window.open('http://localhost:8080/api/export/csv-stata', '_blank');
   }
 
   descargarLeyenda(): void {

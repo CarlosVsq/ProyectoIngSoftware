@@ -321,6 +321,63 @@ public class ExportController {
                 .body(bytes);
     }
 
+    @GetMapping("/csv-stata")
+    @Transactional(readOnly = true)
+    public ResponseEntity<byte[]> exportToCsvStata() {
+        List<Variable> variables = variableRepository.findAll().stream()
+                .sorted(Comparator
+                        .comparing(Variable::getOrdenEnunciado, Comparator.nullsLast(Comparator.naturalOrder()))
+                        .thenComparing(Variable::getCodigoVariable))
+                .collect(Collectors.toList());
+
+        List<Participante> participantes = participanteRepository.findAll();
+        Map<Integer, Map<String, String>> respuestasMap = respuestaRepository.findAll().stream()
+                .collect(Collectors.groupingBy(
+                        r -> r.getParticipante().getIdParticipante(),
+                        Collectors.toMap(
+                                r -> r.getVariable().getCodigoVariable(),
+                                Respuesta::getValorIngresado,
+                                (a, b) -> b)));
+
+        StringBuilder csv = new StringBuilder();
+
+        // Header
+        List<String> headers = new ArrayList<>();
+        for (StaticColumn col : StaticColumn.values())
+            headers.add(col.name());
+        for (Variable v : variables)
+            headers.add(v.getCodigoVariable());
+        csv.append(String.join(",", headers)).append("\n");
+
+        // Rows
+        for (Participante p : participantes) {
+            Map<String, String> pRespuestas = respuestasMap.getOrDefault(p.getIdParticipante(), Map.of());
+            List<String> cols = new ArrayList<>();
+
+            cols.add(escapeCsv(p.getCodigoParticipante()));
+            cols.add(escapeCsv(p.getNombreCompleto()));
+            cols.add(escapeCsv(p.getGrupo() != null ? p.getGrupo().name() : ""));
+            cols.add(escapeCsv(p.getEstadoFicha() != null ? p.getEstadoFicha().name() : ""));
+            cols.add(escapeCsv(p.getFechaInclusion() != null ? p.getFechaInclusion().toString() : ""));
+
+            for (Variable v : variables) {
+                String rawVal = pRespuestas.getOrDefault(v.getCodigoVariable(), "");
+                // STATA COMPATIBILITY: Force dot as decimal separator for numbers
+                if (v.getTipoDato() != null && v.getTipoDato().toLowerCase().contains("numero") && rawVal != null) {
+                    rawVal = rawVal.replace(",", ".");
+                }
+                cols.add(escapeCsv(rawVal));
+            }
+            csv.append(String.join(",", cols)).append("\n");
+        }
+
+        byte[] bytes = csv.toString().getBytes(StandardCharsets.UTF_8);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"datos_stata.csv\"")
+                .contentType(MediaType.parseMediaType("text/csv"))
+                .body(bytes);
+    }
+
     private String safe(String s) {
         return s == null ? "" : s;
     }
