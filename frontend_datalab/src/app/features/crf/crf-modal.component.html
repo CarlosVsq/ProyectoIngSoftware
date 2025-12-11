@@ -54,6 +54,39 @@
       
 
 
+    <!-- Footer -->
+      <div class="flex items-center justify-between pt-6 border-t border-gray-100 mt-4">
+        <div class="text-xs text-gray-400 font-medium">
+          <span *ngIf="lastAutoSaveAt" class="flex items-center gap-2">
+            <span class="w-1.5 h-1.5 rounded-full bg-green-400"></span>
+            Guardado: {{ lastAutoSaveAt }}
+          </span>
+        </div>
+        <div class="flex items-center gap-3">
+          <button type="button"
+            class="px-6 py-2.5 rounded-xl border border-gray-200 text-gray-600 font-medium text-sm hover:bg-gray-50 transition-colors"
+            (click)="guardarBorrador()">
+            Guardar Avance
+          </button>
+          <button type="button"
+            class="px-6 py-2.5 rounded-xl bg-gray-900 text-white font-medium text-sm hover:bg-black shadow-lg shadow-gray-200 transition-all transform hover:-translate-y-0.5"
+            (click)="guardarFinal()">
+            Finalizar CRF
+          </button>
+        </div>
+      </div>
 
+      <div *ngIf="missingRequiredLabels.length"
+        class="bg-red-50 p-4 rounded-xl border border-red-100 flex items-start gap-3">
+        <span class="material-icons text-red-500 mt-0.5">warning</span>
+        <div>
+          <h4 class="text-sm font-semibold text-red-800">Faltan campos obligatorios</h4>
+          <p class="text-xs text-red-600 mt-1 leading-relaxed">
+            Completa los siguientes campos para finalizar: <br>
+            <span class="font-medium text-red-700">{{ missingRequiredLabels.join(', ') }}</span>
+          </p>
+        </div>
+      </div>
+    </form>
   </div>
 </div>
