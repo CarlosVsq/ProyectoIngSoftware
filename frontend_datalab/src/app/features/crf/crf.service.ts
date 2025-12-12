@@ -129,7 +129,7 @@ export class CrfService {
       const section = sections.get(title)!;
 
       // Filter out auto-generated or unwanted fields
-      if (codigo.toUpperCase() === 'CODIGO_PARTICIPANTE' || codigo.toUpperCase() === 'CODIGO') return;
+      if (['CODIGO_PARTICIPANTE', 'CODIGO', 'IMC'].includes(codigo.toUpperCase())) return;
 
       const type = this.mapTipoDato(row.tipo_dato || row.tipoDato);
       let options = this.parseOptions(row.opciones);

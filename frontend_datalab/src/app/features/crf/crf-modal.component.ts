@@ -70,8 +70,10 @@ export class CrfModalComponent implements OnInit, OnDestroy, OnChanges {
   private buildForm(): void {
     const controls: Record<string, AbstractControl> = {};
 
-    // base controls
+    // Base controls
     controls['grupo'] = this.fb.control(this.selectedGroup, Validators.required);
+    // Hidden calculated fields
+    controls['imc'] = this.fb.control(null);
 
     // crear controles para cada campo
     if (this.schema && this.schema.sections) {
@@ -161,9 +163,14 @@ export class CrfModalComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   private setupImcCalculation(): void {
-    const pesoControl = this.form.get('PESO');
-    const tallaControl = this.form.get('TALLA');
-    const imcControl = this.form.get('IMC');
+    const pesoControl = this.form.get('peso_kg');
+    const tallaControl = this.form.get('estatura_m');
+    const imcControl = this.form.get('imc');
+
+    if (imcControl) {
+      // Make IMC read-only/disabled so user cannot edit it manually
+      imcControl.disable();
+    }
 
     if (pesoControl && tallaControl && imcControl) {
       const calculate = () => {
@@ -171,14 +178,13 @@ export class CrfModalComponent implements OnInit, OnDestroy, OnChanges {
         const talla = parseFloat(tallaControl.value);
 
         if (!isNaN(peso) && !isNaN(talla) && talla > 0) {
-          // Talla in cm to meters
-          const tallaM = talla / 100;
-          const imc = peso / (tallaM * tallaM);
+          // Talla is already in meters according to label (m)
+          const imc = peso / (talla * talla);
+          console.log('⚡ IMC Calculado (Oculto):', imc.toFixed(2));
           // Round to 2 decimals
           imcControl.setValue(imc.toFixed(2));
         } else {
-          // Optional: clear IMC if inputs are invalid/empty? 
-          // imcControl.setValue(''); 
+           imcControl.setValue(null); 
         }
       };
 
@@ -442,6 +448,11 @@ export class CrfModalComponent implements OnInit, OnDestroy, OnChanges {
         });
       });
     }
+
+    // Include hidden/calculated fields manually
+    const imcVal = this.form.get('imc')?.value;
+    if (imcVal) map['imc'] = imcVal.toString();
+
     return map;
   }
 
