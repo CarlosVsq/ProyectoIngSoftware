@@ -1,15 +1,16 @@
 // src/app/features/crf/crf-modal.component.ts
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, OnChanges, SimpleChanges } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormArray, AbstractControl, ValidatorFn } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormArray, AbstractControl, ValidatorFn, FormsModule } from '@angular/forms';
 import { CrfService } from './crf.service';
 import { CRFSchema, CRFSection, CRFField } from './schema';
 import { Subscription } from 'rxjs';
+import { ComentarioService } from '../../shared/comentarios/comentario.service';
 
 @Component({
   selector: 'app-crf-modal',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule],
   templateUrl: './crf-modal.component.html',
 })
 export class CrfModalComponent implements OnInit, OnDestroy, OnChanges {
@@ -29,7 +30,11 @@ export class CrfModalComponent implements OnInit, OnDestroy, OnChanges {
   isSubmitting = false;
   private schemaSub?: Subscription;
 
-  constructor(private fb: FormBuilder, private crf: CrfService) { }
+  // Justification Modal
+  showJustificationModal = false;
+  justificationText = '';
+
+  constructor(private fb: FormBuilder, private crf: CrfService, private comentarioService: ComentarioService) { }
 
   ngOnInit(): void {
     this.schemaSub = this.crf.getSchema().subscribe((schema) => {
@@ -232,7 +237,18 @@ export class CrfModalComponent implements OnInit, OnDestroy, OnChanges {
   // Guardados
   // Guardados
   guardarBorrador(): void {
-    // Guardar como incompleto en el sistema (backend)
+    // Abrir modal de justificación
+    this.showJustificationModal = true;
+    this.justificationText = '';
+  }
+
+  cerrarJustificationModal(): void {
+    this.showJustificationModal = false;
+    this.justificationText = '';
+  }
+
+  confirmarGuardarBorrador(): void {
+    this.showJustificationModal = false;
     this.saveToBackend(false);
   }
 
@@ -295,8 +311,17 @@ export class CrfModalComponent implements OnInit, OnDestroy, OnChanges {
             // Actualizar estado local
             this.participantId = idParticipante; 
             this.crf.saveDraft(key, { ...this.form.value, estado: 'borrador', idParticipante });
-            alert('Guardado como Incompleto en el sistema.');
+            
+            // Guardar justificación si existe
+            if (this.justificationText.trim()) {
+              this.comentarioService.agregarComentario(idParticipante, this.justificationText).subscribe({
+                error: (e) => console.error('Error guardando justificación', e)
+              });
+            }
+
+            alert('Guardado como Incompleto en el sistema con justificación.');
             this.lastAutoSaveAt = 'Guardado en sistema: ' + new Date().toLocaleTimeString();
+            this.justificationText = '';
           }
           this.isSubmitting = false;
         },
