@@ -92,6 +92,45 @@ public class DashboardController {
         return res;
     }
 
+    @GetMapping("/clinical")
+    public ApiResponse<Map<String, Object>> getClinicalStats() {
+        Map<String, Object> data = new HashMap<>();
+
+        long totalParticipantes = participanteRepository.count();
+        long completas = participanteRepository.countByEstadoFicha(EstadoFicha.COMPLETA);
+
+        // KPIs Maps
+        data.put("muestrasProcesadas", totalParticipantes);
+        data.put("analisisCompletos", completas);
+        data.put("variantesIdentificadas", 0); // Placeholder start from 0
+
+        // Processing Status Map
+        Map<String, Object> procesamiento = new HashMap<>();
+        // Logic: Extraction = 99% of total (mocked for realism based on total), others
+        // 0 based on request
+        // For now, implementing strictly as requested: REAL DATA for knowns, 0 for
+        // unknowns/not-impl
+
+        // Extraccion de ADN: Let's assume all created participants have samples
+        // extracted for now?
+        // Or strictly 0? User said "valores empiezen desde 0" for things that don't
+        // share real data.
+        // But "Muestras Procesadas" implies we have some.
+        // Let's use:
+        // Extracción: Total Participants (assuming included = extracted)
+        // Others: 0
+
+        procesamiento.put("extraccion", totalParticipantes);
+        procesamiento.put("secuenciacion", 0);
+        procesamiento.put("bioinformatica", 0);
+        procesamiento.put("validacion", 0);
+
+        data.put("procesamiento", procesamiento);
+        data.put("totalMeta", 300); // Fixed meta from UI
+
+        return ApiResponse.success(data);
+    }
+
     private Map<String, Object> calcularEdad() {
         Map<String, AtomicInteger> conteo = new HashMap<>();
         conteo.put("18-30", new AtomicInteger());
