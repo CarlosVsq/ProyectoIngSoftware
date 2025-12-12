@@ -11,7 +11,7 @@ Chart.register(...registerables);
 @Component({
   selector: 'app-exportaciones',
   standalone: true,
-  imports: [CommonModule, AlertPanelComponent, LogoutPanelComponent, HttpClientModule],
+  imports: [CommonModule, AlertPanelComponent, LogoutPanelComponent],
   templateUrl: './exportaciones.html',
   styleUrls: ['./exportaciones.scss']
 })

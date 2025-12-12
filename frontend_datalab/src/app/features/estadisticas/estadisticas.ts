@@ -1,6 +1,6 @@
 import { Component, AfterViewInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Chart, registerables } from 'chart.js';
 import { AlertPanelComponent } from '../../alert-panel/alert-panel.component';
 import { LogoutPanelComponent } from '../../shared/logout-panel/logout-panel.component';
@@ -11,7 +11,7 @@ Chart.register(...registerables);
 @Component({
   selector: 'app-estadisticas',
   standalone: true,
-  imports: [CommonModule, AlertPanelComponent, LogoutPanelComponent, HttpClientModule],
+  imports: [CommonModule, AlertPanelComponent, LogoutPanelComponent],
   templateUrl: './estadisticas.html',
   styleUrls: ['./estadisticas.scss'],
 })
