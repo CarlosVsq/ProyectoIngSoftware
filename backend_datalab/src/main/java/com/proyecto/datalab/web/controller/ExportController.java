@@ -131,9 +131,8 @@ public class ExportController {
             document.add(info);
             document.add(new com.itextpdf.text.Paragraph(" "));
 
-            com.itextpdf.text.pdf.PdfPTable table = new com.itextpdf.text.pdf.PdfPTable(3);
+            com.itextpdf.text.pdf.PdfPTable table = new com.itextpdf.text.pdf.PdfPTable(2);
             table.setWidthPercentage(100);
-            addHeaderCell(table, "Variable");
             addHeaderCell(table, "Enunciado");
             addHeaderCell(table, "Valor");
 
@@ -147,7 +146,6 @@ public class ExportController {
                             (a, b) -> b));
 
             for (Variable v : allVariables) {
-                addBodyCell(table, safe(v.getCodigoVariable()));
                 addBodyCell(table, safe(v.getEnunciado()));
                 addBodyCell(table, safe(respuestasMap.getOrDefault(v.getCodigoVariable(), "")));
             }
