@@ -56,14 +56,22 @@ public class ExportController {
 
     // Helper method to get current user
     private Usuario getCurrentUser() {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String username;
-        if (principal instanceof UserDetails) {
-            username = ((UserDetails) principal).getUsername();
-        } else {
-            username = principal.toString();
+        try {
+            var auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) {
+                return null;
+            }
+            Object principal = auth.getPrincipal();
+            String username;
+            if (principal instanceof UserDetails) {
+                username = ((UserDetails) principal).getUsername();
+            } else {
+                username = principal.toString();
+            }
+            return usuarioRepository.findByCorreo(username).orElse(null);
+        } catch (Exception e) {
+            return null;
         }
-        return usuarioRepository.findByCorreo(username).orElse(null);
     }
 
     @GetMapping("/stats")
@@ -89,9 +97,13 @@ public class ExportController {
             return ResponseEntity.notFound().build();
 
         // LOG
+        // LOG
         try {
-            auditoriaService.registrarAccion(getCurrentUser(), p, "EXPORTAR", "Participante",
-                    "Exportó PDF del participante " + p.getCodigoParticipante());
+            Usuario u = getCurrentUser();
+            if (u != null) {
+                auditoriaService.registrarAccion(u, p, "EXPORTAR", "Participante",
+                        "Exportó PDF del participante " + p.getCodigoParticipante());
+            }
         } catch (Exception e) {
             e.printStackTrace(); // Non-blocking logging
         }
@@ -176,8 +188,12 @@ public class ExportController {
     @Transactional(readOnly = true)
     public ResponseEntity<byte[]> exportLegendPdf() {
         // LOG
+        // LOG
         try {
-            auditoriaService.registrarAccion(getCurrentUser(), null, "EXPORTAR", "Variables", "Exportó Leyenda en PDF");
+            Usuario u = getCurrentUser();
+            if (u != null) {
+                auditoriaService.registrarAccion(u, null, "EXPORTAR", "Variables", "Exportó Leyenda en PDF");
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -233,9 +249,13 @@ public class ExportController {
     @Transactional(readOnly = true)
     public ResponseEntity<byte[]> exportToExcel() {
         // LOG
+        // LOG
         try {
-            auditoriaService.registrarAccion(getCurrentUser(), null, "EXPORTAR", "Base de Datos",
-                    "Exportó Base Completa (Excel)");
+            Usuario u = getCurrentUser();
+            if (u != null) {
+                auditoriaService.registrarAccion(u, null, "EXPORTAR", "Base de Datos",
+                        "Exportó Base Completa (Excel)");
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -322,9 +342,13 @@ public class ExportController {
     @Transactional(readOnly = true)
     public ResponseEntity<byte[]> exportToCsv() {
         // LOG
+        // LOG
         try {
-            auditoriaService.registrarAccion(getCurrentUser(), null, "EXPORTAR", "Base de Datos",
-                    "Exportó Base Completa (CSV)");
+            Usuario u = getCurrentUser();
+            if (u != null) {
+                auditoriaService.registrarAccion(u, null, "EXPORTAR", "Base de Datos",
+                        "Exportó Base Completa (CSV)");
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -382,9 +406,13 @@ public class ExportController {
     @Transactional(readOnly = true)
     public ResponseEntity<byte[]> exportToCsvStata() {
         // LOG
+        // LOG
         try {
-            auditoriaService.registrarAccion(getCurrentUser(), null, "EXPORTAR", "Base de Datos",
-                    "Exportó Base Completa (CSV STATA)");
+            Usuario u = getCurrentUser();
+            if (u != null) {
+                auditoriaService.registrarAccion(u, null, "EXPORTAR", "Base de Datos",
+                        "Exportó Base Completa (CSV STATA)");
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
