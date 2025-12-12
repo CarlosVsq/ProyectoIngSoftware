@@ -8,6 +8,7 @@ import { CrfModalComponent } from '../crf/crf-modal.component';
 import { ParticipanteService } from '../../shared/participantes/participante.service';
 import { AuthService } from '../../shared/auth/auth.service';
 import { ComentarioService } from '../../shared/comentarios/comentario.service';
+import { API_BASE_URL } from '../../shared/config/api.config';
 
 @Component({
     selector: 'app-lista-participantes',
@@ -181,7 +182,7 @@ export class ListaParticipantesComponent implements OnInit {
 
     verPdf(id: number) {
         if (!id) return;
-        window.open(`http://localhost:8080/api/export/participante/${id}/pdf`, '_blank');
+        window.open(`${API_BASE_URL}/export/participante/${id}/pdf`, '_blank');
     }
 
     editar(p: any) {

@@ -12,6 +12,7 @@ import { VariablesModalComponent } from './variables-modal.component';
 import { CRFSchema } from '../crf/schema';
 import { ActivatedRoute } from '@angular/router';
 import { ParticipanteService } from '../../shared/participantes/participante.service';
+import { API_BASE_URL } from '../../shared/config/api.config';
 
 Chart.register(...registerables);
 
@@ -163,7 +164,7 @@ export class ReclutamientoComponent implements OnInit, AfterViewInit {
     this.crfOpen = true;
   }
   verPdf(id: number) {
-    window.open(`http://localhost:8080/api/export/participante/${id}/pdf`, '_blank');
+    window.open(`${API_BASE_URL}/export/participante/${id}/pdf`, '_blank');
   }
 
   buscarPorCodigo() {

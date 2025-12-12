@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, tap, map, catchError, of, finalize } from 'rxjs';
 import { AuthResponse } from './auth.types';
+import { BACKEND_BASE_URL } from '../config/api.config';
 
 interface ApiResponse<T> {
   data: T;
@@ -11,7 +12,7 @@ interface ApiResponse<T> {
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private readonly API_BASE = 'http://localhost:8080';
+  private readonly API_BASE = BACKEND_BASE_URL;
   private readonly TOKEN_KEY = 'datalab_access_token';
   private readonly USER_KEY = 'datalab_user';
 

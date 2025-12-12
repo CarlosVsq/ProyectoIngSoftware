@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
+import { API_BASE_URL } from '../shared/config/api.config';
 
 export interface Auditoria {
   idAuditoria: number;
@@ -24,7 +25,7 @@ export class AlertPanelComponent implements OnInit {
   limit = 10;
   loading = false;
   
-  private readonly API_URL = 'http://localhost:8080/api/auditoria';
+  private readonly API_URL = `${API_BASE_URL}/auditoria`;
 
   constructor(private http: HttpClient) {}
 

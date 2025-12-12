@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { API_BASE_URL } from '../../shared/config/api.config';
 
 @Component({
   selector: 'app-recover',
@@ -29,7 +30,7 @@ export class RecoverComponent {
     }
     this.isLoading = true;
     this.msg = '';
-    this.http.post('http://localhost:8080/api/password/forgot', { correo: this.recoverForm.value.correo }).subscribe({
+    this.http.post(`${API_BASE_URL}/password/forgot`, { correo: this.recoverForm.value.correo }).subscribe({
       next: () => {
         this.isLoading = false;
         this.msg = 'Si el correo existe, recibirás un enlace de recuperación.';

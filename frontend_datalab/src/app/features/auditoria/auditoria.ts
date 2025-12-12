@@ -5,6 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import { AlertPanelComponent } from '../../alert-panel/alert-panel.component';
 import { LogoutPanelComponent } from '../../shared/logout-panel/logout-panel.component';
 import { AuthService } from '../../shared/auth/auth.service';
+import { API_BASE_URL } from '../../shared/config/api.config';
 
 interface Auditoria {
   idAuditoria: number;
@@ -47,7 +48,7 @@ export class AuditoriaComponent implements OnInit {
   loading = false;
   page = 0;
   totalPages = 0;
-  private readonly API_BASE = 'http://localhost:8080/api/auditoria';
+  private readonly API_BASE = `${API_BASE_URL}/auditoria`;
 
   @ViewChild(LogoutPanelComponent)
   logoutPanel!: LogoutPanelComponent;
