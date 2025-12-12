@@ -9,6 +9,10 @@ RUN --mount=type=cache,target=/root/.m2 mvn -Dmaven.test.skip=true package
 # ---------- Runtime stage ----------
 FROM eclipse-temurin:17-jre
 WORKDIR /app
+# Add curl for container healthchecks
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends curl \
+    && rm -rf /var/lib/apt/lists/*
 COPY --from=build /app/target/*.jar /app/app.jar
 # You can pass JVM flags via JAVA_OPTS, e.g. -Xms256m -Xmx512m
 ENV JAVA_OPTS=""     SPRING_PROFILES_ACTIVE=prod
