@@ -43,40 +43,77 @@ export class ExportacionesComponent implements AfterViewInit {
   }
 
   private renderExportChart(): void {
-    const ctx = document.getElementById('exportChart') as HTMLCanvasElement;
+    const canvas = document.getElementById('exportChart') as HTMLCanvasElement;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    if (Chart.getChart(ctx)) {
-      Chart.getChart(ctx)?.destroy();
+    if (Chart.getChart(canvas)) {
+      Chart.getChart(canvas)?.destroy();
     }
 
-    new Chart(ctx as any, {
-      type: 'doughnut',
+    // Create Gradient
+    const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+    gradient.addColorStop(0, 'rgba(67, 56, 202, 0.4)'); // Indigo 700 with opacity
+    gradient.addColorStop(1, 'rgba(67, 56, 202, 0.0)'); // Transparent
+
+    new Chart(canvas as any, {
+      type: 'line',
       data: {
-        labels: ['Completadas', 'En proceso', 'Pendientes'],
+        labels: ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'],
         datasets: [{
-          data: [15, 3, 2],
-          backgroundColor: [
-            '#4338ca', // Indigo 700
-            '#0ea5e9', // Sky 500
-            '#e2e8f0', // Slate 200
-          ],
-          borderWidth: 0,
-          hoverOffset: 4
+          label: 'Exportaciones Realizadas',
+          data: [2, 5, 3, 8, 4, 1, 6], // Dummy data representing weekly activity
+          fill: true,
+          backgroundColor: gradient,
+          borderColor: '#4338ca', // Indigo 700
+          borderWidth: 2,
+          tension: 0.4,
+          pointBackgroundColor: '#ffffff',
+          pointBorderColor: '#4338ca',
+          pointBorderWidth: 2,
+          pointRadius: 4,
+          pointHoverRadius: 6
         }]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        cutout: '80%',
         plugins: {
           legend: {
-            position: 'right',
-            labels: {
-              usePointStyle: true,
-              boxWidth: 8,
-              padding: 15,
-              font: { family: "'Inter', sans-serif", size: 11 }
+            display: false // Hide legend for cleaner look
+          },
+          tooltip: {
+            backgroundColor: '#1e293b',
+            padding: 12,
+            titleFont: { size: 13 },
+            bodyFont: { size: 12 },
+            displayColors: false,
+            callbacks: {
+              label: (context) => ` ${context.parsed.y} archivos exportados`
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: {
+              display: false
+            },
+            ticks: {
+              font: { size: 11 }
+            }
+          },
+          y: {
+            beginAtZero: true,
+            grid: {
+              display: true,
+              color: '#f1f5f9', // Very light gray grid
+              tickLength: 0
+            },
+            border: { display: false }, // Hide y-axis line
+            ticks: {
+              stepSize: 2,
+              font: { size: 11 }
             }
           }
         }
