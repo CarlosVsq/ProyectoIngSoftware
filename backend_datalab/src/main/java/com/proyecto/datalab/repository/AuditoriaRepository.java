@@ -16,23 +16,25 @@ public interface AuditoriaRepository extends JpaRepository<Auditoria, Integer> {
 
     // 1. Estadísticas para los KPIs
     long countByFechaCambioAfter(LocalDateTime fecha); // Para "Hoy" o "Esta semana"
-    
+
     long countByAccionAndFechaCambioAfter(String accion, LocalDateTime fecha); // Para "Accesos Hoy"
 
     @Query("SELECT COUNT(a) FROM Auditoria a WHERE a.accion IN ('LOGIN_FALLIDO', 'ERROR', 'ACCESO_DENEGADO') AND a.fechaCambio >= :fecha")
     long contarErroresDesde(@Param("fecha") LocalDateTime fecha);
 
+    // New method for graph statistics
+    java.util.List<Auditoria> findByAccionAndFechaCambioAfter(String accion, LocalDateTime fecha);
+
     // 2. Buscador con filtros dinámicos (Usuario, Acción, Fechas)
     @Query("SELECT a FROM Auditoria a WHERE " +
-           "(:usuarioId IS NULL OR a.usuario.idUsuario = :usuarioId) AND " +
-           "(:accion IS NULL OR a.accion = :accion) AND " +
-           "(:fechaInicio IS NULL OR a.fechaCambio >= :fechaInicio) AND " +
-           "(:fechaFin IS NULL OR a.fechaCambio <= :fechaFin)")
+            "(:usuarioId IS NULL OR a.usuario.idUsuario = :usuarioId) AND " +
+            "(:accion IS NULL OR a.accion = :accion) AND " +
+            "(:fechaInicio IS NULL OR a.fechaCambio >= :fechaInicio) AND " +
+            "(:fechaFin IS NULL OR a.fechaCambio <= :fechaFin)")
     Page<Auditoria> buscarConFiltros(
             @Param("usuarioId") Integer usuarioId,
             @Param("accion") String accion,
             @Param("fechaInicio") LocalDateTime fechaInicio,
             @Param("fechaFin") LocalDateTime fechaFin,
-            Pageable pageable
-    );
+            Pageable pageable);
 }

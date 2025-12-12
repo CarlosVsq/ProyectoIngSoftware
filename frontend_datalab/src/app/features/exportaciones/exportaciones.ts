@@ -1,5 +1,6 @@
 import { Component, AfterViewInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { Chart, registerables } from 'chart.js';
 import { AlertPanelComponent } from '../../alert-panel/alert-panel.component';
 import { LogoutPanelComponent } from '../../shared/logout-panel/logout-panel.component';
@@ -10,7 +11,7 @@ Chart.register(...registerables);
 @Component({
   selector: 'app-exportaciones',
   standalone: true,
-  imports: [CommonModule, AlertPanelComponent, LogoutPanelComponent],
+  imports: [CommonModule, AlertPanelComponent, LogoutPanelComponent, HttpClientModule],
   templateUrl: './exportaciones.html',
   styleUrls: ['./exportaciones.scss']
 })
@@ -27,7 +28,7 @@ export class ExportacionesComponent implements AfterViewInit {
     { title: 'Reporte Mensual', date: '01 Dec 2025', status: 'Archivado', icon: 'assignment', color: 'bg-gray-100 text-gray-700' }
   ];
 
-  constructor(private auth: AuthService) {
+  constructor(private auth: AuthService, private http: HttpClient) {
     this.usuarioNombre = this.auth.getUserName();
     this.usuarioRol = this.auth.getUserRole();
   }
@@ -38,11 +39,24 @@ export class ExportacionesComponent implements AfterViewInit {
 
   ngAfterViewInit(): void {
     setTimeout(() => {
-      this.renderExportChart();
+      this.loadChartData();
     }, 100);
   }
 
-  private renderExportChart(): void {
+  private loadChartData() {
+    this.http.get<any>('http://localhost:8080/api/export/stats').subscribe({
+      next: (data) => {
+        this.renderExportChart(data);
+      },
+      error: (err) => {
+        console.error('Error loading chart stats', err);
+        // Fallback to empty chart
+        this.renderExportChart({});
+      }
+    });
+  }
+
+  private renderExportChart(apiData: any): void {
     const canvas = document.getElementById('exportChart') as HTMLCanvasElement;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -52,6 +66,10 @@ export class ExportacionesComponent implements AfterViewInit {
       Chart.getChart(canvas)?.destroy();
     }
 
+    // Process data
+    const labels = Object.keys(apiData); // Dates
+    const values = Object.values(apiData); // Counts
+
     // Create Gradient
     const gradient = ctx.createLinearGradient(0, 0, 0, 300);
     gradient.addColorStop(0, 'rgba(67, 56, 202, 0.4)'); // Indigo 700 with opacity
@@ -60,10 +78,10 @@ export class ExportacionesComponent implements AfterViewInit {
     new Chart(canvas as any, {
       type: 'line',
       data: {
-        labels: ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'],
+        labels: labels,
         datasets: [{
           label: 'Exportaciones Realizadas',
-          data: [2, 5, 3, 8, 4, 1, 6], // Dummy data representing weekly activity
+          data: values,
           fill: true,
           backgroundColor: gradient,
           borderColor: '#4338ca', // Indigo 700
@@ -90,35 +108,36 @@ export class ExportacionesComponent implements AfterViewInit {
             bodyFont: { size: 12 },
             displayColors: false,
             callbacks: {
-              label: (context) => ` ${context.parsed.y} archivos exportados`
-            }
-          }
-        },
-        scales: {
-          x: {
-            grid: {
-              display: false
-            },
-            ticks: {
-              font: { size: 11 }
+              callbacks: {
+                label: (context) => ` ${context.parsed.y} archivos exportados`
+              }
             }
           },
-          y: {
-            beginAtZero: true,
-            grid: {
-              display: true,
-              color: '#f1f5f9', // Very light gray grid
-              tickLength: 0
+          scales: {
+            x: {
+              grid: {
+                display: false
+              },
+              ticks: {
+                font: { size: 11 }
+              }
             },
-            border: { display: false }, // Hide y-axis line
-            ticks: {
-              stepSize: 2,
-              font: { size: 11 }
+            y: {
+              beginAtZero: true,
+              grid: {
+                display: true,
+                color: '#f1f5f9', // Very light gray grid
+                tickLength: 0
+              },
+              border: { display: false }, // Hide y-axis line
+              ticks: {
+                stepSize: 2,
+                font: { size: 11 }
+              }
             }
           }
         }
-      }
-    });
+      });
   }
 
   descargarExcel(): void {
