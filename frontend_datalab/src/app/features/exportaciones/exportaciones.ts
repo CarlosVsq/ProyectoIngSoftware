@@ -108,36 +108,35 @@ export class ExportacionesComponent implements AfterViewInit {
             bodyFont: { size: 12 },
             displayColors: false,
             callbacks: {
-              callbacks: {
-                label: (context) => ` ${context.parsed.y} archivos exportados`
-              }
+              label: (context: any) => ` ${context.parsed.y} archivos exportados`
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: {
+              display: false
+            },
+            ticks: {
+              font: { size: 11 }
             }
           },
-          scales: {
-            x: {
-              grid: {
-                display: false
-              },
-              ticks: {
-                font: { size: 11 }
-              }
+          y: {
+            beginAtZero: true,
+            grid: {
+              display: true,
+              color: '#f1f5f9', // Very light gray grid
+              tickLength: 0
             },
-            y: {
-              beginAtZero: true,
-              grid: {
-                display: true,
-                color: '#f1f5f9', // Very light gray grid
-                tickLength: 0
-              },
-              border: { display: false }, // Hide y-axis line
-              ticks: {
-                stepSize: 2,
-                font: { size: 11 }
-              }
+            border: { display: false }, // Hide y-axis line
+            ticks: {
+              stepSize: 2,
+              font: { size: 11 }
             }
           }
         }
-      });
+      }
+    });
   }
 
   descargarExcel(): void {
