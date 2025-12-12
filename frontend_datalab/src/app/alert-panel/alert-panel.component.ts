@@ -15,7 +15,7 @@ export interface Auditoria {
 @Component({
   selector: 'app-alert-panel',
   standalone: true,
-  imports: [CommonModule], 
+  imports: [CommonModule],
   templateUrl: './alert-panel.component.html',
   styleUrls: ['./alert-panel.component.scss']
 })
@@ -23,10 +23,10 @@ export class AlertPanelComponent implements OnInit {
   auditorias: Auditoria[] = [];
   limit = 10;
   loading = false;
-  
+
   private readonly API_URL = 'http://localhost:8080/api/auditoria';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   ngOnInit(): void {
     this.cargarAuditoria();
@@ -34,15 +34,25 @@ export class AlertPanelComponent implements OnInit {
 
   cargarAuditoria(): void {
     this.loading = true;
-    this.http.get<{ data: Auditoria[] }>(`${this.API_URL}?limit=${this.limit}`)
+    // Utilizar el endpoint general que retorna las últimas acciones sin filtros
+    // Esto asegura que siempre se muestre algo si hay datos
+    this.http.get<any>(`${this.API_URL}?limit=${this.limit}`)
       .subscribe({
         next: (res) => {
-          this.auditorias = res.data || [];
+          // Robust check for response format
+          if (res && res.success && Array.isArray(res.data)) {
+            this.auditorias = res.data;
+          } else if (Array.isArray(res)) {
+            this.auditorias = res;
+          } else {
+            console.warn('Formato de respuesta inesperado en alertas:', res);
+            this.auditorias = [];
+          }
           this.loading = false;
         },
-        error: (err) => { 
+        error: (err) => {
           console.error('Error cargando alertas:', err);
-          this.loading = false; 
+          this.loading = false;
         }
       });
   }
@@ -52,7 +62,7 @@ export class AlertPanelComponent implements OnInit {
     this.limit += 10;
     this.cargarAuditoria();
   }
-  
+
   getActionColor(accion: string): string {
     if (accion === 'LOGIN') return 'text-green-600';
     if (accion === 'LOGOUT') return 'text-orange-500';
