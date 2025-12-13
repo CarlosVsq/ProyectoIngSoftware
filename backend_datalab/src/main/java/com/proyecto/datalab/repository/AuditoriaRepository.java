@@ -1,6 +1,7 @@
 package com.proyecto.datalab.repository;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,6 +19,8 @@ public interface AuditoriaRepository extends JpaRepository<Auditoria, Integer> {
         long countByFechaCambioAfter(LocalDateTime fecha); // Para "Hoy" o "Esta semana"
 
         long countByAccionAndFechaCambioAfter(String accion, LocalDateTime fecha); // Para "Accesos Hoy"
+
+        List<Auditoria> findByAccionAndFechaCambioAfter(String accion, LocalDateTime fecha);
 
         @Query("SELECT COUNT(a) FROM Auditoria a WHERE a.accion IN ('LOGIN_FALLIDO', 'ERROR', 'ACCESO_DENEGADO') AND a.fechaCambio >= :fecha")
         long contarErroresDesde(@Param("fecha") LocalDateTime fecha);

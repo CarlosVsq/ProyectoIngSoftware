@@ -26,7 +26,7 @@ export class CrfModalComponent implements OnInit, OnDestroy, OnChanges {
   selectedGroup: 'caso' | 'control' = 'control';
   lastAutoSaveAt = '';
   missingRequiredLabels: string[] = [];
-  private autoSaveHandle?: ReturnType<typeof setInterval>;
+  private autoSaveHandle: ReturnType<typeof setInterval> | null = null;
   isSubmitting = false;
   private schemaSub?: Subscription;
 
@@ -59,8 +59,9 @@ export class CrfModalComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   ngOnDestroy(): void {
-    if (this.autoSaveHandle) {
+    if (this.autoSaveHandle !== null) {
       clearInterval(this.autoSaveHandle);
+      this.autoSaveHandle = null;
     }
     if (this.schemaSub) {
       this.schemaSub.unsubscribe();
@@ -163,94 +164,55 @@ export class CrfModalComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   private setupImcCalculation(): void {
-  if (!this.schema || !this.schema.sections || !this.form) return;
+    if (!this.schema || !this.schema.sections || !this.form) return;
 
-  let pesoId = 'peso_kg';
-  let tallaId = 'estatura_m';
-  let imcId = 'imc';
+    let pesoId = 'peso_kg';
+    let tallaId = 'estatura_m';
+    let imcId = 'imc';
 
-  for (const section of this.schema.sections) {
-    for (const field of section.fields) {
-      const id = field.id.toUpperCase();
-      const label = (field.label || '').toUpperCase();
+    for (const section of this.schema.sections) {
+      for (const field of section.fields) {
+        const id = field.id.toUpperCase();
+        const label = (field.label || '').toUpperCase();
 
-      if (!pesoId && (id === 'PESO' || id === 'WEIGHT' || id === 'KG' || label.includes('PESO') || label.includes('WEIGHT'))) {
-        pesoId = field.id;
-      }
-      if (!tallaId && (id === 'TALLA' || id === 'ESTATURA' || id === 'ALTURA' || id === 'HEIGHT' || label.includes('TALLA') || label.includes('ESTATURA') || label.includes('ALTURA') || label.includes('HEIGHT'))) {
-        tallaId = field.id;
-      }
-      if (!imcId && (id === 'IMC' || id === 'BMI' || label.includes('IMC') || label.includes('BMI'))) {
-        imcId = field.id;
-      }
-    }
-  }
-
-  const pesoControl = this.form.get(pesoId);
-  const tallaControl = this.form.get(tallaId);
-  const imcControl = this.form.get(imcId);
-
-  if (!pesoControl || !tallaControl || !imcControl) return;
-  imcControl.disable();
-
-  const calculate = () => {
-    const peso = parseFloat(pesoControl.value);
-    let talla = parseFloat(tallaControl.value);
-
-    if (isNaN(peso) || isNaN(talla) || talla <= 0) {
-      imcControl.setValue(null);
-      return;
-    }
-
-    const label = (tallaControl['_rawValidatorsLabel'] || tallaControl['_label'] || '').toString().toUpperCase();
-    const isCm = label.includes('CM') || talla > 3;
-    if (isCm) talla = talla / 100;
-
-    const imc = peso / (talla * talla);
-    imcControl.setValue(imc.toFixed(2));
-  };
-
-  pesoControl.valueChanges.subscribe(calculate);
-  tallaControl.valueChanges.subscribe(calculate);
-  calculate();
-}
-
-
-    console.log('Auto-BMI Config:', { pesoId, tallaId, imcId });
-
-    if (pesoId && tallaId && imcId) {
-      const pesoControl = this.form.get(pesoId);
-      const tallaControl = this.form.get(tallaId);
-      const imcControl = this.form.get(imcId);
-
-      if (pesoControl && tallaControl && imcControl) {
-        // Disable IMC to prevent manual edit
-        imcControl.disable();
-
-        const calculate = () => {
-          const peso = parseFloat(pesoControl.value);
-          let talla = parseFloat(tallaControl.value);
-
-          if (!isNaN(peso) && !isNaN(talla) && talla > 0 && peso > 0) {
-            // Heuristic: If height is likely in cm (e.g. > 3), convert to meters
-            if (talla > 3) {
-              talla = talla / 100;
-            }
-
-            const imc = peso / (talla * talla);
-            imcControl.setValue(imc.toFixed(2));
-          } else {
-            imcControl.setValue('');
-          }
-        };
-
-        // Trigger initial calculation
-        calculate();
-
-        pesoControl.valueChanges.subscribe(calculate);
-        tallaControl.valueChanges.subscribe(calculate);
+        if (!pesoId && (id === 'PESO' || id === 'WEIGHT' || id === 'KG' || label.includes('PESO') || label.includes('WEIGHT'))) {
+          pesoId = field.id;
+        }
+        if (!tallaId && (id === 'TALLA' || id === 'ESTATURA' || id === 'ALTURA' || id === 'HEIGHT' || label.includes('TALLA') || label.includes('ESTATURA') || label.includes('ALTURA') || label.includes('HEIGHT'))) {
+          tallaId = field.id;
+        }
+        if (!imcId && (id === 'IMC' || id === 'BMI' || label.includes('IMC') || label.includes('BMI'))) {
+          imcId = field.id;
+        }
       }
     }
+
+    const pesoControl = this.form.get(pesoId);
+    const tallaControl = this.form.get(tallaId);
+    const imcControl = this.form.get(imcId);
+
+    if (!pesoControl || !tallaControl || !imcControl) return;
+    imcControl.disable();
+
+    const calculate = () => {
+      const peso = parseFloat(pesoControl.value);
+      let talla = parseFloat(tallaControl.value);
+
+      if (isNaN(peso) || isNaN(talla) || talla <= 0) {
+        imcControl.setValue(null);
+        return;
+      }
+
+      const isCm = talla > 3; // assume centimeters if value is greater than typical meters
+      if (isCm) talla = talla / 100;
+
+      const imc = peso / (talla * talla);
+      imcControl.setValue(imc.toFixed(2));
+    };
+
+    pesoControl.valueChanges.subscribe(calculate);
+    tallaControl.valueChanges.subscribe(calculate);
+    calculate();
   }
 
   private buildValidatorsForField(field: CRFField): ValidatorFn[] {
@@ -417,6 +379,10 @@ export class CrfModalComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   private startAutoSave(): void {
+    if (this.autoSaveHandle !== null) {
+      clearInterval(this.autoSaveHandle);
+    }
+
     this.autoSaveHandle = setInterval(() => {
       const key = this.getDraftKey();
       if (this.form) {
@@ -534,8 +500,9 @@ export class CrfModalComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   close(): void {
-    if (this.autoSaveHandle) {
+    if (this.autoSaveHandle !== null) {
       clearInterval(this.autoSaveHandle);
+      this.autoSaveHandle = null;
     }
     this.open = false;
     this.closed.emit();

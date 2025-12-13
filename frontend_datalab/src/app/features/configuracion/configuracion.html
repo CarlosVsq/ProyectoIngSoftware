@@ -147,14 +147,13 @@
 
       <button *ngIf="usuarioRol === 'Investigadora Principal' || usuarioRol === 'Administrador'"
         (click)="guardarRoles()"
-        class="w-full mt-4 bg-blue-700 text-white py-2 rounded-md hover:bg-blue-800 transition flex items-center justify-center gap-2"
-        [disabled]="isSubmitting">
-        <span class="material-icons text-sm" *ngIf="!isSubmitting">save</span>
-        <span class="material-icons text-sm animate-spin" *ngIf="isSubmitting">refresh</span>
+        class="w-full mt-4 bg-blue-700 text-white py-2 rounded-md hover:bg-blue-800 transition flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+        [disabled]="savingRoles || !rolesDirty">
+        <span class="material-icons text-sm" *ngIf="!savingRoles">save</span>
+        <span class="material-icons text-sm animate-spin" *ngIf="savingRoles">refresh</span>
         Guardar Cambios
       </button>
     </section>
-
 
   <!-- MODAL AGREGAR USUARIO -->
   <div *ngIf="showUserModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -182,9 +181,9 @@
         <div class="flex justify-end gap-3 mt-6">
           <button type="button" (click)="cerrarModalUsuario()"
             class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded">Cancelar</button>
-          <button type="submit" [disabled]="isSubmitting || userForm.invalid"
+          <button type="submit" [disabled]="savingUser || userForm.invalid"
             class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-2">
-            <span *ngIf="isSubmitting" class="material-icons animate-spin text-sm">refresh</span>
+            <span *ngIf="savingUser" class="material-icons animate-spin text-sm">refresh</span>
             Guardar
           </button>
         </div>
@@ -193,4 +192,5 @@
   </div>
 
   <app-logout-panel></app-logout-panel>
+  </main>
 </div>

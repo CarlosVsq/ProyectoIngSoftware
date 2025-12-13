@@ -25,7 +25,9 @@ export class ConfiguracionComponent implements OnInit {
   // Modal State
   showUserModal = false;
   userForm: FormGroup;
-  isSubmitting = false;
+  savingUser = false;
+  savingRoles = false;
+  rolesDirty = false;
 
   @ViewChild(LogoutPanelComponent)
   logoutPanel!: LogoutPanelComponent;
@@ -53,7 +55,10 @@ export class ConfiguracionComponent implements OnInit {
 
   loadData() {
     this.usuarioService.listarUsuarios().subscribe(users => this.usuarios = users);
-    this.rolService.listarRoles().subscribe(roles => this.roles = roles);
+    this.rolService.listarRoles().subscribe(roles => {
+      this.roles = roles;
+      this.rolesDirty = false;
+    });
   }
 
   abrirLogoutPanel() {
@@ -72,17 +77,17 @@ export class ConfiguracionComponent implements OnInit {
 
   guardarUsuario() {
     if (this.userForm.invalid) return;
-    this.isSubmitting = true;
+    this.savingUser = true;
     this.usuarioService.crearUsuario(this.userForm.value).subscribe({
       next: () => {
         alert('Usuario creado exitosamente');
-        this.isSubmitting = false;
+        this.savingUser = false;
         this.cerrarModalUsuario();
         this.loadData();
       },
       error: (err) => {
         alert('Error al crear usuario');
-        this.isSubmitting = false;
+        this.savingUser = false;
       }
     });
   }
@@ -108,29 +113,26 @@ export class ConfiguracionComponent implements OnInit {
 
   // Permissions Management
   togglePermiso(rol: Rol, permiso: keyof Rol) {
-    // Only update local state, don't call service yet
     // @ts-ignore
     rol[permiso] = !rol[permiso];
+    this.rolesDirty = true;
   }
 
   guardarRoles() {
-    if (!confirm('¿Desea guardar los cambios en los permisos?')) return;
+    if (!this.rolesDirty || this.savingRoles) return;
 
-    this.isSubmitting = true;
-    const requests = this.roles.map(rol => this.rolService.actualizarPermisos(rol));
-
-    forkJoin(requests).subscribe({
+    this.savingRoles = true;
+    forkJoin(this.roles.map(rol => this.rolService.actualizarPermisos(rol))).subscribe({
       next: () => {
         alert('Permisos actualizados exitosamente');
-        this.isSubmitting = false;
-        // No need to reload data as we have the latest state
+        this.rolesDirty = false;
+        this.savingRoles = false;
       },
       error: () => {
         alert('Error al actualizar uno o más permisos');
-        this.isSubmitting = false;
+        this.savingRoles = false;
         this.loadData(); // Revert to server state on error
       }
     });
   }
 }
-
