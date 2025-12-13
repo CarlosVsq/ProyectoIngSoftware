@@ -8,6 +8,7 @@ import { CrfService } from '../crf/crf.service';
   selector: 'app-variables-modal',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
+  styleUrls: ['./variables-modal.scss'], // Add this
   template: `
     <div *ngIf="open" class="fixed inset-0 bg-black/40 flex justify-center items-center z-50">
       <div class="bg-white rounded-xl shadow-xl w-11/12 max-w-6xl overflow-hidden max-h-[90vh] flex flex-col">
@@ -117,6 +118,7 @@ import { CrfService } from '../crf/crf.service';
                       <th class="px-4 py-2">Enunciado</th>
                       <th class="px-4 py-2">Tipo</th>
                       <th class="px-4 py-2">Sección</th>
+                      <th class="px-4 py-2 text-center">Obligatoria</th>
                       <th class="px-4 py-2">Acción</th>
                     </tr>
                   </thead>
@@ -126,6 +128,13 @@ import { CrfService } from '../crf/crf.service';
                       <td class="px-4 py-2">{{ v.enunciado }}</td>
                       <td class="px-4 py-2">{{ v.tipo_dato || v.tipoDato }}</td>
                       <td class="px-4 py-2 text-gray-500">{{ v.seccion }}</td>
+                      <td class="px-4 py-2 text-center">
+                         <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+                            <input type="checkbox" [checked]="v.es_obligatoria || v.esObligatoria" (change)="toggleObligatoria(v, $event)" 
+                                   class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer border-gray-300"/>
+                            <label class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
+                        </div>
+                      </td>
                       <td class="px-4 py-2">
                           <button (click)="eliminar(v)" class="text-red-500 hover:underline text-xs font-bold">ELIMINAR</button>
                       </td>
@@ -181,7 +190,8 @@ export class VariablesModalComponent implements OnInit {
           codigo_variable: v.codigo_variable || v.codigoVariable,
           enunciado: v.enunciado,
           tipo_dato: v.tipo_dato || v.tipoDato,
-          seccion: v.seccion || v.seccionVariable || 'Generales'
+          seccion: v.seccion || v.seccionVariable || 'Generales',
+          es_obligatoria: v.es_obligatoria ?? v.esObligatoria
         }));
       },
       error: () => {
@@ -193,7 +203,8 @@ export class VariablesModalComponent implements OnInit {
               codigoVariable: f.id,
               enunciado: f.label,
               tipoDato: f.type,
-              seccion: s.title
+              seccion: s.title,
+              es_obligatoria: f.required
             });
           }));
           this.variables = flat;
@@ -217,6 +228,7 @@ export class VariablesModalComponent implements OnInit {
     this.crfService.crearVariable(val).subscribe({
       next: (res) => {
         alert('Variable creada exitosamente');
+        this.crfService.clearCache(); // Clear cache
         this.form.reset({
           codigoVariable: '',
           enunciado: '',
@@ -247,6 +259,7 @@ export class VariablesModalComponent implements OnInit {
     this.crfService.deleteVariable(codigo).subscribe({
       next: () => {
         alert('Variable eliminada');
+        this.crfService.clearCache(); // Clear cache
         this.loadVariables();
       },
       error: (err) => {
@@ -260,6 +273,30 @@ export class VariablesModalComponent implements OnInit {
     const input = event.target as HTMLInputElement;
     input.value = input.value.toUpperCase().replace(/[^A-Z0-9_]/g, '');
     this.form.get('codigoVariable')?.setValue(input.value);
+  }
+
+  toggleObligatoria(v: any, event: any) {
+    const checked = event.target.checked;
+    const codigo = v.codigo_variable || v.codigoVariable;
+
+    // Optimistic update
+    v.es_obligatoria = checked;
+    v.esObligatoria = checked;
+
+    this.crfService.actualizarObligatoria(codigo, checked).subscribe({
+      next: () => {
+        console.log('Estado actualizado');
+        this.crfService.clearCache(); // Clear cache
+      },
+      error: (err) => {
+        console.error('Error actualizando:', err);
+        alert('Error al actualizar estado. Se revertirá el cambio.');
+        // Revert
+        v.es_obligatoria = !checked;
+        v.esObligatoria = !checked;
+        event.target.checked = !checked;
+      }
+    });
   }
 
   close() {

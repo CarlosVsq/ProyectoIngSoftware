@@ -49,4 +49,12 @@ public class VariableService {
     public void eliminarVariable(String codigo) {
         variableRepository.deleteByCodigoVariable(codigo);
     }
+
+    @Transactional
+    public Variable actualizarEstadoObligatorio(String codigo, boolean esObligatoria) {
+        Variable variable = variableRepository.findByCodigoVariable(codigo)
+                .orElseThrow(() -> new RuntimeException("Variable no encontrada: " + codigo));
+        variable.setEsObligatoria(esObligatoria);
+        return variableRepository.save(variable);
+    }
 }

@@ -1,0 +1,17 @@
+
+/* Custom Toggle Switch Styles */
+.toggle-checkbox:checked {
+  right: 0;
+  border-color: #68D391;
+}
+.toggle-checkbox:checked + .toggle-label {
+  background-color: #68D391;
+}
+.toggle-checkbox {
+  right: 0;
+  z-index: 10;
+  transition: all 0.3s;
+}
+.toggle-label {
+  width: 2.5rem; /* w-10 */
+}
