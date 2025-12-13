@@ -10,8 +10,8 @@ import { CrfService } from '../crf/crf.service';
   imports: [CommonModule, ReactiveFormsModule],
   styleUrls: ['./variables-modal.scss'], // Add this
   template: `
-    <div *ngIf="open" class="fixed inset-0 bg-black/40 flex justify-center items-center z-50">
-      <div class="bg-white rounded-xl shadow-xl w-11/12 max-w-6xl overflow-hidden max-h-[90vh] flex flex-col">
+    <div *ngIf="open" class="fixed inset-0 bg-black/40 flex justify-center items-center z-50 transition-opacity duration-300">
+      <div class="bg-white rounded-xl shadow-xl w-11/12 max-w-6xl overflow-hidden max-h-[90vh] flex flex-col animate-modal-enter">
         <div class="px-6 py-4 border-b flex items-center justify-between bg-gray-50">
           <h2 class="text-lg font-semibold text-gray-800">Personalizar Formulario (Variables)</h2>
           <button class="text-gray-500 hover:text-red-600" (click)="close()">✕</button>
@@ -123,7 +123,7 @@ import { CrfService } from '../crf/crf.service';
                     </tr>
                   </thead>
                   <tbody class="divide-y">
-                    <tr *ngFor="let v of variables">
+                    <tr *ngFor="let v of variables" class="hover:bg-blue-50 transition-colors duration-200">
                       <td class="px-4 py-2 font-mono text-xs">{{ v.codigo_variable || v.codigoVariable }}</td>
                       <td class="px-4 py-2">{{ v.enunciado }}</td>
                       <td class="px-4 py-2">{{ v.tipo_dato || v.tipoDato }}</td>
