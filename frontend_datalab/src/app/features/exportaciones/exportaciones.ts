@@ -23,11 +23,8 @@ export class ExportacionesComponent implements AfterViewInit {
   @ViewChild(LogoutPanelComponent)
   logoutPanel!: LogoutPanelComponent;
 
-  recentExports = [
-    { title: 'Base Completa', date: '08 Dec 2025', status: 'Completado', icon: 'table_view', color: 'bg-indigo-100 text-indigo-700' },
-    { title: 'Casos vs Controles', date: '07 Dec 2025', status: 'Completado', icon: 'analytics', color: 'bg-green-100 text-green-700' },
-    { title: 'Reporte Mensual', date: '01 Dec 2025', status: 'Archivado', icon: 'assignment', color: 'bg-gray-100 text-gray-700' }
-  ];
+
+
 
   constructor(private auth: AuthService, private http: HttpClient) {
     this.usuarioNombre = this.auth.getUserName();
