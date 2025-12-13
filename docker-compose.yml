@@ -57,7 +57,7 @@ services:
     build:
       context: ./frontend_datalab
       args:
-        NG_APP_BACKEND_BASE: ${NG_APP_BACKEND_BASE:-http://pacheco.chillan.ubiobio.cl:8038}
+        NG_APP_BACKEND_BASE: ${NG_APP_BACKEND_BASE:-http://localhost:8038}
     depends_on:
       app:
         condition: service_healthy
