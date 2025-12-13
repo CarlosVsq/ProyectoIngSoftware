@@ -125,13 +125,13 @@
             <div class="flex items-start sm:items-center gap-3">
               <span class="material-icons text-lg opacity-80">{{ getIconForAction(reg.accion) }}</span>
 
-              <div class="flex flex-col">
+              <div class="flex flex-col min-w-0 flex-1">
                 <p class="font-medium">
                   {{ reg.accion }}
                   <span class="font-normal text-xs opacity-80" *ngIf="reg.tablaAfectada">en {{ reg.tablaAfectada
                     }}</span>
                 </p>
-                <p class="text-xs opacity-75 truncate max-w-[200px]" title="{{ reg.detalleCambio }}">
+                <p class="text-xs opacity-75 truncate max-w-[200px] sm:max-w-none" title="{{ reg.detalleCambio }}">
                   {{ reg.detalleCambio }}
                 </p>
               </div>
