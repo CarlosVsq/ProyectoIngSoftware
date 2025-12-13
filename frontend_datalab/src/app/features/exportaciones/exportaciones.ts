@@ -45,7 +45,7 @@ export class ExportacionesComponent implements AfterViewInit {
   }
 
   private loadChartData() {
-    this.http.get<any>('http://localhost:8080/api/export/stats').subscribe({
+    this.http.get<any>(`${API_BASE_URL}/export/stats`).subscribe({
       next: (data) => {
         this.renderExportChart(data);
       },
