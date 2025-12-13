@@ -106,7 +106,8 @@ public class ParticipanteService {
         }
 
         /**
-         * Guardar respuestas con validacion basica por tipo y reglas declaradas en la variable.
+         * Guardar respuestas con validacion basica por tipo y reglas declaradas en la
+         * variable.
          */
         @Transactional
         public void guardarRespuestas(Integer participanteId, Map<String, String> respuestasMap,
@@ -192,8 +193,7 @@ public class ParticipanteService {
 
         private boolean isFichaCompleta(Map<Integer, String> respuestasActuales, GrupoParticipante grupo) {
                 List<Variable> requeridas = variableRepository.findAll().stream()
-                                // .filter(Variable::isEsObligatoria) // Ahora se requieren todas para estar
-                                // COMPLETA
+                                .filter(Variable::isEsObligatoria)
                                 .filter(v -> {
                                         String codigo = v.getCodigoVariable() != null
                                                         ? v.getCodigoVariable().toUpperCase()

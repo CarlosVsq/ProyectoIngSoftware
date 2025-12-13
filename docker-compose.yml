@@ -33,7 +33,7 @@ services:
       start_period: 30s
     environment:
       SPRING_PROFILES_ACTIVE: prod
-      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/DBB_DATALAB?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/DBB_DATALAB?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=UTF-8
       SPRING_DATASOURCE_USERNAME: ${MYSQL_USER:-datalab_user}
       SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD:-password_datalab_user}
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
