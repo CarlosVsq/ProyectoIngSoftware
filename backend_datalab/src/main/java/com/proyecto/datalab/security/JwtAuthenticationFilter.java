@@ -1,6 +1,8 @@
 package com.proyecto.datalab.security;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.proyecto.datalab.service.auth.JwtService;
+import com.proyecto.datalab.web.dto.common.ApiResponse;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -10,12 +12,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Filtro JWT - Intercepta todas las requests y valida el token
@@ -28,6 +32,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final CustomUserDetailsService userDetailsService;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
     protected void doFilterInternal(
@@ -51,8 +56,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             // 4. Si hay username y no está autenticado
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 
-                // 5. Cargar usuario desde BD
-                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                UserDetails userDetails;
+                try {
+                    // 5. Cargar usuario desde BD
+                    userDetails = userDetailsService.loadUserByUsername(username);
+                } catch (UsernameNotFoundException ex) {
+                    log.warn("Intento de acceso con usuario inexistente: {}", username);
+                    writeAuthError(response, HttpServletResponse.SC_UNAUTHORIZED, "Usuario no encontrado");
+                    return;
+                }
+
+                // Usuario bloqueado/inactivo
+                if (!userDetails.isAccountNonLocked() || !userDetails.isEnabled()) {
+                    log.warn("Usuario bloqueado o inactivo: {}", username);
+                    writeAuthError(response, HttpServletResponse.SC_UNAUTHORIZED, "Usuario bloqueado o inactivo");
+                    return;
+                }
                 
                 // 6. Validar token
                 if (jwtService.isTokenValid(token, userDetails)) {
@@ -69,11 +88,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                     
                     log.debug("Usuario autenticado: {}", username);
+                } else {
+                    log.warn("Token inválido o expirado para usuario: {}", username);
+                    writeAuthError(response, HttpServletResponse.SC_UNAUTHORIZED, "Token inválido o expirado");
+                    return;
                 }
             }
             
         } catch (Exception e) {
             log.error("Error en filtro JWT: {}", e.getMessage());
+            writeAuthError(response, HttpServletResponse.SC_UNAUTHORIZED, "Error de autenticación");
+            return;
         }
         
         // 8. Continuar con el filtro
@@ -91,5 +116,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
         
         return null;
+    }
+
+    private void writeAuthError(HttpServletResponse response, int status, String message) throws IOException {
+        if (response.isCommitted()) {
+            return;
+        }
+        response.setStatus(status);
+        response.setContentType("application/json");
+        response.setCharacterEncoding(StandardCharsets.UTF_8.name());
+        ApiResponse<Void> body = ApiResponse.error(message);
+        response.getWriter().write(objectMapper.writeValueAsString(body));
+        response.getWriter().flush();
     }
 }

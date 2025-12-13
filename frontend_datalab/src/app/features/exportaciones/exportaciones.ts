@@ -5,6 +5,7 @@ import { Chart, registerables } from 'chart.js';
 import { AlertPanelComponent } from '../../alert-panel/alert-panel.component';
 import { LogoutPanelComponent } from '../../shared/logout-panel/logout-panel.component';
 import { AuthService } from '../../shared/auth/auth.service';
+import { API_BASE_URL } from '../../shared/config/api.config';
 
 Chart.register(...registerables);
 
@@ -140,15 +141,15 @@ export class ExportacionesComponent implements AfterViewInit {
   }
 
   descargarExcel(): void {
-    this.downloadFile('http://localhost:8080/api/export/excel', 'datos_completos.xlsx');
+    this.downloadFile(`${API_BASE_URL}/export/excel`, 'datos_completos.xlsx');
   }
 
   descargarCsv(): void {
-    this.downloadFile('http://localhost:8080/api/export/csv-stata', 'datos_stata.csv');
+    this.downloadFile(`${API_BASE_URL}/export/csv-stata`, 'datos_stata.csv');
   }
 
   descargarLeyenda(): void {
-    this.downloadFile('http://localhost:8080/api/export/leyenda-pdf', 'leyenda_variables.pdf');
+    this.downloadFile(`${API_BASE_URL}/export/leyenda-pdf`, 'leyenda_variables.pdf');
   }
 
   private downloadFile(url: string, filename: string) {

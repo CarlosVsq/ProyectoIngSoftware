@@ -8,8 +8,6 @@ services:
       MYSQL_USER: ${MYSQL_USER:-datalab_user}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD:-password_datalab_user}
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_password_datalab}
-    ports:
-      - "3306:3306"
     volumes:
       - db_data:/var/lib/mysql
       - ./BDD/init:/docker-entrypoint-initdb.d:ro
@@ -27,6 +25,12 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/actuator/health" ]
+      interval: 15s
+      timeout: 10s
+      retries: 20
+      start_period: 30s
     environment:
       SPRING_PROFILES_ACTIVE: prod
       SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/DBB_DATALAB?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
@@ -35,7 +39,7 @@ services:
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SERVER_PORT: ${SERVER_PORT:-8080}
     ports:
-      - "${SERVER_PORT:-8080}:8080"
+      - "8038:8080"
 
   phpmyadmin:
     image: phpmyadmin:5
@@ -46,13 +50,16 @@ services:
       PMA_HOST: db
       PMA_PORT: 3306
     ports:
-      - "8081:80"
+      - "8039:80"
   frontend:
     build:
       context: ./frontend_datalab
+    depends_on:
+      app:
+        condition: service_healthy
     environment:
       NODE_ENV: production
     ports:
-      - 80:80
+      - 8040:80
 volumes:
   db_data:

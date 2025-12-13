@@ -8,6 +8,7 @@ import { CrfModalComponent } from '../crf/crf-modal.component';
 import { ParticipanteService } from '../../shared/participantes/participante.service';
 import { AuthService } from '../../shared/auth/auth.service';
 import { ComentarioService } from '../../shared/comentarios/comentario.service';
+import { API_BASE_URL } from '../../shared/config/api.config';
 
 @Component({
     selector: 'app-lista-participantes',
@@ -70,10 +71,24 @@ export class ListaParticipantesComponent implements OnInit {
                 const rawData = resp.data || [];
                 this.participantes = rawData.map((c: any) => {
                     const estadoAnalisis = this.analizarEstado(c);
+                    // Use backend status if available, otherwise fallback to frontend analysis
+                    // Normalize backend 'COMPLETA' to 'COMPLETO' simply for UI consistency if needed, 
+                    // but better to just use what backend gives or standardise.
+                    // Let's rely on backend status primarily.
+                    let estado = c.estadoFicha || (estadoAnalisis.completo ? 'COMPLETA' : 'INCOMPLETA');
+                    
+                    // Determine color based on state
+                    let color = 'bg-purple-600'; // Default Incomplete
+                    if (estado === 'COMPLETA' || estado === 'COMPLETO') {
+                        color = 'bg-green-600';
+                    } else if (estado === 'NO_COMPLETABLE') {
+                        color = 'bg-gray-600';
+                    }
+
                     return {
                         ...c,
-                        estadoFicha: estadoAnalisis.completo ? 'COMPLETO' : 'INCOMPLETO',
-                        colorEstado: estadoAnalisis.completo ? 'bg-green-600' : 'bg-purple-600',
+                        estadoFicha: estado,
+                        colorEstado: color,
                         variablesFaltantes: estadoAnalisis.faltantes,
                         resumenRespuestas: c.respuestas && c.respuestas.length
                             ? c.respuestas.slice(0, 3).map((r: any) => `${r.codigoVariable}: ${r.valor} `).join(' | ')
@@ -96,7 +111,7 @@ export class ListaParticipantesComponent implements OnInit {
         this.stats.total = this.participantes.length;
         this.stats.casos = this.participantes.filter(p => (p.grupo || '').toUpperCase() === 'CASO').length;
         this.stats.controles = this.participantes.filter(p => (p.grupo || '').toUpperCase() === 'CONTROL').length;
-        this.stats.completados = this.participantes.filter(p => p.estadoFicha === 'COMPLETO').length;
+        this.stats.completados = this.participantes.filter(p => p.estadoFicha === 'COMPLETA' || p.estadoFicha === 'COMPLETO').length;
     }
 
     applyFilters() {
@@ -126,7 +141,12 @@ export class ListaParticipantesComponent implements OnInit {
 
         const respuestasIds = new Set<string>();
         if (participante.respuestas) {
-            participante.respuestas.forEach((r: any) => respuestasIds.add(r.codigoVariable));
+            participante.respuestas.forEach((r: any) => {
+                // Only count as answered if value is not empty
+                if (r.valor !== null && r.valor !== undefined && String(r.valor).trim() !== '') {
+                    respuestasIds.add(r.codigoVariable);
+                }
+            });
         }
 
         const grupo = (participante.grupo || 'CONTROL').toLowerCase();
@@ -162,7 +182,7 @@ export class ListaParticipantesComponent implements OnInit {
 
     verPdf(id: number) {
         if (!id) return;
-        window.open(`http://localhost:8080/api/export/participante/${id}/pdf`, '_blank');
+        window.open(`${API_BASE_URL}/export/participante/${id}/pdf`, '_blank');
     }
 
     editar(p: any) {

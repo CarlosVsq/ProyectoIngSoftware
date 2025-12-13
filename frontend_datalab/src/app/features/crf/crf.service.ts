@@ -6,10 +6,11 @@ import { CRFSchema, CRFFieldType, CRFSection } from './schema';
 import { AuthService } from '../../shared/auth/auth.service';
 import { Observable, of } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
+import { API_BASE_URL } from '../../shared/config/api.config';
 
 @Injectable({ providedIn: 'root' })
 export class CrfService {
-  private readonly API_BASE = 'http://localhost:8080/api';
+  private readonly API_BASE = API_BASE_URL;
   private cachedSchema?: CRFSchema;
 
   clearCache() {
@@ -137,7 +138,7 @@ export class CrfService {
       const section = sections.get(title)!;
 
       // Filter out auto-generated or unwanted fields
-      if (codigo.toUpperCase() === 'CODIGO_PARTICIPANTE' || codigo.toUpperCase() === 'CODIGO') return;
+      if (['CODIGO_PARTICIPANTE', 'CODIGO', 'IMC'].includes(codigo.toUpperCase())) return;
 
       const type = this.mapTipoDato(row.tipo_dato || row.tipoDato);
       let options = this.parseOptions(row.opciones);

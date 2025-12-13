@@ -4,6 +4,7 @@
 }
 @media (min-width: 1024px) {
   .content.with-sidebar {
-    margin-left: 16rem; /* w-64 */
+    margin-left: 0;
+    padding-left: 16rem; /* w-64 */
   }
 }

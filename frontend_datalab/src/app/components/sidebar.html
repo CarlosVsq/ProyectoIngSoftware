@@ -23,7 +23,7 @@
       <a routerLink="/dashboard" routerLinkActive="bg-blue-50 text-primary font-semibold"
         class="flex items-center gap-3 px-6 py-3 text-gray-600 hover:bg-blue-50 hover:text-primary transition">
         <span class="material-icons text-[20px]">home</span>
-        <span *ngIf="open">Inicio / Dashboard</span>
+        <span *ngIf="open">Inicio</span>
       </a>
 
       <a routerLink="/lista-participantes" routerLinkActive="bg-blue-50 text-primary font-semibold"
@@ -38,11 +38,6 @@
         <span *ngIf="open">Progreso de Reclutamiento</span>
       </a>
 
-      <a routerLink="/estadisticas" routerLinkActive="bg-blue-50 text-primary font-semibold"
-        class="flex items-center gap-3 px-6 py-3 text-gray-600 hover:bg-blue-50 hover:text-primary transition">
-        <span class="material-icons text-[20px]">science</span>
-        <span *ngIf="open">Estadísticas Clínicas</span>
-      </a>
 
       <a routerLink="/exportaciones" routerLinkActive="bg-blue-50 text-primary font-semibold"
         class="flex items-center gap-3 px-6 py-3 text-gray-600 hover:bg-blue-50 hover:text-primary transition">
@@ -64,9 +59,18 @@
     </nav>
   </div>
 
-  <!-- FOOTER -->
-  <footer class="px-6 py-3 text-xs text-gray-400 border-t border-gray-100">
-    v1.0.0 © 2025 DATALAB
+  <!-- FOOTER / USER INFO -->
+  <footer class="px-6 py-4 text-xs text-gray-400 border-t border-gray-100 space-y-3">
+    <div class="flex items-center gap-3">
+      <div class="h-10 w-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-semibold">
+        {{ usuarioIniciales }}
+      </div>
+      <div class="flex-1 min-w-0">
+        <p class="text-sm font-semibold text-gray-800 truncate">{{ usuarioNombre }}</p>
+        <p class="text-[11px] text-gray-500 truncate">{{ usuarioRol }}</p>
+      </div>
+    </div>
+    <div>v1.0.0 © 2025 DATALAB</div>
   </footer>
 </aside>
 

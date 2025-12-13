@@ -12,6 +12,7 @@ import { VariablesModalComponent } from './variables-modal.component';
 import { CRFSchema } from '../crf/schema';
 import { ActivatedRoute } from '@angular/router';
 import { ParticipanteService } from '../../shared/participantes/participante.service';
+import { API_BASE_URL } from '../../shared/config/api.config';
 
 Chart.register(...registerables);
 
@@ -52,24 +53,7 @@ export class ReclutamientoComponent implements OnInit, AfterViewInit {
   ngOnInit(): void {
     this.usuarioNombre = this.auth.getUserName();
     this.usuarioRol = this.auth.getUserRole();
-    this.dashboard.getResumen().subscribe({
-      next: (res: { data: DashboardResumen }) => {
-        this.resumen = res.data;
-        if (this.chart) {
-          this.chart.data.datasets[0].data = [
-            this.resumen.casos,
-            this.resumen.controles,
-            this.resumen.completas + this.resumen.incompletas
-          ];
-          this.chart.update();
-        } else {
-          this.renderChart();
-        }
-      },
-      error: () => {
-        // deja números mock si falla
-      }
-    });
+    this.cargarResumen();
 
     // Cargar schema primero para poder validar estados
     this.crfService.getSchema().subscribe(s => {
@@ -95,6 +79,27 @@ export class ReclutamientoComponent implements OnInit, AfterViewInit {
     });
   }
 
+  cargarResumen() {
+    this.dashboard.getResumen().subscribe({
+      next: (res: { data: DashboardResumen }) => {
+        this.resumen = res.data;
+        if (this.chart) {
+          this.chart.data.datasets[0].data = [
+            this.resumen.casos,
+            this.resumen.controles,
+            this.resumen.completas + this.resumen.incompletas
+          ];
+          this.chart.update();
+        } else {
+          this.renderChart();
+        }
+      },
+      error: () => {
+        // deja números mock si falla
+      }
+    });
+  }
+
   abrirLogoutPanel(panel: LogoutPanelComponent) {
     panel.showPanel();
   }
@@ -112,6 +117,7 @@ export class ReclutamientoComponent implements OnInit, AfterViewInit {
     this.crfPreload = null;
     this.crfParticipantId = null;
     this.cargarCrfs(); // Refrescar lista al cerrar
+    this.cargarResumen(); // Refrescar metricas
   }
 
   abrirVariables() {
@@ -158,7 +164,7 @@ export class ReclutamientoComponent implements OnInit, AfterViewInit {
     this.crfOpen = true;
   }
   verPdf(id: number) {
-    window.open(`http://localhost:8080/api/export/participante/${id}/pdf`, '_blank');
+    window.open(`${API_BASE_URL}/export/participante/${id}/pdf`, '_blank');
   }
 
   buscarPorCodigo() {
