@@ -1,92 +1,228 @@
 <!-- src/app/features/crf/crf-modal.component.html -->
 <div *ngIf="open" class="fixed inset-0 bg-black/40 flex justify-center items-start pt-6">
-  <div class="w-full max-w-4xl bg-white rounded-xl shadow-xl overflow-hidden">
-    <div class="px-6 py-4 border-b flex items-center justify-between">
-      <h2 class="text-lg font-semibold">
-        Registrar CRF — {{ (form.get('grupo')?.value || selectedGroup)?.toString().toUpperCase() }}
-      </h2>
-      <button class="text-gray-500 hover:text-red-600" (click)="close()">✕</button>
+  <div
+    class="w-full max-w-5xl bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl overflow-hidden border border-white/20">
+    <!-- Header -->
+    <div class="px-8 py-5 border-b border-gray-100 flex items-center justify-between bg-white/50">
+      <div>
+        <h2 class="text-xl font-bold text-gray-800 tracking-tight">
+          CRF Digital
+        </h2>
+        <p class="text-xs text-gray-500 font-medium uppercase tracking-wider mt-1">
+          Planilla: {{ (form.get('grupo')?.value || selectedGroup)?.toString().toUpperCase() }}
+        </p>
+      </div>
+      <button
+        class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-50 text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors"
+        (click)="close()">
+        <span class="material-icons text-lg">close</span>
+      </button>
     </div>
 
-   <form class="p-6 space-y-8 max-h-[75vh] overflow-y-auto bg-white scrollbar-thin scrollbar-thumb-gray-300 rounded-b-xl" [formGroup]="form">
+    <form class="p-8 space-y-10 max-h-[80vh] overflow-y-auto bg-gray-50/30 scrollbar-thin scrollbar-thumb-gray-200"
+      [formGroup]="form">
 
-      <!-- Grupo selector arriba siempre visible -->
-      <div class="flex items-center gap-4">
-        <label class="text-sm text-gray-600">Grupo:</label>
-        <label class="flex items-center gap-2">
-          <input type="radio" value="caso" formControlName="grupo" />
-          <span>caso</span>
-        </label>
-        <label class="flex items-center gap-2">
-          <input type="radio" value="control" formControlName="grupo" />
-          <span>control</span>
-        </label>
+      <!-- Selector de Grupo -->
+      <div class="bg-blue-50/50 p-4 rounded-xl border border-blue-100 flex flex-col md:flex-row md:items-center gap-4">
+        <span class="text-sm font-semibold text-blue-900">Asignar Grupo:</span>
+        <div class="flex gap-4">
+          <label class="cursor-pointer relative group">
+            <input type="radio" value="caso" formControlName="grupo" class="peer sr-only" />
+            <span
+              class="px-4 py-2 rounded-lg text-sm border border-transparent peer-checked:bg-white peer-checked:shadow-sm peer-checked:text-blue-700 peer-checked:font-semibold text-gray-500 hover:text-gray-700 transition-all flex items-center gap-2">
+              <span
+                class="w-2 h-2 rounded-full bg-blue-500 opacity-0 peer-checked:opacity-100 transition-opacity"></span>
+              Caso
+            </span>
+          </label>
+          <label class="cursor-pointer relative group">
+            <input type="radio" value="control" formControlName="grupo" class="peer sr-only" />
+            <span
+              class="px-4 py-2 rounded-lg text-sm border border-transparent peer-checked:bg-white peer-checked:shadow-sm peer-checked:text-purple-700 peer-checked:font-semibold text-gray-500 hover:text-gray-700 transition-all flex items-center gap-2">
+              <span
+                class="w-2 h-2 rounded-full bg-purple-500 opacity-0 peer-checked:opacity-100 transition-opacity"></span>
+              Control
+            </span>
+          </label>
+        </div>
       </div>
 
-      <!-- Secciones -->
-      <ng-container *ngFor="let s of schema.sections">
-        <section *ngIf="showSection(s)">
-          <h3 class="text-primary font-semibold mb-3">{{ s.title }}</h3>
+      <!-- Spinner de carga -->
+      <div *ngIf="!schema" class="flex justify-center py-10">
+        <span class="animate-spin h-8 w-8 border-4 border-blue-500 rounded-full border-t-transparent"></span>
+      </div>
 
-          <div class="grid md:grid-cols-2 gap-4">
-            <ng-container *ngFor="let f of s.fields">
-              <ng-container *ngIf="showField(f)">
-                <!-- text/number/date/textarea -->
-                <div *ngIf="f.type==='text' || f.type==='number' || f.type==='date' || f.type==='textarea'">
-                  <label class="text-sm text-gray-700 mb-1 block">{{ f.label }} <span *ngIf="f.required" class="text-red-500">*</span></label>
-                  <ng-container [ngSwitch]="f.type">
-                    <input *ngSwitchCase="'text'" class="border rounded-md px-3 py-2 w-full" [placeholder]="f.placeholder || f.label" [formControlName]="f.id" />
-                    <input *ngSwitchCase="'number'" type="number" class="border rounded-md px-3 py-2 w-full" [formControlName]="f.id" />
-                    <input *ngSwitchCase="'date'" type="date" class="border rounded-md px-3 py-2 w-full" [formControlName]="f.id" />
-                    <textarea *ngSwitchCase="'textarea'" rows="3" class="border rounded-md px-3 py-2 w-full" [formControlName]="f.id"></textarea>
-                  </ng-container>
-                </div>
+      <!-- Renderizado de Schema -->
+      <ng-container *ngIf="schema">
+        <ng-container *ngFor="let s of schema.sections">
+          <section *ngIf="showSection(s)" class="animate-fadeIn">
+            <div class="flex items-center gap-4 mb-6">
+              <h3 class="text-lg font-bold text-gray-800">{{ s.title }}</h3>
+              <div class="h-px bg-gray-200 flex-1"></div>
+            </div>
 
-                <!-- radio -->
-                <div *ngIf="f.type==='radio'">
-                  <label class="text-sm text-gray-700 mb-1 block">{{ f.label }}</label>
-                  <div class="flex flex-wrap gap-4">
-                    <label class="inline-flex items-center gap-2" *ngFor="let o of f.options">
-                      <input type="radio" [value]="o" [formControlName]="f.id" />
-                      <span>{{ o }}</span>
+            <div class="grid md:grid-cols-2 gap-x-8 gap-y-6">
+              <ng-container *ngFor="let f of s.fields">
+                <ng-container *ngIf="showField(f)">
+                  <!-- Wrapper del campo -->
+                  <div class="group relative">
+
+                    <!-- Label -->
+                    <label
+                      class="block text-sm font-medium text-gray-700 mb-2 transition-colors group-hover:text-primary">
+                      {{ f.label }} <span *ngIf="f.required" class="text-red-400 text-xs align-top">*</span>
                     </label>
-                  </div>
-                </div>
 
-                <!-- checkbox (FormArray) -->
-                <div *ngIf="f.type==='checkbox'">
-                  <label class="text-sm text-gray-700 mb-1 block">{{ f.label }}</label>
-                  <div class="flex flex-wrap gap-4">
-                    <label class="inline-flex items-center gap-2" *ngFor="let o of f.options">
-                      <input
-                        type="checkbox"
-                        [checked]="(form.get(f.id)?.value || []).includes(o)"
-                        (change)="onCheckboxChange($event, f.id, o)"
-                      />
-                      <span>{{ o }}</span>
-                    </label>
-                  </div>
-                </div>
+                    <!-- Inputs -->
+                    <ng-container [ngSwitch]="f.type">
 
-                <!-- select (opcional si lo usas) -->
-                <div *ngIf="f.type==='select'">
-                  <label class="text-sm text-gray-700 mb-1 block">{{ f.label }}</label>
-                  <select class="border rounded-md px-3 py-2 w-full" [formControlName]="f.id">
-                    <option [ngValue]="null">Seleccione…</option>
-                    <option *ngFor="let o of f.options" [value]="o">{{ o }}</option>
-                  </select>
-                </div>
+                      <!-- Text / Number / Date -->
+                      <input *ngSwitchCase="'text'" type="text"
+                        class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none placeholder-gray-300 hover:border-gray-300 disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
+                        [class.border-red-500]="isFieldInvalid(f.id)" [placeholder]="f.placeholder || 'Escribe aquí...'"
+                        [formControlName]="f.id" />
+
+                      <input *ngSwitchCase="'number'" type="number"
+                        class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none placeholder-gray-300 hover:border-gray-300 disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
+                        [class.border-red-500]="isFieldInvalid(f.id)" [formControlName]="f.id" />
+
+                      <input *ngSwitchCase="'date'" type="date"
+                        class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none text-gray-500 hover:border-gray-300"
+                        [class.border-red-500]="isFieldInvalid(f.id)" [formControlName]="f.id" />
+
+                      <!-- Textarea -->
+                      <textarea *ngSwitchCase="'textarea'" rows="3"
+                        class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none placeholder-gray-300 hover:border-gray-300 resize-none"
+                        [class.border-red-500]="isFieldInvalid(f.id)" [formControlName]="f.id"></textarea>
+
+                      <!-- Select -->
+                      <div *ngSwitchCase="'select'" class="relative">
+                        <select
+                          class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none appearance-none hover:border-gray-300 cursor-pointer"
+                          [class.border-red-500]="isFieldInvalid(f.id)" [formControlName]="f.id">
+                          <option [ngValue]="null" class="text-gray-300">Seleccionar opción...</option>
+                          <option *ngFor="let o of f.options" [value]="o">{{ o }}</option>
+                        </select>
+                        <span
+                          class="material-icons absolute right-3 top-3.5 text-gray-400 pointer-events-none text-lg">expand_more</span>
+                      </div>
+
+                    </ng-container>
+
+                    <!-- Radio -->
+                    <div *ngIf="f.type==='radio'" class="flex flex-wrap gap-2">
+                      <label class="cursor-pointer relative" *ngFor="let o of f.options">
+                        <input type="radio" [value]="o" [formControlName]="f.id" class="peer sr-only" />
+                        <span
+                          class="px-3 py-1.5 rounded-lg border border-gray-200 text-sm text-gray-600 bg-white peer-checked:bg-blue-50 peer-checked:text-blue-700 peer-checked:border-blue-200 transition-all hover:bg-gray-50 inline-block"
+                          [class.border-red-200]="isFieldInvalid(f.id)" [class.bg-red-50]="isFieldInvalid(f.id)">
+                          {{ o }}
+                        </span>
+                      </label>
+                    </div>
+
+                    <!-- Checkbox -->
+                    <div *ngIf="f.type==='checkbox'" class="flex flex-wrap gap-2">
+                      <label class="cursor-pointer relative" *ngFor="let o of f.options">
+                        <input type="checkbox" [checked]="(form.get(f.id)?.value || []).includes(o)"
+                          (change)="onCheckboxChange($event, f.id, o)" class="peer sr-only" />
+                        <span
+                          class="px-3 py-1.5 rounded-lg border border-gray-200 text-sm text-gray-600 bg-white peer-checked:bg-blue-50 peer-checked:text-blue-700 peer-checked:border-blue-200 transition-all hover:bg-gray-50 inline-block"
+                          [class.border-red-200]="isFieldInvalid(f.id)" [class.bg-red-50]="isFieldInvalid(f.id)">
+                          {{ o }}
+                        </span>
+                      </label>
+                    </div>
+
+                    <!-- Error msg -->
+                    <div *ngIf="isFieldInvalid(f.id)"
+                      class="text-xs text-red-500 mt-1.5 flex items-center gap-1 animate-pulse">
+                      <span class="material-icons text-[10px]">error</span>
+                      <span *ngIf="form.get(f.id)?.hasError('required')">Este campo es requerido.</span>
+                      <span *ngIf="form.get(f.id)?.hasError('min')">El valor es muy bajo.</span>
+                      <span *ngIf="form.get(f.id)?.hasError('max')">El valor es muy alto.</span>
+                    </div>
+                  </div>
+                </ng-container>
               </ng-container>
-            </ng-container>
-          </div>
-        </section>
+            </div>
+          </section>
+        </ng-container>
       </ng-container>
 
       <!-- Footer -->
-      <div class="flex items-center justify-end gap-3 pt-4 border-t">
-        <button type="button" class="px-4 py-2 rounded-lg bg-gray-200" (click)="guardarBorrador()">Guardar borrador</button>
-        <button type="button" class="px-4 py-2 rounded-lg bg-green-600 text-white" (click)="guardarFinal()">Guardar CRF</button>
+      <div class="flex items-center justify-between pt-6 border-t border-gray-100 mt-4">
+        <div class="text-xs text-gray-400 font-medium">
+          <span *ngIf="lastAutoSaveAt" class="flex items-center gap-2">
+            <span class="w-1.5 h-1.5 rounded-full bg-green-400"></span>
+            Guardado: {{ lastAutoSaveAt }}
+          </span>
+        </div>
+        <div class="flex items-center gap-3">
+          <button type="button"
+            class="px-6 py-2.5 rounded-xl border border-gray-200 text-gray-600 font-medium text-sm hover:bg-gray-50 transition-colors"
+            (click)="guardarBorrador()">
+            Guardar Avance
+          </button>
+          <button type="button"
+            class="px-6 py-2.5 rounded-xl bg-gray-900 text-white font-medium text-sm hover:bg-black shadow-lg shadow-gray-200 transition-all transform hover:-translate-y-0.5"
+            (click)="guardarFinal()">
+            Finalizar CRF
+          </button>
+        </div>
+      </div>
+
+      <div *ngIf="missingRequiredLabels.length"
+        class="bg-red-50 p-4 rounded-xl border border-red-100 flex items-start gap-3">
+        <span class="material-icons text-red-500 mt-0.5">warning</span>
+        <div>
+          <h4 class="text-sm font-semibold text-red-800">Faltan campos obligatorios</h4>
+          <p class="text-xs text-red-600 mt-1 leading-relaxed">
+            Completa los siguientes campos para finalizar: <br>
+            <span class="font-medium text-red-700">{{ missingRequiredLabels.join(', ') }}</span>
+          </p>
+        </div>
       </div>
     </form>
+  </div>
+
+  <!-- Justification Modal Overlay -->
+  <div *ngIf="showJustificationModal" class="absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-scaleIn">
+      <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+        <h3 class="font-bold text-gray-800">Justificación de Avance</h3>
+        <button (click)="cerrarJustificationModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+          <span class="material-icons">close</span>
+        </button>
+      </div>
+      
+      <div class="p-6">
+        <p class="text-sm text-gray-600 mb-4">
+          Por favor, indica el motivo por el cual no se ha completado la encuesta en este momento. Esta información quedará registrada en el historial.
+        </p>
+        <textarea
+          [(ngModel)]="justificationText"
+          rows="4"
+          placeholder="Escribe la justificación aquí..."
+          class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none resize-none"
+        ></textarea>
+      </div>
+
+      <div class="px-6 py-4 bg-gray-50 flex justify-end gap-3 border-t border-gray-100">
+        <button
+          (click)="cerrarJustificationModal()"
+          class="px-4 py-2 rounded-lg text-gray-600 font-medium text-sm hover:bg-gray-100 transition-colors"
+        >
+          Cancelar
+        </button>
+        <button
+          (click)="confirmarGuardarBorrador()"
+          [disabled]="!justificationText.trim()"
+          class="px-4 py-2 rounded-lg bg-blue-600 text-white font-medium text-sm hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-blue-200"
+        >
+          Confirmar y Guardar
+        </button>
+      </div>
+    </div>
   </div>
 </div>

@@ -1,0 +1,62 @@
+/* Custom Toggle Switch Styles */
+
+/* The knob (input) */
+.toggle-checkbox {
+  top: 0;
+  left: 0;
+  /* Premium smooth bouncy transition */
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.3s ease;
+  transform: translateX(0);
+  z-index: 10;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.toggle-checkbox:checked {
+  /* Move right by 1rem (2.5rem container - 1.5rem knob) */
+  transform: translateX(1rem);
+  border-color: #68D391;
+}
+
+/* The track (label) */
+.toggle-checkbox:checked+.toggle-label {
+  background-color: #68D391;
+}
+
+.toggle-label {
+  width: 2.5rem;
+  /* w-10 */
+  background-color: #e5e7eb;
+  /* gray-200 base */
+  transition: background-color 0.3s ease;
+}
+
+/* Modal Entrance Animation */
+@keyframes modalPopIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-modal-enter {
+  animation: modalPopIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Global Interactive Elements for this component */
+button {
+  transition: transform 0.1s ease-in-out, background-color 0.2s, color 0.2s;
+}
+
+button:active {
+  transform: scale(0.97);
+}
+
+/* Specific overrides if needed so close button doesn't shrink too weirdly */
+button.text-gray-500:active {
+  transform: scale(0.90);
+}

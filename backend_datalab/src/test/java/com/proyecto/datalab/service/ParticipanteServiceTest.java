@@ -102,92 +102,77 @@ class ParticipanteServiceTest {
     @Test
     @DisplayName("Crear participante del grupo CASO exitosamente")
     void testCrearParticipante_GrupoCaso_Exitoso() {
-        // Arrange
         Participante participanteNuevo = new Participante();
         participanteNuevo.setIdParticipante(5);
         participanteNuevo.setGrupo(GrupoParticipante.CASO);
 
         when(usuarioRepository.findById(1)).thenReturn(Optional.of(reclutador));
         when(participanteRepository.save(any(Participante.class)))
-            .thenAnswer(invocation -> {
-                Participante p = invocation.getArgument(0);
-                p.setIdParticipante(5);
-                return p;
-            });
+                .thenAnswer(invocation -> {
+                    Participante p = invocation.getArgument(0);
+                    p.setIdParticipante(5);
+                    return p;
+                });
         doNothing().when(auditoriaService).registrarAccion(
-            any(Usuario.class),
-            any(Participante.class),
-            anyString(),
-            anyString(),
-            anyString()
-        );
+                any(Usuario.class),
+                any(Participante.class),
+                anyString(),
+                anyString(),
+                anyString());
 
-        // Act
         Participante resultado = participanteService.crearParticipante(
-            "María González",
-            "555-1234",
-            "Calle Principal 123",
-            "CASO",
-            1
-        );
+                "María González",
+                "555-1234",
+                "Calle Principal 123",
+                "CASO",
+                1);
 
-        // Assert
         assertNotNull(resultado);
         assertEquals(GrupoParticipante.CASO, resultado.getGrupo());
         assertEquals(EstadoFicha.INCOMPLETA, resultado.getEstadoFicha());
         assertEquals(LocalDate.now(), resultado.getFechaInclusion());
-
-        // Verificar que se generó el código correcto
         assertEquals("CS5", resultado.getCodigoParticipante());
 
         verify(usuarioRepository, times(1)).findById(1);
         verify(participanteRepository, times(2)).save(any(Participante.class));
         verify(auditoriaService, times(1)).registrarAccion(
-            any(Usuario.class),
-            any(Participante.class),
-            eq("CREAR"),
-            eq("Participante"),
-            anyString()
-        );
+                any(Usuario.class),
+                any(Participante.class),
+                eq("CREAR"),
+                eq("Participante"),
+                anyString());
     }
 
     @Test
     @DisplayName("Crear participante del grupo CONTROL exitosamente")
     void testCrearParticipante_GrupoControl_Exitoso() {
-        // Arrange
         Participante participanteNuevo = new Participante();
         participanteNuevo.setIdParticipante(10);
         participanteNuevo.setGrupo(GrupoParticipante.CONTROL);
 
         when(usuarioRepository.findById(1)).thenReturn(Optional.of(reclutador));
         when(participanteRepository.save(any(Participante.class)))
-            .thenAnswer(invocation -> {
-                Participante p = invocation.getArgument(0);
-                p.setIdParticipante(10);
-                return p;
-            });
+                .thenAnswer(invocation -> {
+                    Participante p = invocation.getArgument(0);
+                    p.setIdParticipante(10);
+                    return p;
+                });
         doNothing().when(auditoriaService).registrarAccion(
-            any(Usuario.class),
-            any(Participante.class),
-            anyString(),
-            anyString(),
-            anyString()
-        );
+                any(Usuario.class),
+                any(Participante.class),
+                anyString(),
+                anyString(),
+                anyString());
 
-        // Act
         Participante resultado = participanteService.crearParticipante(
-            "Pedro Ramírez",
-            "555-5678",
-            "Avenida Libertad 456",
-            "CONTROL",
-            1
-        );
+                "Pedro Ramírez",
+                "555-5678",
+                "Avenida Libertad 456",
+                "CONTROL",
+                1);
 
-        // Assert
         assertNotNull(resultado);
         assertEquals(GrupoParticipante.CONTROL, resultado.getGrupo());
-
-        // Verificar que se generó el código correcto para CONTROL
         assertEquals("CT10", resultado.getCodigoParticipante());
 
         verify(usuarioRepository, times(1)).findById(1);
@@ -197,64 +182,44 @@ class ParticipanteServiceTest {
     @Test
     @DisplayName("Lanzar excepción cuando reclutador no existe")
     void testCrearParticipante_ReclutadorNoEncontrado() {
-        // Arrange
         when(usuarioRepository.findById(999)).thenReturn(Optional.empty());
 
-        // Act & Assert
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
             participanteService.crearParticipante(
-                "María González",
-                "555-1234",
-                "Calle Principal 123",
-                "CASO",
-                999
-            );
+                    "María González",
+                    "555-1234",
+                    "Calle Principal 123",
+                    "CASO",
+                    999);
         });
 
         assertEquals("Usuario reclutador no encontrado", exception.getMessage());
         verify(usuarioRepository, times(1)).findById(999);
         verify(participanteRepository, never()).save(any());
-        verify(auditoriaService, never()).registrarAccion(
-            any(), any(), anyString(), anyString(), anyString()
-        );
+        verify(auditoriaService, never()).registrarAccion(any(), any(), anyString(), anyString(), anyString());
     }
 
     @Test
     @DisplayName("Verificar que se registra auditoría al crear participante")
     void testCrearParticipante_RegistraAuditoria() {
-        // Arrange
         when(usuarioRepository.findById(1)).thenReturn(Optional.of(reclutador));
         when(participanteRepository.save(any(Participante.class)))
-            .thenAnswer(invocation -> {
-                Participante p = invocation.getArgument(0);
-                p.setIdParticipante(1);
-                return p;
-            });
-        doNothing().when(auditoriaService).registrarAccion(
-            any(Usuario.class),
-            any(Participante.class),
-            anyString(),
-            anyString(),
-            anyString()
-        );
+                .thenAnswer(invocation -> {
+                    Participante p = invocation.getArgument(0);
+                    p.setIdParticipante(1);
+                    return p;
+                });
+        doNothing().when(auditoriaService).registrarAccion(any(Usuario.class), any(Participante.class), anyString(),
+                anyString(), anyString());
 
-        // Act
-        participanteService.crearParticipante(
-            "María González",
-            "555-1234",
-            "Calle Principal 123",
-            "CASO",
-            1
-        );
+        participanteService.crearParticipante("María González", "555-1234", "Calle Principal 123", "CASO", 1);
 
-        // Assert
         verify(auditoriaService, times(1)).registrarAccion(
-            eq(reclutador),
-            any(Participante.class),
-            eq("CREAR"),
-            eq("Participante"),
-            contains("Se creó el participante ID:")
-        );
+                eq(reclutador),
+                any(Participante.class),
+                eq("CREAR"),
+                eq("Participante"),
+                contains("Se creo el participante ID:"));
     }
 
     // ==================== PRUEBAS GUARDAR RESPUESTAS ====================
@@ -262,10 +227,9 @@ class ParticipanteServiceTest {
     @Test
     @DisplayName("Guardar respuestas exitosamente (HU-15: Guardar formulario incompleto)")
     void testGuardarRespuestas_Exitoso() {
-        // Arrange
-        Map<Integer, String> respuestasMap = new HashMap<>();
-        respuestasMap.put(1, "45"); // edad
-        respuestasMap.put(2, "Masculino"); // género
+        Map<String, String> respuestasMap = new HashMap<>();
+        respuestasMap.put("1", "45"); // edad
+        respuestasMap.put("2", "Masculino"); // género
 
         Variable variable2 = new Variable();
         variable2.setIdVariable(2);
@@ -277,45 +241,30 @@ class ParticipanteServiceTest {
         when(variableRepository.findById(1)).thenReturn(Optional.of(variable));
         when(variableRepository.findById(2)).thenReturn(Optional.of(variable2));
         when(respuestaRepository.save(any(Respuesta.class))).thenAnswer(i -> i.getArgument(0));
-        doNothing().when(auditoriaService).registrarAccion(
-            any(Usuario.class),
-            any(Participante.class),
-            anyString(),
-            anyString(),
-            anyString()
-        );
+        doNothing().when(auditoriaService).registrarAccion(any(Usuario.class), any(Participante.class), anyString(),
+                anyString(), anyString());
 
-        // Act
-        participanteService.guardarRespuestas(1, respuestasMap, 1);
+        participanteService.guardarRespuestas(1, respuestasMap, 1, null, null, null, null);
 
-        // Assert
         verify(participanteRepository, times(1)).findById(1);
         verify(usuarioRepository, times(1)).findById(1);
         verify(variableRepository, times(1)).findById(1);
         verify(variableRepository, times(1)).findById(2);
         verify(respuestaRepository, times(2)).save(any(Respuesta.class));
-        verify(auditoriaService, times(2)).registrarAccion(
-            eq(reclutador),
-            eq(participante),
-            eq("ACTUALIZAR"),
-            eq("Respuesta"),
-            anyString()
-        );
+        verify(auditoriaService, times(2)).registrarAccion(eq(reclutador), eq(participante), eq("ACTUALIZAR"),
+                eq("Respuesta"), anyString());
     }
 
     @Test
     @DisplayName("Lanzar excepción cuando participante no existe al guardar respuestas")
     void testGuardarRespuestas_ParticipanteNoEncontrado() {
-        // Arrange
-        Map<Integer, String> respuestasMap = new HashMap<>();
-        respuestasMap.put(1, "45");
+        Map<String, String> respuestasMap = new HashMap<>();
+        respuestasMap.put("1", "45");
 
         when(participanteRepository.findById(999)).thenReturn(Optional.empty());
 
-        // Act & Assert
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            participanteService.guardarRespuestas(999, respuestasMap, 1);
-        });
+        RuntimeException exception = assertThrows(RuntimeException.class,
+                () -> participanteService.guardarRespuestas(999, respuestasMap, 1, null, null, null, null));
 
         assertEquals("Participante no encontrado", exception.getMessage());
         verify(participanteRepository, times(1)).findById(999);
@@ -325,17 +274,14 @@ class ParticipanteServiceTest {
     @Test
     @DisplayName("Lanzar excepción cuando usuario editor no existe")
     void testGuardarRespuestas_EditorNoEncontrado() {
-        // Arrange
-        Map<Integer, String> respuestasMap = new HashMap<>();
-        respuestasMap.put(1, "45");
+        Map<String, String> respuestasMap = new HashMap<>();
+        respuestasMap.put("1", "45");
 
         when(participanteRepository.findById(1)).thenReturn(Optional.of(participante));
         when(usuarioRepository.findById(999)).thenReturn(Optional.empty());
 
-        // Act & Assert
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            participanteService.guardarRespuestas(1, respuestasMap, 999);
-        });
+        RuntimeException exception = assertThrows(RuntimeException.class,
+                () -> participanteService.guardarRespuestas(1, respuestasMap, 999, null, null, null, null));
 
         assertEquals("Usuario editor no encontrado", exception.getMessage());
         verify(participanteRepository, times(1)).findById(1);
@@ -344,22 +290,17 @@ class ParticipanteServiceTest {
     }
 
     @Test
-    @DisplayName("Lanzar excepción cuando variable no existe al guardar respuestas")
+    @DisplayName("Ignorar variable cuando no existe al guardar respuestas")
     void testGuardarRespuestas_VariableNoEncontrada() {
-        // Arrange
-        Map<Integer, String> respuestasMap = new HashMap<>();
-        respuestasMap.put(999, "valor");
+        Map<String, String> respuestasMap = new HashMap<>();
+        respuestasMap.put("999", "valor");
 
         when(participanteRepository.findById(1)).thenReturn(Optional.of(participante));
         when(usuarioRepository.findById(1)).thenReturn(Optional.of(reclutador));
         when(variableRepository.findById(999)).thenReturn(Optional.empty());
 
-        // Act & Assert
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            participanteService.guardarRespuestas(1, respuestasMap, 1);
-        });
+        assertDoesNotThrow(() -> participanteService.guardarRespuestas(1, respuestasMap, 1, null, null, null, null));
 
-        assertEquals("Variable no encontrada", exception.getMessage());
         verify(variableRepository, times(1)).findById(999);
         verify(respuestaRepository, never()).save(any());
     }
@@ -367,10 +308,9 @@ class ParticipanteServiceTest {
     @Test
     @DisplayName("Guardar respuestas vacías (permitir guardar formulario incompleto)")
     void testGuardarRespuestas_RespuestasVacias() {
-        // Arrange
-        Map<Integer, String> respuestasMap = new HashMap<>();
-        respuestasMap.put(1, "");
-        respuestasMap.put(2, null);
+        Map<String, String> respuestasMap = new HashMap<>();
+        respuestasMap.put("1", "");
+        respuestasMap.put("2", null);
 
         Variable variable2 = new Variable();
         variable2.setIdVariable(2);
@@ -380,43 +320,33 @@ class ParticipanteServiceTest {
         when(variableRepository.findById(1)).thenReturn(Optional.of(variable));
         when(variableRepository.findById(2)).thenReturn(Optional.of(variable2));
         when(respuestaRepository.save(any(Respuesta.class))).thenAnswer(i -> i.getArgument(0));
-        doNothing().when(auditoriaService).registrarAccion(
-            any(), any(), anyString(), anyString(), anyString()
-        );
+        doNothing().when(auditoriaService).registrarAccion(any(), any(), anyString(), anyString(), anyString());
 
-        // Act
-        participanteService.guardarRespuestas(1, respuestasMap, 1);
+        participanteService.guardarRespuestas(1, respuestasMap, 1, null, null, null, null);
 
-        // Assert - Debe permitir guardar respuestas vacías
         verify(respuestaRepository, times(2)).save(any(Respuesta.class));
     }
 
     @Test
     @DisplayName("Verificar que se registra auditoría para cada respuesta guardada")
     void testGuardarRespuestas_RegistraAuditoria() {
-        // Arrange
-        Map<Integer, String> respuestasMap = new HashMap<>();
-        respuestasMap.put(1, "45");
+        Map<String, String> respuestasMap = new HashMap<>();
+        respuestasMap.put("1", "45");
 
         when(participanteRepository.findById(1)).thenReturn(Optional.of(participante));
         when(usuarioRepository.findById(1)).thenReturn(Optional.of(reclutador));
         when(variableRepository.findById(1)).thenReturn(Optional.of(variable));
         when(respuestaRepository.save(any(Respuesta.class))).thenAnswer(i -> i.getArgument(0));
-        doNothing().when(auditoriaService).registrarAccion(
-            any(), any(), anyString(), anyString(), anyString()
-        );
+        doNothing().when(auditoriaService).registrarAccion(any(), any(), anyString(), anyString(), anyString());
 
-        // Act
-        participanteService.guardarRespuestas(1, respuestasMap, 1);
+        participanteService.guardarRespuestas(1, respuestasMap, 1, null, null, null, null);
 
-        // Assert
         verify(auditoriaService, times(1)).registrarAccion(
-            eq(reclutador),
-            eq(participante),
-            eq("ACTUALIZAR"),
-            eq("Respuesta"),
-            contains("Se guardó respuesta para participante ID:")
-        );
+                eq(reclutador),
+                eq(participante),
+                eq("ACTUALIZAR"),
+                eq("Respuesta"),
+                contains("Se guardo respuesta para participante ID:"));
     }
 
     // ==================== PRUEBAS OBTENER PARTICIPANTES ====================
@@ -424,7 +354,6 @@ class ParticipanteServiceTest {
     @Test
     @DisplayName("Obtener todos los participantes")
     void testObtenerTodosLosParticipantes() {
-        // Arrange
         Participante participante2 = new Participante();
         participante2.setIdParticipante(2);
         participante2.setCodigoParticipante("CT2");
@@ -434,10 +363,8 @@ class ParticipanteServiceTest {
         List<Participante> participantes = Arrays.asList(participante, participante2);
         when(participanteRepository.findAll()).thenReturn(participantes);
 
-        // Act
         List<Participante> resultado = participanteService.obtenerTodosLosParticipantes();
 
-        // Assert
         assertNotNull(resultado);
         assertEquals(2, resultado.size());
         assertEquals("CS1", resultado.get(0).getCodigoParticipante());
@@ -448,13 +375,10 @@ class ParticipanteServiceTest {
     @Test
     @DisplayName("Obtener lista vacía cuando no hay participantes")
     void testObtenerTodosLosParticipantes_ListaVacia() {
-        // Arrange
         when(participanteRepository.findAll()).thenReturn(Arrays.asList());
 
-        // Act
         List<Participante> resultado = participanteService.obtenerTodosLosParticipantes();
 
-        // Assert
         assertNotNull(resultado);
         assertTrue(resultado.isEmpty());
         verify(participanteRepository, times(1)).findAll();

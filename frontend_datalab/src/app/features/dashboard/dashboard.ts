@@ -1,57 +1,103 @@
-import { Component, AfterViewInit,ViewChild } from '@angular/core';
+import { Component, AfterViewInit, ViewChild, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import {
-  Chart,
-  ChartConfiguration,
-  ChartOptions,
-  registerables
-} from 'chart.js';
+import { Chart, ChartOptions, registerables } from 'chart.js';
 import { AlertPanelComponent } from '../../alert-panel/alert-panel.component';
 import { LogoutPanelComponent } from '../../shared/logout-panel/logout-panel.component';
+import { DashboardService, DashboardResumen } from '../../shared/dashboard/dashboard.service';
+import { AuthService } from '../../shared/auth/auth.service';
 
 Chart.register(...registerables);
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule,AlertPanelComponent, LogoutPanelComponent],
+  imports: [CommonModule, AlertPanelComponent, LogoutPanelComponent],
   templateUrl: './dashboard.html',
   styleUrls: ['./dashboard.scss']
 })
-export class DashboardComponent implements AfterViewInit {
+export class DashboardComponent implements OnInit, AfterViewInit {
   menuAbierto: boolean = false;
 
-   usuarioNombre = 'Dra. González';
-    @ViewChild(LogoutPanelComponent)
-    logoutPanel!: LogoutPanelComponent;
-    abrirLogoutPanel() {
-      this.logoutPanel.showPanel();
-    }
+  usuarioNombre = '';
+  usuarioRol = '';
+  @ViewChild(LogoutPanelComponent)
+  logoutPanel!: LogoutPanelComponent;
+  abrirLogoutPanel() {
+    this.logoutPanel.showPanel();
+  }
+
+  resumen?: DashboardResumen;
+  chartEdad?: Chart;
+  chartSexo?: Chart;
+  chartReclutamiento?: Chart;
+
+  constructor(private dashboard: DashboardService, private auth: AuthService) {}
+
+  ngOnInit(): void {
+    this.usuarioNombre = this.auth.getUserName();
+    this.usuarioRol = this.auth.getUserRole();
+    this.dashboard.getResumen().subscribe({
+      next: (res) => {
+        this.resumen = res.data;
+        this.updateCharts();
+      },
+      error: () => {
+        this.resumen = undefined;
+        this.updateCharts();
+      }
+    });
+  }
+
   ngAfterViewInit(): void {
     this.renderEdadChart();
     this.renderSexoChart();
     this.renderReclutamientoChart();
   }
 
+  private updateCharts(): void {
+    if (this.chartEdad) {
+      const edades = this.resumen?.porEdad || {};
+      this.chartEdad.data.datasets[0].data = [
+        edades['18-30'] || 0,
+        edades['31-45'] || 0,
+        edades['46-60'] || 0,
+        edades['61-75'] || 0,
+        edades['76+'] || 0
+      ];
+      this.chartEdad.update();
+    }
+    if (this.chartSexo) {
+      const sexo = this.resumen?.porSexo || { masculino: 0, femenino: 0, otros: 0 };
+      this.chartSexo.data.datasets[0].data = [sexo.masculino, sexo.femenino, sexo.otros];
+      this.chartSexo.update();
+    }
+    if (this.chartReclutamiento && this.resumen?.serieReclutamiento) {
+      this.chartReclutamiento.data.labels = this.resumen.serieReclutamiento.map(p => p.label);
+      this.chartReclutamiento.data.datasets[0].data = this.resumen.serieReclutamiento.map(p => p.valor);
+      this.chartReclutamiento.update();
+    }
+  }
+
   // === Distribución por Edad ===
   private renderEdadChart(): void {
     const ctx = document.getElementById('edadChart') as HTMLCanvasElement;
     if (!ctx) return;
-
-    new Chart(ctx, {
+    const edades = this.resumen?.porEdad || {};
+    this.chartEdad = new Chart(ctx as any, {
       type: 'bar',
       data: {
         labels: ['18-30', '31-45', '46-60', '61-75', '76+'],
         datasets: [
           {
             label: 'Participantes',
-            data: [45, 70, 95, 75, 30],
+            data: [
+              edades['18-30'] || 0,
+              edades['31-45'] || 0,
+              edades['46-60'] || 0,
+              edades['61-75'] || 0,
+              edades['76+'] || 0
+            ],
             backgroundColor: '#0056A3'
-          },
-          {
-            label: 'Controles',
-            data: [38, 60, 80, 70, 25],
-            backgroundColor: '#2BB673'
           }
         ]
       },
@@ -66,15 +112,15 @@ export class DashboardComponent implements AfterViewInit {
   private renderSexoChart(): void {
     const ctx = document.getElementById('sexoChart') as HTMLCanvasElement;
     if (!ctx) return;
-
-    new Chart(ctx, {
+    const sexo = this.resumen?.porSexo || { masculino: 0, femenino: 0, otros: 0 };
+    this.chartSexo = new Chart(ctx as any, {
       type: 'pie',
       data: {
-        labels: ['Masculino', 'Femenino'],
+        labels: ['Masculino', 'Femenino', 'Otros'],
         datasets: [
           {
-            data: [52, 48],
-            backgroundColor: ['#0056A3', '#2BB673']
+            data: [sexo.masculino, sexo.femenino, sexo.otros],
+            backgroundColor: ['#0056A3', '#2BB673', '#f59e0b']
           }
         ]
       },
@@ -89,15 +135,16 @@ export class DashboardComponent implements AfterViewInit {
   private renderReclutamientoChart(): void {
     const ctx = document.getElementById('reclutamientoChart') as HTMLCanvasElement;
     if (!ctx) return;
-
-    new Chart(ctx, {
+    const labels = this.resumen?.serieReclutamiento?.map(p => p.label) || ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'];
+    const valores = this.resumen?.serieReclutamiento?.map(p => p.valor) || [0, 0, 0, 0, 0, 0];
+    this.chartReclutamiento = new Chart(ctx as any, {
       type: 'line',
       data: {
-        labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
+        labels,
         datasets: [
           {
             label: 'Participantes acumulados',
-            data: [50, 80, 120, 160, 220, 300],
+            data: valores,
             borderColor: '#2BB673',
             backgroundColor: 'rgba(43,182,115,0.2)',
             fill: true,

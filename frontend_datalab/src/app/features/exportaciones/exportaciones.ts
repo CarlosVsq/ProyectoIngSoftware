@@ -1,8 +1,11 @@
 import { Component, AfterViewInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { Chart, registerables } from 'chart.js';
 import { AlertPanelComponent } from '../../alert-panel/alert-panel.component';
 import { LogoutPanelComponent } from '../../shared/logout-panel/logout-panel.component';
+import { AuthService } from '../../shared/auth/auth.service';
+import { API_BASE_URL } from '../../shared/config/api.config';
 
 Chart.register(...registerables);
 
@@ -14,45 +17,157 @@ Chart.register(...registerables);
   styleUrls: ['./exportaciones.scss']
 })
 export class ExportacionesComponent implements AfterViewInit {
-   usuarioNombre = 'Dra. González';
+  usuarioNombre = '';
+  usuarioRol = '';
+
   @ViewChild(LogoutPanelComponent)
   logoutPanel!: LogoutPanelComponent;
+
+  recentExports = [
+    { title: 'Base Completa', date: '08 Dec 2025', status: 'Completado', icon: 'table_view', color: 'bg-indigo-100 text-indigo-700' },
+    { title: 'Casos vs Controles', date: '07 Dec 2025', status: 'Completado', icon: 'analytics', color: 'bg-green-100 text-green-700' },
+    { title: 'Reporte Mensual', date: '01 Dec 2025', status: 'Archivado', icon: 'assignment', color: 'bg-gray-100 text-gray-700' }
+  ];
+
+  constructor(private auth: AuthService, private http: HttpClient) {
+    this.usuarioNombre = this.auth.getUserName();
+    this.usuarioRol = this.auth.getUserRole();
+  }
+
   abrirLogoutPanel() {
     this.logoutPanel.showPanel();
   }
-  
 
   ngAfterViewInit(): void {
-    this.renderExportChart();
+    setTimeout(() => {
+      this.loadChartData();
+    }, 100);
   }
 
-  private renderExportChart(): void {
-    const ctx = document.getElementById('exportChart') as HTMLCanvasElement;
+  private loadChartData() {
+    this.http.get<any>(`${API_BASE_URL}/export/stats`).subscribe({
+      next: (data) => {
+        this.renderExportChart(data);
+      },
+      error: (err) => {
+        console.error('Error loading chart stats', err);
+        // Fallback to empty chart
+        this.renderExportChart({});
+      }
+    });
+  }
+
+  private renderExportChart(apiData: any): void {
+    const canvas = document.getElementById('exportChart') as HTMLCanvasElement;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    new Chart(ctx, {
-      type: 'doughnut',
+    if (Chart.getChart(canvas)) {
+      Chart.getChart(canvas)?.destroy();
+    }
+
+    // Process data
+    const labels = Object.keys(apiData); // Dates
+    const values = Object.values(apiData); // Counts
+
+    // Create Gradient
+    const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+    gradient.addColorStop(0, 'rgba(67, 56, 202, 0.4)'); // Indigo 700 with opacity
+    gradient.addColorStop(1, 'rgba(67, 56, 202, 0.0)'); // Transparent
+
+    new Chart(canvas as any, {
+      type: 'line',
       data: {
-        labels: ['Completadas', 'En proceso', 'Pendientes'],
+        labels: labels,
         datasets: [{
-          label: 'Exportaciones',
-          data: [12, 3, 2],
-          backgroundColor: ['#22c55e', '#facc15', '#e11d48'],
-          borderWidth: 1
+          label: 'Exportaciones Realizadas',
+          data: values,
+          fill: true,
+          backgroundColor: gradient,
+          borderColor: '#4338ca', // Indigo 700
+          borderWidth: 2,
+          tension: 0.4,
+          pointBackgroundColor: '#ffffff',
+          pointBorderColor: '#4338ca',
+          pointBorderWidth: 2,
+          pointRadius: 4,
+          pointHoverRadius: 6
         }]
       },
       options: {
         responsive: true,
+        maintainAspectRatio: false,
         plugins: {
           legend: {
-            position: 'bottom'
+            display: false // Hide legend for cleaner look
           },
           tooltip: {
-            backgroundColor: '#1f2937',
-            titleColor: '#fff',
-            bodyColor: '#fff'
+            backgroundColor: '#1e293b',
+            padding: 12,
+            titleFont: { size: 13 },
+            bodyFont: { size: 12 },
+            displayColors: false,
+            callbacks: {
+              label: (context: any) => ` ${context.parsed.y} archivos exportados`
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: {
+              display: false
+            },
+            ticks: {
+              font: { size: 11 }
+            }
+          },
+          y: {
+            beginAtZero: true,
+            grid: {
+              display: true,
+              color: '#f1f5f9', // Very light gray grid
+              tickLength: 0
+            },
+            border: { display: false }, // Hide y-axis line
+            ticks: {
+              stepSize: 2,
+              font: { size: 11 }
+            }
           }
         }
+      }
+    });
+  }
+
+  descargarExcel(): void {
+    this.downloadFile(`${API_BASE_URL}/export/excel`, 'datos_completos.xlsx');
+  }
+
+  descargarCsv(): void {
+    this.downloadFile(`${API_BASE_URL}/export/csv-stata`, 'datos_stata.csv');
+  }
+
+  descargarLeyenda(): void {
+    this.downloadFile(`${API_BASE_URL}/export/leyenda-pdf`, 'leyenda_variables.pdf');
+  }
+
+  private downloadFile(url: string, filename: string) {
+    this.http.get(url, { responseType: 'blob' }).subscribe({
+      next: (blob) => {
+        const a = document.createElement('a');
+        const objectUrl = URL.createObjectURL(blob);
+        a.href = objectUrl;
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(objectUrl);
+
+        // Refresh chart immediately since request completed
+        this.loadChartData();
+      },
+      error: (err) => {
+        console.error('Download failed', err);
+        alert('Error al descargar el archivo.');
       }
     });
   }
