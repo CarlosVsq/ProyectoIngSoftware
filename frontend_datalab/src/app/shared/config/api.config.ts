@@ -4,5 +4,5 @@ const envBackendBase =
   (import.meta as any)?.env?.NG_APP_BACKEND_BASE as string | undefined;
 export const BACKEND_BASE_URL = envBackendBase && envBackendBase.length
   ? envBackendBase
-  : 'http://localhost:8038';
+  : 'http://pacheco.chillan.ubiobio.cl:8038';
 export const API_BASE_URL = `${BACKEND_BASE_URL}/api`;

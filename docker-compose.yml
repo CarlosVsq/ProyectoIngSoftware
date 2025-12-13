@@ -26,7 +26,7 @@ services:
       db:
         condition: service_healthy
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8080/actuator/health" ]
+      test: [ "CMD", "curl", "-f", "http://localhost:${SERVER_PORT:-8080}/actuator/health" ]
       interval: 15s
       timeout: 10s
       retries: 20
@@ -57,7 +57,7 @@ services:
     build:
       context: ./frontend_datalab
       args:
-        NG_APP_BACKEND_BASE: ${NG_APP_BACKEND_BASE:-http://localhost:8038}
+        NG_APP_BACKEND_BASE: ${NG_APP_BACKEND_BASE:-http://pacheco.chillan.ubiobio.cl:8038}
     depends_on:
       app:
         condition: service_healthy

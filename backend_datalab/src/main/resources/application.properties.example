@@ -20,3 +20,6 @@ jwt.expiration=${JWT_EXPIRATION:604800000}
 jwt.refresh-expiration=${JWT_REFRESH_EXPIRATION:604800000}
 
 datalab.reminder.days=${DATALAB_REMINDER_DAYS:3}
+
+management.endpoint.health.probes.enabled=true
+management.health.mail.enabled=${MANAGEMENT_HEALTH_MAIL_ENABLED:false}
