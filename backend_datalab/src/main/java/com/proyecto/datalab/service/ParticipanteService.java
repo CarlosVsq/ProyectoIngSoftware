@@ -175,15 +175,17 @@ public class ParticipanteService {
 
                         respuestaRepository.save(respuesta);
                         existentes.put(variable.getIdVariable(), valor);
-
-                        auditoriaService.registrarAccion(
-                                        editor,
-                                        participante,
-                                        "ACTUALIZAR",
-                                        "Respuesta",
-                                        "Se guardo respuesta para participante ID: " + participante.getIdParticipante()
-                                                        + ", Variable: " + variable.getCodigoVariable());
                 }
+
+                // Registrar auditoria agrupada
+                auditoriaService.registrarAccion(
+                                editor,
+                                participante,
+                                "ACTUALIZAR",
+                                "Respuesta",
+                                "Se guardaron respuestas (" + respuestasMap.size()
+                                                + " variables) para participante ID: "
+                                                + participante.getIdParticipante());
 
                 // evaluar completitud: todas las variables obligatorias con valor no vacío
                 boolean completo = isFichaCompleta(existentes, participante.getGrupo());
