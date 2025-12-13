@@ -143,8 +143,23 @@ public class ExportController {
                             (a, b) -> b));
 
             for (Variable v : allVariables) {
+                // Filter by Group (Aplica A)
+                String aplica = v.getAplicaA() != null ? v.getAplicaA() : "Ambos";
+                String grupo = p.getGrupo() != null ? p.getGrupo().name() : ""; // CASO / CONTROL
+
+                boolean show = aplica.equalsIgnoreCase("Ambos") || aplica.equalsIgnoreCase(grupo);
+                if (!show)
+                    continue;
+
                 addBodyCell(table, safe(v.getEnunciado()));
-                addBodyCell(table, safe(respuestasMap.getOrDefault(v.getCodigoVariable(), "")));
+
+                // Inject value for codigo_participante if missing in responses
+                String val = respuestasMap.get(v.getCodigoVariable());
+                if (v.getCodigoVariable().equalsIgnoreCase("codigo_participante") && (val == null || val.isEmpty())) {
+                    val = p.getCodigoParticipante();
+                }
+
+                addBodyCell(table, safe(val));
             }
 
             document.add(table);
@@ -507,8 +522,7 @@ public class ExportController {
                 "telefono",
                 "nombre_completo",
                 "correo_electronico",
-                "direccion"
-        ));
+                "direccion"));
 
         return variableRepository.findAll().stream()
                 .sorted(Comparator
@@ -524,7 +538,8 @@ public class ExportController {
                 // Excluir sensibles y columnas estáticas
                 .filter(v -> {
                     String code = v.getCodigoVariable();
-                    if (code == null) return false;
+                    if (code == null)
+                        return false;
                     String lower = code.toLowerCase();
                     return !sensitiveCodes.contains(lower)
                             && !lower.equals(StaticColumn.CODIGO_PARTICIPANTE.name().toLowerCase());
