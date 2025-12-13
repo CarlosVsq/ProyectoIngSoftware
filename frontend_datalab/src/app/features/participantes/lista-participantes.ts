@@ -24,6 +24,11 @@ export class ListaParticipantesComponent implements OnInit {
     // Filters
     searchTerm: string = '';
     selectedGroup: string = 'Todos';
+    selectedReclutador: string = 'Todos';
+    filterFechaInicio: string = '';
+    filterFechaFin: string = '';
+
+    uniqueReclutadores: string[] = [];
 
     stats = {
         total: 0,
@@ -33,6 +38,7 @@ export class ListaParticipantesComponent implements OnInit {
     };
 
     loading = true;
+
 
     // Modal logic
     crfOpen = false;
@@ -56,7 +62,6 @@ export class ListaParticipantesComponent implements OnInit {
     ) { }
 
     ngOnInit(): void {
-        // Load schema first for status analysis
         this.crfService.getSchema().subscribe(s => {
             this.schema = s;
             this.loadParticipantes();
@@ -65,20 +70,18 @@ export class ListaParticipantesComponent implements OnInit {
 
     loadParticipantes() {
         this.loading = true;
-        // Fetch a larger limit or all if possible. Using 100 for now.
         this.crfService.listarCrfs(100).subscribe({
             next: (resp) => {
                 const rawData = resp.data || [];
+                // Extract unique recruiters
+                const recruiters = new Set<string>();
+
                 this.participantes = rawData.map((c: any) => {
+                    if (c.nombreReclutador) recruiters.add(c.nombreReclutador);
                     const estadoAnalisis = this.analizarEstado(c);
-                    // Use backend status if available, otherwise fallback to frontend analysis
-                    // Normalize backend 'COMPLETA' to 'COMPLETO' simply for UI consistency if needed, 
-                    // but better to just use what backend gives or standardise.
-                    // Let's rely on backend status primarily.
                     let estado = c.estadoFicha || (estadoAnalisis.completo ? 'COMPLETA' : 'INCOMPLETA');
-                    
-                    // Determine color based on state
-                    let color = 'bg-purple-600'; // Default Incomplete
+
+                    let color = 'bg-purple-600';
                     if (estado === 'COMPLETA' || estado === 'COMPLETO') {
                         color = 'bg-green-600';
                     } else if (estado === 'NO_COMPLETABLE') {
@@ -96,6 +99,8 @@ export class ListaParticipantesComponent implements OnInit {
                     };
                 });
 
+                this.uniqueReclutadores = Array.from(recruiters).sort();
+
                 this.calculateStats();
                 this.applyFilters();
                 this.loading = false;
@@ -107,6 +112,7 @@ export class ListaParticipantesComponent implements OnInit {
         });
     }
 
+    // ... calculateStats ...
     calculateStats() {
         this.stats.total = this.participantes.length;
         this.stats.casos = this.participantes.filter(p => (p.grupo || '').toUpperCase() === 'CASO').length;
@@ -120,15 +126,44 @@ export class ListaParticipantesComponent implements OnInit {
             const code = (p.codigoParticipante || '').toLowerCase();
             const name = (p.nombreCompleto || '').toLowerCase();
 
+            // Text Search
             const matchSearch = code.includes(term) || name.includes(term);
 
+            // Group Filter
             let matchGroup = true;
             if (this.selectedGroup !== 'Todos') {
                 const g = (p.grupo || '').toUpperCase();
                 matchGroup = g === this.selectedGroup.toUpperCase();
             }
 
-            return matchSearch && matchGroup;
+            // Recruiter Filter
+            let matchReclutador = true;
+            if (this.selectedReclutador !== 'Todos') {
+                matchReclutador = p.nombreReclutador === this.selectedReclutador;
+            }
+
+            // Date Filter
+            let matchDate = true;
+            if (this.filterFechaInicio || this.filterFechaFin) {
+                const pDateStr = p.fechaInclusion; // assumed YYYY-MM-DD from backend
+                if (pDateStr) {
+                    const pDate = new Date(pDateStr).getTime();
+                    if (this.filterFechaInicio) {
+                        const start = new Date(this.filterFechaInicio).getTime();
+                        if (pDate < start) matchDate = false;
+                    }
+                    if (matchDate && this.filterFechaFin) {
+                        const end = new Date(this.filterFechaFin).getTime();
+                        // Add 1 day to include the end date fully or compare properly
+                        // Simple comparison: as long as pDate <= end (considering time)
+                        // Since inputs are YYYY-MM-DD, pDate is YYYY-MM-DD. 
+                        // To be inclusive, if pDate > end it fails.
+                        if (pDate > end) matchDate = false;
+                    }
+                }
+            }
+
+            return matchSearch && matchGroup && matchReclutador && matchDate;
         });
     }
 
