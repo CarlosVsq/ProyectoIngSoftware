@@ -248,6 +248,9 @@ public class ParticipanteService {
                                                 .fechaInclusion(p.getFechaInclusion())
                                                 .telefono(p.getTelefono())
                                                 .direccion(p.getDireccion())
+                                                .nombreReclutador(p.getReclutador() != null
+                                                                ? p.getReclutador().getNombreCompleto()
+                                                                : "")
                                                 .respuestas(p.getRespuestas() == null ? List.of()
                                                                 : p.getRespuestas().stream()
                                                                                 .map(r -> CrfRespuestaDTO.builder()
