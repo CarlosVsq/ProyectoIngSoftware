@@ -49,13 +49,12 @@ public class UsuarioService {
         return usuarioRepository.save(nuevoUsuario);
     }
 
-    
     @Transactional
     public List<Usuario> obtenerTodosLosUsuarios() {
         return usuarioRepository.findAll();
     }
 
-    @Transactional //(readOnly = true)
+    @Transactional // (readOnly = true)
     public Optional<Usuario> obtenerUsuarioPorId(Integer id) {
         return usuarioRepository.findById(id);
     }
@@ -67,8 +66,8 @@ public class UsuarioService {
 
     @Transactional
     public Usuario actualizarUsuario(Integer id, @RequestBody UsuarioUpdateRequest datos) {
-        
-        //Buscar al usuario existente
+
+        // Buscar al usuario existente
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado con id: " + id));
 
@@ -82,7 +81,7 @@ public class UsuarioService {
         }
 
         if (datos.getNombre() != null && !datos.getNombre().isEmpty()) {
-        System.out.println(datos.getNombre());
+            System.out.println(datos.getNombre());
             usuario.setNombreCompleto(datos.getNombre());
         }
 
@@ -102,6 +101,18 @@ public class UsuarioService {
         }
         return usuarioRepository.save(usuario);
     }
+
+    @Transactional
+    public Usuario toggleEstado(Integer id) {
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        if (usuario.getEstado() == EstadoUsuario.ACTIVO) {
+            usuario.setEstado(EstadoUsuario.INACTIVO);
+        } else {
+            usuario.setEstado(EstadoUsuario.ACTIVO);
+        }
+
+        return usuarioRepository.save(usuario);
+    }
 }
-
-

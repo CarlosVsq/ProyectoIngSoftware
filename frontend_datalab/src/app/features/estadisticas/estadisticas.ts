@@ -1,32 +1,66 @@
 import { Component, AfterViewInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
 import { Chart, registerables } from 'chart.js';
 import { AlertPanelComponent } from '../../alert-panel/alert-panel.component';
 import { LogoutPanelComponent } from '../../shared/logout-panel/logout-panel.component';
+import { AuthService } from '../../shared/auth/auth.service';
 
 Chart.register(...registerables);
 
 @Component({
   selector: 'app-estadisticas',
   standalone: true,
-  imports: [CommonModule,AlertPanelComponent, LogoutPanelComponent],
+  imports: [CommonModule, AlertPanelComponent, LogoutPanelComponent],
   templateUrl: './estadisticas.html',
   styleUrls: ['./estadisticas.scss'],
 })
 export class EstadisticasComponent implements AfterViewInit {
-   usuarioNombre = 'Dra. González';
-    @ViewChild(LogoutPanelComponent)
-    logoutPanel!: LogoutPanelComponent;
-    abrirLogoutPanel() {
-      this.logoutPanel.showPanel();
-    }
+  usuarioNombre = '';
+  usuarioRol = '';
+  stats: any = {
+    muestrasProcesadas: 0,
+    analisisCompletos: 0,
+    variantesIdentificadas: 0,
+    procesamiento: {
+      extraccion: 0,
+      secuenciacion: 0,
+      bioinformatica: 0,
+      validacion: 0
+    },
+    totalMeta: 300
+  };
+
+  @ViewChild(LogoutPanelComponent)
+  logoutPanel!: LogoutPanelComponent;
+  abrirLogoutPanel() {
+    this.logoutPanel.showPanel();
+  }
+
+  constructor(private auth: AuthService, private http: HttpClient) {
+    this.usuarioNombre = this.auth.getUserName();
+    this.usuarioRol = this.auth.getUserRole();
+  }
 
   ngAfterViewInit(): void {
+    this.loadStats();
     this.renderGenVariantsChart();
+  }
+
+  loadStats() {
+    this.http.get<any>('http://localhost:8080/api/dashboard/clinical').subscribe({
+      next: (res) => {
+        if (res.success) {
+          this.stats = res.data;
+        }
+      },
+      error: (e) => console.error('Error loading clinical stats', e)
+    });
   }
 
   private renderGenVariantsChart(): void {
     const ctx = document.getElementById('genVariantsChart') as HTMLCanvasElement;
+    if (!ctx) return;
     new Chart(ctx, {
       type: 'bar',
       data: {
@@ -34,17 +68,17 @@ export class EstadisticasComponent implements AfterViewInit {
         datasets: [
           {
             label: 'Benignas',
-            data: [2, 1, 3, 2, 1],
+            data: [],
             backgroundColor: '#facc15',
           },
           {
             label: 'Probablemente patogénicas',
-            data: [3, 2, 3, 1, 2],
+            data: [],
             backgroundColor: '#22c55e',
           },
           {
             label: 'Patogénicas',
-            data: [12, 8, 6, 9, 5],
+            data: [],
             backgroundColor: '#ef4444',
           },
         ],
@@ -54,7 +88,6 @@ export class EstadisticasComponent implements AfterViewInit {
         scales: {
           y: {
             beginAtZero: true,
-            ticks: { stepSize: 3 },
             grid: { color: '#f3f4f6' },
           },
           x: { grid: { display: false } },

@@ -1,21 +1,15 @@
 <div class="flex bg-gray-50 min-h-screen">
   <!-- Sidebar -->
-  <app-sidebar *ngIf="!isLoginPage()"
-               [open]="isSidebarOpen()"
-               (openChange)="setSidebarOpen($event)"></app-sidebar>
+  <app-sidebar *ngIf="!isLoginPage()" [open]="isSidebarOpen()" (openChange)="setSidebarOpen($event)"></app-sidebar>
 
   <!-- Botón hamburguesa cuando el sidebar está oculto -->
-  <button *ngIf="!isLoginPage() && !isSidebarOpen()"
-          type="button"
-          aria-label="Mostrar menú"
-          (click)="toggleSidebar()"
-          class="fixed top-4 left-4 z-30 p-2 rounded-md border bg-white shadow hover:bg-gray-50">
+  <button *ngIf="!isLoginPage() && !isSidebarOpen()" type="button" aria-label="Mostrar menú" (click)="toggleSidebar()"
+    class="fixed top-4 left-4 z-30 p-2 rounded-md border bg-white shadow hover:bg-gray-50">
     <span class="material-icons">menu</span>
   </button>
 
   <!-- Contenido -->
-  <div class="content flex-1 p-6"
-       [class.with-sidebar]="!isLoginPage() && isSidebarOpen()">
+  <div class="content flex-1" [class.p-6]="!isLoginPage()" [class.with-sidebar]="!isLoginPage() && isSidebarOpen()">
     <router-outlet></router-outlet>
   </div>
 </div>
