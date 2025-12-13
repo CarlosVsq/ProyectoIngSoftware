@@ -140,14 +140,34 @@ export class ExportacionesComponent implements AfterViewInit {
   }
 
   descargarExcel(): void {
-    window.open('http://localhost:8080/api/export/excel', '_blank');
+    this.downloadFile('http://localhost:8080/api/export/excel', 'datos_completos.xlsx');
   }
 
   descargarCsv(): void {
-    window.open('http://localhost:8080/api/export/csv-stata', '_blank');
+    this.downloadFile('http://localhost:8080/api/export/csv-stata', 'datos_stata.csv');
   }
 
   descargarLeyenda(): void {
-    window.open('http://localhost:8080/api/export/leyenda-pdf', '_blank');
+    this.downloadFile('http://localhost:8080/api/export/leyenda-pdf', 'leyenda_variables.pdf');
+  }
+
+  private downloadFile(url: string, filename: string) {
+    this.http.get(url, { responseType: 'blob' }).subscribe({
+      next: (blob) => {
+        const a = document.createElement('a');
+        const objectUrl = URL.createObjectURL(blob);
+        a.href = objectUrl;
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(objectUrl);
+
+        // Refresh chart immediately since request completed
+        this.loadChartData();
+      },
+      error: (err) => {
+        console.error('Download failed', err);
+        alert('Error al descargar el archivo.');
+      }
+    });
   }
 }

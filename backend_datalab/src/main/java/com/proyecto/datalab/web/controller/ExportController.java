@@ -89,7 +89,7 @@ public class ExportController {
     }
 
     @GetMapping("/participante/{id}/pdf")
-    @Transactional(readOnly = true)
+
     public ResponseEntity<byte[]> exportPdfParticipante(
             @org.springframework.web.bind.annotation.PathVariable Integer id) {
         Participante p = participanteRepository.findById(id).orElse(null);
@@ -183,7 +183,7 @@ public class ExportController {
     }
 
     @GetMapping("/leyenda-pdf")
-    @Transactional(readOnly = true)
+
     public ResponseEntity<byte[]> exportLegendPdf() {
         // LOG
         // LOG
@@ -244,7 +244,7 @@ public class ExportController {
     }
 
     @GetMapping("/excel")
-    @Transactional(readOnly = true)
+
     public ResponseEntity<byte[]> exportToExcel() {
         // LOG
         // LOG
@@ -337,7 +337,7 @@ public class ExportController {
     }
 
     @GetMapping("/csv")
-    @Transactional(readOnly = true)
+
     public ResponseEntity<byte[]> exportToCsv() {
         // LOG
         // LOG
@@ -401,7 +401,7 @@ public class ExportController {
     }
 
     @GetMapping("/csv-stata")
-    @Transactional(readOnly = true)
+
     public ResponseEntity<byte[]> exportToCsvStata() {
         // LOG
         // LOG

@@ -156,29 +156,67 @@ export class CrfModalComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   private setupImcCalculation(): void {
-    const pesoControl = this.form.get('PESO');
-    const tallaControl = this.form.get('TALLA');
-    const imcControl = this.form.get('IMC');
+    if (!this.schema || !this.schema.sections) return;
 
-    if (pesoControl && tallaControl && imcControl) {
-      const calculate = () => {
-        const peso = parseFloat(pesoControl.value);
-        const talla = parseFloat(tallaControl.value);
+    let pesoId = '';
+    let tallaId = '';
+    let imcId = '';
 
-        if (!isNaN(peso) && !isNaN(talla) && talla > 0) {
-          // Talla in cm to meters
-          const tallaM = talla / 100;
-          const imc = peso / (tallaM * tallaM);
-          // Round to 2 decimals
-          imcControl.setValue(imc.toFixed(2));
-        } else {
-          // Optional: clear IMC if inputs are invalid/empty? 
-          // imcControl.setValue(''); 
+    // Search schema for fields matching Weight/Height/BMI patterns
+    for (const section of this.schema.sections) {
+      for (const field of section.fields) {
+        const id = field.id.toUpperCase();
+        const label = (field.label || '').toUpperCase();
+
+        // Detect Weight
+        if (!pesoId && (id === 'PESO' || id === 'WEIGHT' || id === 'KG' || label.includes('PESO') || label.includes('WEIGHT'))) {
+          pesoId = field.id;
         }
-      };
+        // Detect Height
+        if (!tallaId && (id === 'TALLA' || id === 'ESTATURA' || id === 'ALTURA' || id === 'HEIGHT' || label.includes('TALLA') || label.includes('ESTATURA') || label.includes('ALTURA'))) {
+          tallaId = field.id;
+        }
+        // Detect BMI
+        if (!imcId && (id === 'IMC' || id === 'BMI' || label.includes('IMC') || label.includes('BMI'))) {
+          imcId = field.id;
+        }
+      }
+    }
 
-      pesoControl.valueChanges.subscribe(calculate);
-      tallaControl.valueChanges.subscribe(calculate);
+    console.log('Auto-BMI Config:', { pesoId, tallaId, imcId });
+
+    if (pesoId && tallaId && imcId) {
+      const pesoControl = this.form.get(pesoId);
+      const tallaControl = this.form.get(tallaId);
+      const imcControl = this.form.get(imcId);
+
+      if (pesoControl && tallaControl && imcControl) {
+        // Disable IMC to prevent manual edit
+        imcControl.disable();
+
+        const calculate = () => {
+          const peso = parseFloat(pesoControl.value);
+          let talla = parseFloat(tallaControl.value);
+
+          if (!isNaN(peso) && !isNaN(talla) && talla > 0 && peso > 0) {
+            // Heuristic: If height is likely in cm (e.g. > 3), convert to meters
+            if (talla > 3) {
+              talla = talla / 100;
+            }
+
+            const imc = peso / (talla * talla);
+            imcControl.setValue(imc.toFixed(2));
+          } else {
+            imcControl.setValue('');
+          }
+        };
+
+        // Trigger initial calculation
+        calculate();
+
+        pesoControl.valueChanges.subscribe(calculate);
+        tallaControl.valueChanges.subscribe(calculate);
+      }
     }
   }
 
