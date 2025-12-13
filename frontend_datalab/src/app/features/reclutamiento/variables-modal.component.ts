@@ -46,7 +46,10 @@ import { CrfService } from '../crf/crf.service';
                   <div class="grid grid-cols-2 gap-4">
                     <div>
                       <label class="block text-xs font-medium text-gray-700 mb-1">Código (ID único)</label>
-                      <input class="w-full border rounded px-3 py-2 text-sm" formControlName="codigoVariable" placeholder="EJ: PREGUNTA_01" />
+                      <input class="w-full border rounded px-3 py-2 text-sm" formControlName="codigoVariable" placeholder="EJ: PREGUNTA_01" (input)="onCodeInput($event)" />
+                      <p *ngIf="form.get('codigoVariable')?.invalid && form.get('codigoVariable')?.touched" class="text-xs text-red-500 mt-1">
+                        Solo mayúsculas, números y guiones bajos (sin espacios).
+                      </p>
                     </div>
                     <div>
                     <label class="block text-xs font-medium text-gray-700 mb-1">Sección</label>
@@ -251,6 +254,12 @@ export class VariablesModalComponent implements OnInit {
         alert('Error al eliminar: ' + (err?.message || 'Error desconocido'));
       }
     });
+  }
+
+  onCodeInput(event: any) {
+    const input = event.target as HTMLInputElement;
+    input.value = input.value.toUpperCase().replace(/[^A-Z0-9_]/g, '');
+    this.form.get('codigoVariable')?.setValue(input.value);
   }
 
   close() {
