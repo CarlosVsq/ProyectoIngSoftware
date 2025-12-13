@@ -3,8 +3,9 @@ FROM maven:3.9.9-eclipse-temurin-17 AS build
 WORKDIR /app
 COPY pom.xml .
 COPY src ./src
-# Speed up: use a local maven repo cache layer if needed
-RUN --mount=type=cache,target=/root/.m2 mvn -Dmaven.test.skip=true package
+# Build sin usar mount (compatibilidad con entornos sin BuildKit). Si necesitas cacheo,
+# habilita BuildKit o añade un volumen local al directorio .m2.
+RUN mvn -Dmaven.test.skip=true package
 
 # ---------- Runtime stage ----------
 FROM eclipse-temurin:17-jre
