@@ -1,17 +1,31 @@
-
 /* Custom Toggle Switch Styles */
+
+/* The knob (input) */
+.toggle-checkbox {
+  top: 0;
+  left: 0;
+  /* Premium smooth bouncy transition */
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.3s ease;
+  transform: translateX(0);
+  z-index: 10;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
 .toggle-checkbox:checked {
-  right: 0;
+  /* Move right by 1rem (2.5rem container - 1.5rem knob) */
+  transform: translateX(1rem);
   border-color: #68D391;
 }
-.toggle-checkbox:checked + .toggle-label {
+
+/* The track (label) */
+.toggle-checkbox:checked+.toggle-label {
   background-color: #68D391;
 }
-.toggle-checkbox {
-  right: 0;
-  z-index: 10;
-  transition: all 0.3s;
-}
+
 .toggle-label {
-  width: 2.5rem; /* w-10 */
+  width: 2.5rem;
+  /* w-10 */
+  background-color: #e5e7eb;
+  /* gray-200 base */
+  transition: background-color 0.3s ease;
 }
