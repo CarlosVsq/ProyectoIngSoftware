@@ -163,33 +163,93 @@ export class CrfModalComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   private setupImcCalculation(): void {
-    const pesoControl = this.form.get('peso_kg');
-    const tallaControl = this.form.get('estatura_m');
-    const imcControl = this.form.get('imc');
+  if (!this.schema || !this.schema.sections || !this.form) return;
 
-    if (imcControl) {
-      // Make IMC read-only/disabled so user cannot edit it manually
-      imcControl.disable();
+  let pesoId = 'peso_kg';
+  let tallaId = 'estatura_m';
+  let imcId = 'imc';
+
+  for (const section of this.schema.sections) {
+    for (const field of section.fields) {
+      const id = field.id.toUpperCase();
+      const label = (field.label || '').toUpperCase();
+
+      if (!pesoId && (id === 'PESO' || id === 'WEIGHT' || id === 'KG' || label.includes('PESO') || label.includes('WEIGHT'))) {
+        pesoId = field.id;
+      }
+      if (!tallaId && (id === 'TALLA' || id === 'ESTATURA' || id === 'ALTURA' || id === 'HEIGHT' || label.includes('TALLA') || label.includes('ESTATURA') || label.includes('ALTURA') || label.includes('HEIGHT'))) {
+        tallaId = field.id;
+      }
+      if (!imcId && (id === 'IMC' || id === 'BMI' || label.includes('IMC') || label.includes('BMI'))) {
+        imcId = field.id;
+      }
+    }
+  }
+
+  const pesoControl = this.form.get(pesoId);
+  const tallaControl = this.form.get(tallaId);
+  const imcControl = this.form.get(imcId);
+
+  if (!pesoControl || !tallaControl || !imcControl) return;
+  imcControl.disable();
+
+  const calculate = () => {
+    const peso = parseFloat(pesoControl.value);
+    let talla = parseFloat(tallaControl.value);
+
+    if (isNaN(peso) || isNaN(talla) || talla <= 0) {
+      imcControl.setValue(null);
+      return;
     }
 
-    if (pesoControl && tallaControl && imcControl) {
-      const calculate = () => {
-        const peso = parseFloat(pesoControl.value);
-        const talla = parseFloat(tallaControl.value);
+    const label = (tallaControl['_rawValidatorsLabel'] || tallaControl['_label'] || '').toString().toUpperCase();
+    const isCm = label.includes('CM') || talla > 3;
+    if (isCm) talla = talla / 100;
 
-        if (!isNaN(peso) && !isNaN(talla) && talla > 0) {
-          // Talla is already in meters according to label (m)
-          const imc = peso / (talla * talla);
-          console.log('⚡ IMC Calculado (Oculto):', imc.toFixed(2));
-          // Round to 2 decimals
-          imcControl.setValue(imc.toFixed(2));
-        } else {
-           imcControl.setValue(null); 
-        }
-      };
+    const imc = peso / (talla * talla);
+    imcControl.setValue(imc.toFixed(2));
+  };
 
-      pesoControl.valueChanges.subscribe(calculate);
-      tallaControl.valueChanges.subscribe(calculate);
+  pesoControl.valueChanges.subscribe(calculate);
+  tallaControl.valueChanges.subscribe(calculate);
+  calculate();
+}
+
+
+    console.log('Auto-BMI Config:', { pesoId, tallaId, imcId });
+
+    if (pesoId && tallaId && imcId) {
+      const pesoControl = this.form.get(pesoId);
+      const tallaControl = this.form.get(tallaId);
+      const imcControl = this.form.get(imcId);
+
+      if (pesoControl && tallaControl && imcControl) {
+        // Disable IMC to prevent manual edit
+        imcControl.disable();
+
+        const calculate = () => {
+          const peso = parseFloat(pesoControl.value);
+          let talla = parseFloat(tallaControl.value);
+
+          if (!isNaN(peso) && !isNaN(talla) && talla > 0 && peso > 0) {
+            // Heuristic: If height is likely in cm (e.g. > 3), convert to meters
+            if (talla > 3) {
+              talla = talla / 100;
+            }
+
+            const imc = peso / (talla * talla);
+            imcControl.setValue(imc.toFixed(2));
+          } else {
+            imcControl.setValue('');
+          }
+        };
+
+        // Trigger initial calculation
+        calculate();
+
+        pesoControl.valueChanges.subscribe(calculate);
+        tallaControl.valueChanges.subscribe(calculate);
+      }
     }
   }
 

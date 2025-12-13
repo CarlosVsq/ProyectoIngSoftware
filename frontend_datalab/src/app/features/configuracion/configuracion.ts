@@ -1,6 +1,7 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { forkJoin } from 'rxjs'; // Import forkJoin
 import { AlertPanelComponent } from '../../alert-panel/alert-panel.component';
 import { LogoutPanelComponent } from '../../shared/logout-panel/logout-panel.component';
 import { AuthService } from '../../shared/auth/auth.service';
@@ -107,20 +108,27 @@ export class ConfiguracionComponent implements OnInit {
 
   // Permissions Management
   togglePermiso(rol: Rol, permiso: keyof Rol) {
-    // Because simple boolean toggle might not trigger change detection deeply or reference update
-    // We update the rol object and send it
+    // Only update local state, don't call service yet
     // @ts-ignore
     rol[permiso] = !rol[permiso];
+  }
 
-    this.rolService.actualizarPermisos(rol).subscribe({
-      next: (updatedRol) => {
-        console.log('Rol actualizado', updatedRol);
+  guardarRoles() {
+    if (!confirm('¿Desea guardar los cambios en los permisos?')) return;
+
+    this.isSubmitting = true;
+    const requests = this.roles.map(rol => this.rolService.actualizarPermisos(rol));
+
+    forkJoin(requests).subscribe({
+      next: () => {
+        alert('Permisos actualizados exitosamente');
+        this.isSubmitting = false;
+        // No need to reload data as we have the latest state
       },
       error: () => {
-        alert('No se pudo actualizar el permiso');
-        // Revert?
-        // @ts-ignore
-        rol[permiso] = !rol[permiso];
+        alert('Error al actualizar uno o más permisos');
+        this.isSubmitting = false;
+        this.loadData(); // Revert to server state on error
       }
     });
   }

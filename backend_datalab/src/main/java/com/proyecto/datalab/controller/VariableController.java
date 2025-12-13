@@ -41,4 +41,15 @@ public class VariableController {
         variableService.eliminarVariable(codigo);
     }
 
+    @org.springframework.web.bind.annotation.PatchMapping("/{codigo}/obligatoria")
+    public Variable toggleObligatoria(
+            @org.springframework.web.bind.annotation.PathVariable String codigo,
+            @RequestBody Map<String, Boolean> body) {
+        Boolean esObligatoria = body.get("esObligatoria");
+        if (esObligatoria == null) {
+            throw new IllegalArgumentException("El campo 'esObligatoria' es requerido");
+        }
+        return variableService.actualizarEstadoObligatorio(codigo, esObligatoria);
+    }
+
 }

@@ -9,7 +9,7 @@
   </button>
 
   <!-- Contenido -->
-  <div class="content flex-1 p-2 md:p-6" [class.with-sidebar]="!isLoginPage() && isSidebarOpen()">
+  <div class="content flex-1" [class.p-6]="!isLoginPage()" [class.with-sidebar]="!isLoginPage() && isSidebarOpen()">
     <router-outlet></router-outlet>
   </div>
 </div>

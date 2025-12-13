@@ -13,6 +13,10 @@ export class CrfService {
   private readonly API_BASE = API_BASE_URL;
   private cachedSchema?: CRFSchema;
 
+  clearCache() {
+    this.cachedSchema = undefined;
+  }
+
   constructor(private http: HttpClient, private auth: AuthService) { }
 
   getSchema(): Observable<CRFSchema> {
@@ -65,6 +69,10 @@ export class CrfService {
 
   crearVariable(variable: any): Observable<any> {
     return this.http.post(`${this.API_BASE}/variables`, variable);
+  }
+
+  actualizarObligatoria(codigo: string, esObligatoria: boolean): Observable<any> {
+    return this.http.patch(`${this.API_BASE}/variables/${codigo}/obligatoria`, { esObligatoria });
   }
 
   // Returns raw variables without schema filtering

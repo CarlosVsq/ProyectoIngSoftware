@@ -16,7 +16,7 @@ export class App implements OnInit {
   isSidebarOpen = signal<boolean>(localStorage.getItem('sidebarOpen') !== 'false');
   isAuthPage = signal<boolean>(false);
 
-  constructor(private router: Router) {}
+  constructor(private router: Router) { }
 
   ngOnInit(): void {
     // estado inicial
@@ -34,7 +34,7 @@ export class App implements OnInit {
   }
 
   private isAuthRoute(url: string): boolean {
-    return url.includes('/login') || url.includes('/register') || url.includes('/recover');
+    return url.includes('/login') || url.includes('/register') || url.includes('/recover') || url.includes('/reset-password');
   }
 
   setSidebarOpen(v: boolean) {

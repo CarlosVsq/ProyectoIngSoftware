@@ -1,5 +1,6 @@
 import { Component, AfterViewInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
 import { Chart, registerables } from 'chart.js';
 import { AlertPanelComponent } from '../../alert-panel/alert-panel.component';
 import { LogoutPanelComponent } from '../../shared/logout-panel/logout-panel.component';
@@ -17,19 +18,44 @@ Chart.register(...registerables);
 export class EstadisticasComponent implements AfterViewInit {
   usuarioNombre = '';
   usuarioRol = '';
+  stats: any = {
+    muestrasProcesadas: 0,
+    analisisCompletos: 0,
+    variantesIdentificadas: 0,
+    procesamiento: {
+      extraccion: 0,
+      secuenciacion: 0,
+      bioinformatica: 0,
+      validacion: 0
+    },
+    totalMeta: 300
+  };
+
   @ViewChild(LogoutPanelComponent)
   logoutPanel!: LogoutPanelComponent;
   abrirLogoutPanel() {
     this.logoutPanel.showPanel();
   }
 
-  constructor(private auth: AuthService) {
+  constructor(private auth: AuthService, private http: HttpClient) {
     this.usuarioNombre = this.auth.getUserName();
     this.usuarioRol = this.auth.getUserRole();
   }
 
   ngAfterViewInit(): void {
+    this.loadStats();
     this.renderGenVariantsChart();
+  }
+
+  loadStats() {
+    this.http.get<any>('http://localhost:8080/api/dashboard/clinical').subscribe({
+      next: (res) => {
+        if (res.success) {
+          this.stats = res.data;
+        }
+      },
+      error: (e) => console.error('Error loading clinical stats', e)
+    });
   }
 
   private renderGenVariantsChart(): void {

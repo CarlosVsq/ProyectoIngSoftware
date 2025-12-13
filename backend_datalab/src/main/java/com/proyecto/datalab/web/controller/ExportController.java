@@ -37,6 +37,13 @@ import com.proyecto.datalab.repository.VariableRepository;
 
 import lombok.RequiredArgsConstructor;
 
+import com.proyecto.datalab.service.AuditoriaService;
+import com.proyecto.datalab.repository.UsuarioRepository;
+import com.proyecto.datalab.entity.Usuario;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/export")
 @RequiredArgsConstructor
@@ -45,6 +52,33 @@ public class ExportController {
     private final ParticipanteRepository participanteRepository;
     private final RespuestaRepository respuestaRepository;
     private final VariableRepository variableRepository;
+    private final AuditoriaService auditoriaService;
+    private final UsuarioRepository usuarioRepository;
+
+    // Helper method to get current user
+    private Usuario getCurrentUser() {
+        try {
+            var auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) {
+                return null;
+            }
+            Object principal = auth.getPrincipal();
+            String username;
+            if (principal instanceof UserDetails) {
+                username = ((UserDetails) principal).getUsername();
+            } else {
+                username = principal.toString();
+            }
+            return usuarioRepository.findByCorreo(username).orElse(null);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    @GetMapping("/stats")
+    public ResponseEntity<Map<String, Long>> getExportStats() {
+        return ResponseEntity.ok(auditoriaService.getExportStatsLast7Days());
+    }
 
     // Defines the static columns for the export
     private enum StaticColumn {
@@ -52,12 +86,24 @@ public class ExportController {
     }
 
     @GetMapping("/participante/{id}/pdf")
-    @Transactional(readOnly = true)
+
     public ResponseEntity<byte[]> exportPdfParticipante(
             @org.springframework.web.bind.annotation.PathVariable Integer id) {
         Participante p = participanteRepository.findById(id).orElse(null);
         if (p == null)
             return ResponseEntity.notFound().build();
+
+        // LOG
+        // LOG
+        try {
+            Usuario u = getCurrentUser();
+            if (u != null) {
+                auditoriaService.registrarAccion(u, p, "EXPORTAR", "Participante",
+                        "Exportó PDF del participante " + p.getCodigoParticipante());
+            }
+        } catch (Exception e) {
+            e.printStackTrace(); // Non-blocking logging
+        }
 
         List<Respuesta> respuestas = respuestaRepository.findByParticipante_IdParticipante(id);
 
@@ -82,9 +128,8 @@ public class ExportController {
             document.add(info);
             document.add(new com.itextpdf.text.Paragraph(" "));
 
-            com.itextpdf.text.pdf.PdfPTable table = new com.itextpdf.text.pdf.PdfPTable(3);
+            com.itextpdf.text.pdf.PdfPTable table = new com.itextpdf.text.pdf.PdfPTable(2);
             table.setWidthPercentage(100);
-            addHeaderCell(table, "Variable");
             addHeaderCell(table, "Enunciado");
             addHeaderCell(table, "Valor");
 
@@ -98,7 +143,6 @@ public class ExportController {
                             (a, b) -> b));
 
             for (Variable v : allVariables) {
-                addBodyCell(table, safe(v.getCodigoVariable()));
                 addBodyCell(table, safe(v.getEnunciado()));
                 addBodyCell(table, safe(respuestasMap.getOrDefault(v.getCodigoVariable(), "")));
             }
@@ -136,8 +180,19 @@ public class ExportController {
     }
 
     @GetMapping("/leyenda-pdf")
-    @Transactional(readOnly = true)
+
     public ResponseEntity<byte[]> exportLegendPdf() {
+        // LOG
+        // LOG
+        try {
+            Usuario u = getCurrentUser();
+            if (u != null) {
+                auditoriaService.registrarAccion(u, null, "EXPORTAR", "Variables", "Exportó Leyenda en PDF");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
             com.itextpdf.text.Document document = new com.itextpdf.text.Document();
             com.itextpdf.text.pdf.PdfWriter.getInstance(document, baos);
@@ -186,8 +241,20 @@ public class ExportController {
     }
 
     @GetMapping("/excel")
-    @Transactional(readOnly = true)
+
     public ResponseEntity<byte[]> exportToExcel() {
+        // LOG
+        // LOG
+        try {
+            Usuario u = getCurrentUser();
+            if (u != null) {
+                auditoriaService.registrarAccion(u, null, "EXPORTAR", "Base de Datos",
+                        "Exportó Base Completa (Excel)");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         try (Workbook workbook = new XSSFWorkbook();
                 ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
 
@@ -259,9 +326,25 @@ public class ExportController {
     }
 
     @GetMapping("/csv")
-    @Transactional(readOnly = true)
+
     public ResponseEntity<byte[]> exportToCsv() {
-        List<Variable> variables = getSafeVariables();
+        // LOG
+        // LOG
+        try {
+            Usuario u = getCurrentUser();
+            if (u != null) {
+                auditoriaService.registrarAccion(u, null, "EXPORTAR", "Base de Datos",
+                        "Exportó Base Completa (CSV)");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        List<Variable> variables = variableRepository.findAll().stream()
+                .sorted(Comparator
+                        .comparing(Variable::getOrdenEnunciado, Comparator.nullsLast(Comparator.naturalOrder()))
+                        .thenComparing(Variable::getCodigoVariable))
+                .collect(Collectors.toList());
 
         List<Participante> participantes = participanteRepository.findAll();
         Map<Integer, Map<String, String>> respuestasMap = respuestaRepository.findAll().stream()
@@ -304,9 +387,25 @@ public class ExportController {
     }
 
     @GetMapping("/csv-stata")
-    @Transactional(readOnly = true)
+
     public ResponseEntity<byte[]> exportToCsvStata() {
-        List<Variable> variables = getSafeVariables();
+        // LOG
+        // LOG
+        try {
+            Usuario u = getCurrentUser();
+            if (u != null) {
+                auditoriaService.registrarAccion(u, null, "EXPORTAR", "Base de Datos",
+                        "Exportó Base Completa (CSV STATA)");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        List<Variable> variables = variableRepository.findAll().stream()
+                .sorted(Comparator
+                        .comparing(Variable::getOrdenEnunciado, Comparator.nullsLast(Comparator.naturalOrder()))
+                        .thenComparing(Variable::getCodigoVariable))
+                .collect(Collectors.toList());
 
         List<Participante> participantes = participanteRepository.findAll();
         Map<Integer, Map<String, String>> respuestasMap = respuestaRepository.findAll().stream()

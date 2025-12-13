@@ -1,5 +1,6 @@
 import { Component, AfterViewInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { Chart, registerables } from 'chart.js';
 import { AlertPanelComponent } from '../../alert-panel/alert-panel.component';
 import { LogoutPanelComponent } from '../../shared/logout-panel/logout-panel.component';
@@ -28,7 +29,7 @@ export class ExportacionesComponent implements AfterViewInit {
     { title: 'Reporte Mensual', date: '01 Dec 2025', status: 'Archivado', icon: 'assignment', color: 'bg-gray-100 text-gray-700' }
   ];
 
-  constructor(private auth: AuthService) {
+  constructor(private auth: AuthService, private http: HttpClient) {
     this.usuarioNombre = this.auth.getUserName();
     this.usuarioRol = this.auth.getUserRole();
   }
@@ -39,45 +40,99 @@ export class ExportacionesComponent implements AfterViewInit {
 
   ngAfterViewInit(): void {
     setTimeout(() => {
-      this.renderExportChart();
+      this.loadChartData();
     }, 100);
   }
 
-  private renderExportChart(): void {
-    const ctx = document.getElementById('exportChart') as HTMLCanvasElement;
+  private loadChartData() {
+    this.http.get<any>('http://localhost:8080/api/export/stats').subscribe({
+      next: (data) => {
+        this.renderExportChart(data);
+      },
+      error: (err) => {
+        console.error('Error loading chart stats', err);
+        // Fallback to empty chart
+        this.renderExportChart({});
+      }
+    });
+  }
+
+  private renderExportChart(apiData: any): void {
+    const canvas = document.getElementById('exportChart') as HTMLCanvasElement;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    if (Chart.getChart(ctx)) {
-      Chart.getChart(ctx)?.destroy();
+    if (Chart.getChart(canvas)) {
+      Chart.getChart(canvas)?.destroy();
     }
 
-    new Chart(ctx as any, {
-      type: 'doughnut',
+    // Process data
+    const labels = Object.keys(apiData); // Dates
+    const values = Object.values(apiData); // Counts
+
+    // Create Gradient
+    const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+    gradient.addColorStop(0, 'rgba(67, 56, 202, 0.4)'); // Indigo 700 with opacity
+    gradient.addColorStop(1, 'rgba(67, 56, 202, 0.0)'); // Transparent
+
+    new Chart(canvas as any, {
+      type: 'line',
       data: {
-        labels: ['Completadas', 'En proceso', 'Pendientes'],
+        labels: labels,
         datasets: [{
-          data: [15, 3, 2],
-          backgroundColor: [
-            '#4338ca', // Indigo 700
-            '#0ea5e9', // Sky 500
-            '#e2e8f0', // Slate 200
-          ],
-          borderWidth: 0,
-          hoverOffset: 4
+          label: 'Exportaciones Realizadas',
+          data: values,
+          fill: true,
+          backgroundColor: gradient,
+          borderColor: '#4338ca', // Indigo 700
+          borderWidth: 2,
+          tension: 0.4,
+          pointBackgroundColor: '#ffffff',
+          pointBorderColor: '#4338ca',
+          pointBorderWidth: 2,
+          pointRadius: 4,
+          pointHoverRadius: 6
         }]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        cutout: '80%',
         plugins: {
           legend: {
-            position: 'right',
-            labels: {
-              usePointStyle: true,
-              boxWidth: 8,
-              padding: 15,
-              font: { family: "'Inter', sans-serif", size: 11 }
+            display: false // Hide legend for cleaner look
+          },
+          tooltip: {
+            backgroundColor: '#1e293b',
+            padding: 12,
+            titleFont: { size: 13 },
+            bodyFont: { size: 12 },
+            displayColors: false,
+            callbacks: {
+              label: (context: any) => ` ${context.parsed.y} archivos exportados`
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: {
+              display: false
+            },
+            ticks: {
+              font: { size: 11 }
+            }
+          },
+          y: {
+            beginAtZero: true,
+            grid: {
+              display: true,
+              color: '#f1f5f9', // Very light gray grid
+              tickLength: 0
+            },
+            border: { display: false }, // Hide y-axis line
+            ticks: {
+              stepSize: 2,
+              font: { size: 11 }
             }
           }
         }
@@ -86,14 +141,34 @@ export class ExportacionesComponent implements AfterViewInit {
   }
 
   descargarExcel(): void {
-    window.open(`${API_BASE_URL}/export/excel`, '_blank');
+    this.downloadFile(`${API_BASE_URL}/export/excel`, 'datos_completos.xlsx');
   }
 
   descargarCsv(): void {
-    window.open(`${API_BASE_URL}/export/csv-stata`, '_blank');
+    this.downloadFile(`${API_BASE_URL}/export/csv-stata`, 'datos_stata.csv');
   }
 
   descargarLeyenda(): void {
-    window.open(`${API_BASE_URL}/export/leyenda-pdf`, '_blank');
+    this.downloadFile(`${API_BASE_URL}/export/leyenda-pdf`, 'leyenda_variables.pdf');
+  }
+
+  private downloadFile(url: string, filename: string) {
+    this.http.get(url, { responseType: 'blob' }).subscribe({
+      next: (blob) => {
+        const a = document.createElement('a');
+        const objectUrl = URL.createObjectURL(blob);
+        a.href = objectUrl;
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(objectUrl);
+
+        // Refresh chart immediately since request completed
+        this.loadChartData();
+      },
+      error: (err) => {
+        console.error('Download failed', err);
+        alert('Error al descargar el archivo.');
+      }
+    });
   }
 }
