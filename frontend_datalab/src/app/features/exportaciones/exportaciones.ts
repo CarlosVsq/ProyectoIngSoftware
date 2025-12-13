@@ -148,6 +148,14 @@ export class ExportacionesComponent implements AfterViewInit {
     this.downloadFile(`${API_BASE_URL}/export/csv-stata`, 'datos_stata.csv');
   }
 
+  descargarExcelDicotomizado(): void {
+    this.downloadFile(`${API_BASE_URL}/export/excel-dicotomizado`, 'datos_codificados.xlsx');
+  }
+
+  descargarCsvDicotomizado(): void {
+    this.downloadFile(`${API_BASE_URL}/export/csv-dicotomizado`, 'datos_codificados.csv');
+  }
+
   descargarLeyenda(): void {
     this.downloadFile(`${API_BASE_URL}/export/leyenda-pdf`, 'leyenda_variables.pdf');
   }
