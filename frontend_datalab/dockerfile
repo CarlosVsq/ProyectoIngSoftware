@@ -1,6 +1,8 @@
 # Stage 1: Build
 FROM node:20-alpine AS build
 WORKDIR /app
+ARG NG_APP_BACKEND_BASE=http://localhost:8038
+ENV NG_APP_BACKEND_BASE=${NG_APP_BACKEND_BASE}
 COPY package*.json ./
 RUN npm ci
 COPY . .
