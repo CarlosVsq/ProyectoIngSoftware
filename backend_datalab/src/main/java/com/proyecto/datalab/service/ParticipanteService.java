@@ -106,8 +106,7 @@ public class ParticipanteService {
         }
 
         /**
-         * Guardar respuestas con validacion basica por tipo y reglas declaradas en la
-         * variable.
+         * Guardar respuestas con validacion basica por tipo y reglas declaradas en la variable.
          */
         @Transactional
         public void guardarRespuestas(Integer participanteId, Map<String, String> respuestasMap,
