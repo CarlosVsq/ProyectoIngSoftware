@@ -26,7 +26,7 @@
         <span *ngIf="open">Inicio</span>
       </a>
       <!-- Listado de Participantes -->
-      <a routerLink="/participantes" routerLinkActive="bg-blue-50 text-blue-700"
+      <a routerLink="/lista-participantes" routerLinkActive="bg-blue-50 text-blue-700"
         [class.pointer-events-none]="!auth.canViewData()" [class.opacity-50]="!auth.canViewData()"
         class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors group">
         <span class="material-icons text-xl group-hover:text-blue-600 transition-colors">people</span>
@@ -34,7 +34,7 @@
       </a>
 
       <!-- Progreso (Modificar) -->
-      <a routerLink="/progreso" routerLinkActive="bg-blue-50 text-blue-700"
+      <a routerLink="/reclutamiento" routerLinkActive="bg-blue-50 text-blue-700"
         [class.pointer-events-none]="!auth.canModify()" [class.opacity-50]="!auth.canModify()"
         class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors group">
         <span class="material-icons text-xl group-hover:text-blue-600 transition-colors">show_chart</span>
