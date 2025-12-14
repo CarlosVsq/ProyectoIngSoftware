@@ -189,6 +189,14 @@ public class Usuario implements Serializable, UserDetails {
         return rol != null && rol.puedeVerAuditoria();
     }
 
+    public boolean puedeVerDatos() {
+        return rol != null && rol.isPermisoVerDatos();
+    }
+
+    public boolean puedeModificar() {
+        return rol != null && rol.isPermisoModificar();
+    }
+
     // Activa el usuario (HU-28)
     public void activar() {
         this.estado = EstadoUsuario.ACTIVO;

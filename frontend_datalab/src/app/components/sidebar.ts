@@ -23,15 +23,15 @@ export class SidebarComponent {
   usuarioRol = '';
   usuarioIniciales = '';
 
-  constructor(private auth: AuthService) {
+  constructor(public auth: AuthService) {
     this.usuarioNombre = this.auth.getUserName();
     this.usuarioRol = this.auth.getUserRole();
     this.usuarioIniciales = this.buildIniciales(this.usuarioNombre);
   }
 
   close() { this.openChange.emit(false); }
-  openMenu(){ this.openChange.emit(true); }
-  toggle(){ this.openChange.emit(!this.open); }
+  openMenu() { this.openChange.emit(true); }
+  toggle() { this.openChange.emit(!this.open); }
 
   toggleMini() { this.miniChange.emit(!this.mini); }
 
