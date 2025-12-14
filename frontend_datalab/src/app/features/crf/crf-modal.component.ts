@@ -253,9 +253,43 @@ export class CrfModalComponent implements OnInit, OnDestroy, OnChanges {
     return section.groupVisibility.includes(this.selectedGroup);
   }
 
+
+  // Reglas de visibilidad
+  // Mapa: fieldId_a_mostrar -> { dependsOn: fieldId_trigger, value: value_trigger }
+  private readonly VISIBILITY_RULES: Record<string, { dependsOn: string; value: string }> = {
+    'prevision_salud_otra': { dependsOn: 'prevision_salud', value: 'Otra' },
+    'anteced_fam_otro_cancer_detalle': { dependsOn: 'anteced_fam_otro_cancer', value: 'Si' },
+    'uso_cronico_gastrolesivos_detalle': { dependsOn: 'uso_cronico_gastrolesivos', value: 'Si' },
+    'tiempo_desde_dejo_fumar': { dependsOn: 'estado_tabaquismo', value: 'Exfumador' },
+    'tiempo_desde_dejo_beber': { dependsOn: 'estado_consumo_alcohol', value: 'Exconsumidor' },
+    'exposicion_otros_quimicos_detalle': { dependsOn: 'exposicion_otros_quimicos', value: 'Si' },
+    'fuente_agua_hogar_otra': { dependsOn: 'fuente_agua_hogar', value: 'Otra' },
+    'hp_tipo_examen_otro': { dependsOn: 'hp_tipo_examen_actual', value: 'Otro' }
+  };
+
   showField(field: CRFField): boolean {
     // Hide IMC from UI as it is auto-calculated
     if (field.id.toUpperCase() === 'IMC' || field.label?.toUpperCase().includes('IMC')) return false;
+
+    // Check visibility rules
+    const rule = this.VISIBILITY_RULES[field.id];
+    if (rule) {
+      const triggerValue = this.form?.get(rule.dependsOn)?.value;
+      // Comparación flexible por si acaso (trim, lower)
+      const currentVal = (triggerValue || '').toString().trim();
+      // Nota: Los valores 'Si', 'No', 'Otra', 'Exfumador', etc. vienen del backend/SQL exactamente así.
+      // Se asume case-sensitive o se normaliza si es necesario.
+      // SQL values: 'Si', 'No', 'Otra', 'Exfumador', 'Exconsumidor', 'Otro'. 
+      // Cuidado con 'Otro' vs 'Otra'.
+      // hp_tipo_examen_actual options: ...,Otro
+      // fuente_agua_hogar options: ...,Otra
+      // prevision_salud options: ...,Otra
+
+      // Para asegurar, comparamos incluyendo el valor esperado
+      if (currentVal !== rule.value) {
+        return false;
+      }
+    }
 
     if (!field.groupVisibility || field.groupVisibility.length === 0) return true;
     return field.groupVisibility.includes(this.selectedGroup);
