@@ -110,4 +110,36 @@ export class AuthService {
   resetPassword(token: string, newPassword: string): Observable<any> {
     return this.http.post<any>(`${this.API_BASE}/auth/reset-password`, { token, newPassword });
   }
+  // --- RBAC Helpers ---
+
+  canViewData(): boolean {
+    const user = this.getUser();
+    if (this.isPI() || this.isSuperAdmin(user)) return true;
+    return user?.permisos?.puedeVerDatos ?? false;
+  }
+
+  canModify(): boolean {
+    const user = this.getUser();
+    if (this.isPI() || this.isSuperAdmin(user)) return true;
+    return user?.permisos?.puedeModificar ?? false;
+  }
+
+  canExport(): boolean {
+    const user = this.getUser();
+    if (this.isPI() || this.isSuperAdmin(user)) return true;
+    return user?.permisos?.puedeExportar ?? false;
+  }
+
+  canAdmin(): boolean {
+    const user = this.getUser();
+    if (this.isPI() || this.isSuperAdmin(user)) return true;
+    // Audit/Config share administration permission
+    return user?.permisos?.puedeAdministrarUsuarios ?? false;
+  }
+
+  private isSuperAdmin(user: any): boolean {
+    // Fallback in case role name varies, though 'Administrador' is standard
+    const rolName = user?.rol?.nombreRol || user?.rol?.nombre || '';
+    return rolName === 'Administrador';
+  }
 }
