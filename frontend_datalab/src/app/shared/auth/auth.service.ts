@@ -128,23 +128,25 @@ export class AuthService {
 
   canViewData(): boolean {
     const user = this.getUser();
-    // Debug log to trace permissions
-    // console.log('Checking ViewData. User:', user?.nombreCompleto, 'Permisos:', user?.permisos);
+    if (this.isPI() || this.isSuperAdmin(user)) return true;
     return user?.permisos?.puedeVerDatos ?? false;
   }
 
   canModify(): boolean {
     const user = this.getUser();
+    if (this.isPI() || this.isSuperAdmin(user)) return true;
     return user?.permisos?.puedeModificar ?? false;
   }
 
   canExport(): boolean {
     const user = this.getUser();
+    if (this.isPI() || this.isSuperAdmin(user)) return true;
     return user?.permisos?.puedeExportar ?? false;
   }
 
   canAdmin(): boolean {
     const user = this.getUser();
+    if (this.isPI() || this.isSuperAdmin(user)) return true;
     return user?.permisos?.puedeAdministrarUsuarios ?? false;
   }
 
