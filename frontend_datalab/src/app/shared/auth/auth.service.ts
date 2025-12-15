@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, tap, map, catchError, of, finalize } from 'rxjs';
-import { AuthResponse } from './auth.types';
+import { AuthResponse, UsuarioDTO } from './auth.types';
 import { BACKEND_BASE_URL } from '../config/api.config';
 
 interface ApiResponse<T> {
@@ -102,6 +102,18 @@ export class AuthService {
     localStorage.setItem(this.USER_KEY, JSON.stringify(res.usuario));
   }
 
+  refreshProfile(): Observable<UsuarioDTO> {
+    return this.http.get<ApiResponse<UsuarioDTO>>(`${this.API_BASE}/auth/me`).pipe(
+      map(res => res.data),
+      tap(user => {
+        const currentUser = this.getUser();
+        if (currentUser) {
+          localStorage.setItem(this.USER_KEY, JSON.stringify(user));
+        }
+      })
+    );
+  }
+
   // --- Password Recovery ---
   forgotPassword(email: string): Observable<any> {
     return this.http.post<any>(`${this.API_BASE}/auth/forgot-password`, { email });
@@ -109,5 +121,38 @@ export class AuthService {
 
   resetPassword(token: string, newPassword: string): Observable<any> {
     return this.http.post<any>(`${this.API_BASE}/auth/reset-password`, { token, newPassword });
+  }
+  // --- RBAC Helpers ---
+
+  // --- RBAC Helpers ---
+
+  canViewData(): boolean {
+    const user = this.getUser();
+    if (this.isPI() || this.isSuperAdmin(user)) return true;
+    return user?.permisos?.puedeVerDatos ?? false;
+  }
+
+  canModify(): boolean {
+    const user = this.getUser();
+    if (this.isPI() || this.isSuperAdmin(user)) return true;
+    return user?.permisos?.puedeModificar ?? false;
+  }
+
+  canExport(): boolean {
+    const user = this.getUser();
+    if (this.isPI() || this.isSuperAdmin(user)) return true;
+    return user?.permisos?.puedeExportar ?? false;
+  }
+
+  canAdmin(): boolean {
+    const user = this.getUser();
+    if (this.isPI() || this.isSuperAdmin(user)) return true;
+    return user?.permisos?.puedeAdministrarUsuarios ?? false;
+  }
+
+  private isSuperAdmin(user: any): boolean {
+    // Fallback in case role name varies, though 'Administrador' is standard
+    const rolName = user?.rol?.nombreRol || user?.rol?.nombre || '';
+    return rolName === 'Administrador';
   }
 }

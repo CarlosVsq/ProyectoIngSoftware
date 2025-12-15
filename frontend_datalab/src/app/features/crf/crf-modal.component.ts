@@ -99,18 +99,20 @@ export class CrfModalComponent implements OnInit, OnDestroy, OnChanges {
     });
 
     // precarga de borrador o datos existentes
+    // precarga de borrador o datos existentes
     const key = this.getDraftKey();
     const isEditing = this.participantId !== null;
+    let loadedFromDraft = false;
 
     if (!isEditing && key) {
       const draft = this.crf.load(key);
       if (draft) {
         this.form.patchValue(draft);
-        return;
+        loadedFromDraft = true;
       }
     }
 
-    if (this.preloadData) {
+    if (!loadedFromDraft && this.preloadData) {
       this.hydrateForm(this.preloadData);
     }
 
@@ -166,9 +168,9 @@ export class CrfModalComponent implements OnInit, OnDestroy, OnChanges {
   private setupImcCalculation(): void {
     if (!this.schema || !this.schema.sections || !this.form) return;
 
-    let pesoId = 'peso_kg';
-    let tallaId = 'estatura_m';
-    let imcId = 'imc';
+    let pesoId = '';
+    let tallaId = '';
+    let imcId = '';
 
     for (const section of this.schema.sections) {
       for (const field of section.fields) {
@@ -195,10 +197,15 @@ export class CrfModalComponent implements OnInit, OnDestroy, OnChanges {
     imcControl.disable();
 
     const calculate = () => {
-      const peso = parseFloat(pesoControl.value);
-      let talla = parseFloat(tallaControl.value);
+      const pesoStr = (pesoControl.value || '').toString().replace(',', '.');
+      const tallaStr = (tallaControl.value || '').toString().replace(',', '.');
+
+      console.log('Calculating IMC...', { pesoId, tallaId, pesoStr, tallaStr });
+      const peso = parseFloat(pesoStr);
+      let talla = parseFloat(tallaStr);
 
       if (isNaN(peso) || isNaN(talla) || talla <= 0) {
+        console.log('Invalid values for IMC', { peso, talla });
         imcControl.setValue(null);
         return;
       }
@@ -207,6 +214,7 @@ export class CrfModalComponent implements OnInit, OnDestroy, OnChanges {
       if (isCm) talla = talla / 100;
 
       const imc = peso / (talla * talla);
+      console.log('calculated IMC:', imc);
       imcControl.setValue(imc.toFixed(2));
     };
 
@@ -245,7 +253,44 @@ export class CrfModalComponent implements OnInit, OnDestroy, OnChanges {
     return section.groupVisibility.includes(this.selectedGroup);
   }
 
+
+  // Reglas de visibilidad
+  // Mapa: fieldId_a_mostrar -> { dependsOn: fieldId_trigger, value: value_trigger }
+  private readonly VISIBILITY_RULES: Record<string, { dependsOn: string; value: string }> = {
+    'prevision_salud_otra': { dependsOn: 'prevision_salud', value: 'Otra' },
+    'anteced_fam_otro_cancer_detalle': { dependsOn: 'anteced_fam_otro_cancer', value: 'Si' },
+    'uso_cronico_gastrolesivos_detalle': { dependsOn: 'uso_cronico_gastrolesivos', value: 'Si' },
+    'tiempo_desde_dejo_fumar': { dependsOn: 'estado_tabaquismo', value: 'Exfumador' },
+    'tiempo_desde_dejo_beber': { dependsOn: 'estado_consumo_alcohol', value: 'Exconsumidor' },
+    'exposicion_otros_quimicos_detalle': { dependsOn: 'exposicion_otros_quimicos', value: 'Si' },
+    'fuente_agua_hogar_otra': { dependsOn: 'fuente_agua_hogar', value: 'Otra' },
+    'hp_tipo_examen_otro': { dependsOn: 'hp_tipo_examen_actual', value: 'Otro' }
+  };
+
   showField(field: CRFField): boolean {
+    // Hide IMC from UI as it is auto-calculated
+    if (field.id.toUpperCase() === 'IMC' || field.label?.toUpperCase().includes('IMC')) return false;
+
+    // Check visibility rules
+    const rule = this.VISIBILITY_RULES[field.id];
+    if (rule) {
+      const triggerValue = this.form?.get(rule.dependsOn)?.value;
+      // Comparación flexible por si acaso (trim, lower)
+      const currentVal = (triggerValue || '').toString().trim();
+      // Nota: Los valores 'Si', 'No', 'Otra', 'Exfumador', etc. vienen del backend/SQL exactamente así.
+      // Se asume case-sensitive o se normaliza si es necesario.
+      // SQL values: 'Si', 'No', 'Otra', 'Exfumador', 'Exconsumidor', 'Otro'. 
+      // Cuidado con 'Otro' vs 'Otra'.
+      // hp_tipo_examen_actual options: ...,Otro
+      // fuente_agua_hogar options: ...,Otra
+      // prevision_salud options: ...,Otra
+
+      // Para asegurar, comparamos incluyendo el valor esperado
+      if (currentVal !== rule.value) {
+        return false;
+      }
+    }
+
     if (!field.groupVisibility || field.groupVisibility.length === 0) return true;
     return field.groupVisibility.includes(this.selectedGroup);
   }
@@ -282,7 +327,7 @@ export class CrfModalComponent implements OnInit, OnDestroy, OnChanges {
 
   guardarFinal(): void {
     const key = this.getDraftKey();
-    
+
     // Check strict completeness (all fields)
     const missing = this.getAllMissingFields();
     if (missing.length > 0) {
@@ -290,7 +335,7 @@ export class CrfModalComponent implements OnInit, OnDestroy, OnChanges {
       this.missingRequiredLabels = missing;
       this.crf.saveDraft(key, { ...this.form.value, estado: 'borrador' });
       alert(`No se puede finalizar. La ficha debe estar 100% completa.\nFaltan campos: ${missing.join(', ')}`);
-      
+
       // Marcar controles vacíos como touched para feedback visual si tienen validadores, 
       // o invalidar manualmente si queremos forzar el rojo.
       this.markMissingAsTouched();
@@ -332,14 +377,14 @@ export class CrfModalComponent implements OnInit, OnDestroy, OnChanges {
       }).subscribe({
         next: () => {
           if (isFinal) {
-            this.crf.saveFinalLocal(key, { ...this.form.value, estado: 'completo', idParticipante });
+            this.crf.saveFinalLocal(key, { ...this.form.getRawValue(), estado: 'completo', idParticipante });
             alert('CRF Finalizado y Guardado exitosamente.');
             this.close();
           } else {
             // Actualizar estado local
-            this.participantId = idParticipante; 
-            this.crf.saveDraft(key, { ...this.form.value, estado: 'borrador', idParticipante });
-            
+            this.participantId = idParticipante;
+            this.crf.saveDraft(key, { ...this.form.getRawValue(), estado: 'borrador', idParticipante });
+
             // Guardar justificación si existe
             if (this.justificationText.trim()) {
               this.comentarioService.agregarComentario(idParticipante, this.justificationText).subscribe({
@@ -386,7 +431,7 @@ export class CrfModalComponent implements OnInit, OnDestroy, OnChanges {
     this.autoSaveHandle = setInterval(() => {
       const key = this.getDraftKey();
       if (this.form) {
-        this.crf.saveDraft(key, { ...this.form.value, estado: 'autosave' });
+        this.crf.saveDraft(key, { ...this.form.getRawValue(), estado: 'autosave' });
         this.lastAutoSaveAt = new Date().toLocaleTimeString();
       }
     }, 15000); // 15 segundos
@@ -422,7 +467,7 @@ export class CrfModalComponent implements OnInit, OnDestroy, OnChanges {
           if (control) {
             const val = control.value;
             const isArray = control instanceof FormArray;
-            
+
             let isEmpty = false;
             if (isArray) {
               isEmpty = (val || []).length === 0;
@@ -434,7 +479,7 @@ export class CrfModalComponent implements OnInit, OnDestroy, OnChanges {
               missing.push(field.label);
               // Optional: set explicit error for visual feedback
               if (!control.errors) {
-                 control.setErrors({ 'required': true }); 
+                control.setErrors({ 'required': true });
               }
             }
           }
@@ -446,13 +491,13 @@ export class CrfModalComponent implements OnInit, OnDestroy, OnChanges {
 
   private markMissingAsTouched() {
     Object.keys(this.form.controls).forEach(key => {
-       this.form.get(key)?.markAsTouched();
+      this.form.get(key)?.markAsTouched();
     });
   }
 
   // Renamed/Replaced old getMissingRequiredFields
   private getMissingRequiredFields(): string[] {
-     return this.getAllMissingFields();
+    return this.getAllMissingFields();
   }
 
 

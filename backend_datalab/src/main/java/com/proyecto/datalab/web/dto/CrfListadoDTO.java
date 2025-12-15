@@ -20,5 +20,6 @@ public class CrfListadoDTO {
     private LocalDate fechaInclusion;
     private String telefono;
     private String direccion;
+    private String nombreReclutador;
     private List<CrfRespuestaDTO> respuestas;
 }

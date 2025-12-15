@@ -15,7 +15,7 @@
       </div>
     </header>
     <!-- GESTIÓN DE USUARIOS -->
-    <section class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8 min-w-0">
+    <section class="grid grid-cols-1 gap-6 mb-8 min-w-0">
       <div class="bg-white p-6 rounded-xl shadow min-w-0">
         <h3 class="text-primary font-semibold mb-4">Gestión de Usuarios</h3>
 
@@ -55,42 +55,7 @@
         </button>
       </div>
 
-      <!-- CONFIGURACIÓN DEL SISTEMA -->
-      <div class="bg-white p-6 rounded-xl shadow min-w-0">
-        <h3 class="text-primary font-semibold mb-4">Configuración del Sistema</h3>
 
-        <div class="space-y-3 text-sm text-gray-700">
-          <label class="flex justify-between items-center">
-            <span>Notificaciones por email</span>
-            <input type="checkbox" checked class="accent-blue-600 scale-110">
-          </label>
-
-          <label class="flex justify-between items-center">
-            <span>Backup automático</span>
-            <input type="checkbox" checked class="accent-blue-600 scale-110">
-          </label>
-
-          <label class="flex justify-between items-center">
-            <span>Auditoría detallada</span>
-            <input type="checkbox" checked class="accent-blue-600 scale-110">
-          </label>
-
-          <label class="flex justify-between items-center">
-            <span>Autenticación 2FA</span>
-            <input type="checkbox" class="accent-blue-600 scale-110">
-          </label>
-
-          <div class="mt-4">
-            <label class="text-gray-700 font-medium text-sm mb-1 block">Retención de datos (días)</label>
-            <input type="number" value="2555" class="border border-gray-300 rounded-md px-3 py-2 w-full text-sm">
-          </div>
-
-          <button
-            class="w-full mt-4 bg-gray-900 text-white py-2 rounded-md text-sm hover:bg-gray-800 transition flex items-center justify-center gap-2">
-            <span class="material-icons text-sm">save</span> Guardar Configuración
-          </button>
-        </div>
-      </div>
     </section>
 
     <!-- PERMISOS Y ROLES -->
@@ -155,42 +120,42 @@
       </button>
     </section>
 
-  <!-- MODAL AGREGAR USUARIO -->
-  <div *ngIf="showUserModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
-      <h3 class="text-xl font-bold mb-4 text-gray-800">Nuevo Usuario</h3>
-      <form [formGroup]="userForm" (ngSubmit)="guardarUsuario()" class="space-y-4">
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Nombre Completo</label>
-          <input formControlName="nombre" type="text" class="w-full border rounded px-3 py-2 mt-1">
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Correo</label>
-          <input formControlName="correo" type="email" class="w-full border rounded px-3 py-2 mt-1">
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Contraseña</label>
-          <input formControlName="contrasena" type="password" class="w-full border rounded px-3 py-2 mt-1">
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Rol</label>
-          <select formControlName="rolId" class="w-full border rounded px-3 py-2 mt-1">
-            <option *ngFor="let r of roles" [value]="r.idRol">{{ r.nombreRol }}</option>
-          </select>
-        </div>
-        <div class="flex justify-end gap-3 mt-6">
-          <button type="button" (click)="cerrarModalUsuario()"
-            class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded">Cancelar</button>
-          <button type="submit" [disabled]="savingUser || userForm.invalid"
-            class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-2">
-            <span *ngIf="savingUser" class="material-icons animate-spin text-sm">refresh</span>
-            Guardar
-          </button>
-        </div>
-      </form>
+    <!-- MODAL AGREGAR USUARIO  -->
+    <div *ngIf="showUserModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
+        <h3 class="text-xl font-bold mb-4 text-gray-800">Nuevo Usuario</h3>
+        <form [formGroup]="userForm" (ngSubmit)="guardarUsuario()" class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Nombre Completo</label>
+            <input formControlName="nombre" type="text" class="w-full border rounded px-3 py-2 mt-1">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Correo</label>
+            <input formControlName="correo" type="email" class="w-full border rounded px-3 py-2 mt-1">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Contraseña</label>
+            <input formControlName="contrasena" type="password" class="w-full border rounded px-3 py-2 mt-1">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Rol</label>
+            <select formControlName="rolId" class="w-full border rounded px-3 py-2 mt-1">
+              <option *ngFor="let r of roles" [value]="r.idRol">{{ r.nombreRol }}</option>
+            </select>
+          </div>
+          <div class="flex justify-end gap-3 mt-6">
+            <button type="button" (click)="cerrarModalUsuario()"
+              class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded">Cancelar</button>
+            <button type="submit" [disabled]="savingUser || userForm.invalid"
+              class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-2">
+              <span *ngIf="savingUser" class="material-icons animate-spin text-sm">refresh</span>
+              Guardar
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
-  </div>
 
-  <app-logout-panel></app-logout-panel>
+    <app-logout-panel></app-logout-panel>
   </main>
 </div>

@@ -10,6 +10,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PermisosDTO {
+    private boolean puedeVerDatos;
+    private boolean puedeModificar; // Add this too for explicit 'Modificar' permission
     private boolean puedeCrudCrf;
     private boolean puedeExportar;
     private boolean puedeReclutar;

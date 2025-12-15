@@ -142,6 +142,8 @@ public class AuthController {
                 .rol(usuario.getRol().getNombreRol())
                 .estado(usuario.getEstado().name())
                 .permisos(PermisosDTO.builder()
+                        .puedeVerDatos(usuario.puedeVerDatos())
+                        .puedeModificar(usuario.puedeModificar())
                         .puedeCrudCrf(usuario.puedeCrudCrf())
                         .puedeExportar(usuario.puedeExportar())
                         .puedeReclutar(usuario.puedeReclutar())

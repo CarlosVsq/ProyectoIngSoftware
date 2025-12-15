@@ -54,6 +54,7 @@ public class ExportController {
     private final VariableRepository variableRepository;
     private final AuditoriaService auditoriaService;
     private final UsuarioRepository usuarioRepository;
+    private final com.proyecto.datalab.service.VariableCodingService variableCodingService;
 
     // Helper method to get current user
     private Usuario getCurrentUser() {
@@ -143,8 +144,23 @@ public class ExportController {
                             (a, b) -> b));
 
             for (Variable v : allVariables) {
+                // Filter by Group (Aplica A)
+                String aplica = v.getAplicaA() != null ? v.getAplicaA() : "Ambos";
+                String grupo = p.getGrupo() != null ? p.getGrupo().name() : ""; // CASO / CONTROL
+
+                boolean show = aplica.equalsIgnoreCase("Ambos") || aplica.equalsIgnoreCase(grupo);
+                if (!show)
+                    continue;
+
                 addBodyCell(table, safe(v.getEnunciado()));
-                addBodyCell(table, safe(respuestasMap.getOrDefault(v.getCodigoVariable(), "")));
+
+                // Inject value for codigo_participante if missing in responses
+                String val = respuestasMap.get(v.getCodigoVariable());
+                if (v.getCodigoVariable().equalsIgnoreCase("codigo_participante") && (val == null || val.isEmpty())) {
+                    val = p.getCodigoParticipante();
+                }
+
+                addBodyCell(table, safe(val));
             }
 
             document.add(table);
@@ -207,13 +223,15 @@ public class ExportController {
             document.add(title);
             document.add(new com.itextpdf.text.Paragraph(" "));
 
-            com.itextpdf.text.pdf.PdfPTable table = new com.itextpdf.text.pdf.PdfPTable(3);
+            // Expanded to 4 columns to include Encoding Rules
+            com.itextpdf.text.pdf.PdfPTable table = new com.itextpdf.text.pdf.PdfPTable(4);
             table.setWidthPercentage(100);
-            table.setWidths(new float[] { 2, 6, 2 }); // Relative widths
+            table.setWidths(new float[] { 2, 5, 2, 4 }); // Relative widths
 
             addHeaderCell(table, "Código Variable");
             addHeaderCell(table, "Descripción / Enunciado");
             addHeaderCell(table, "Tipo de Dato");
+            addHeaderCell(table, "Codificación / Reglas");
 
             List<Variable> allVariables = variableRepository.findAll().stream()
                     .sorted(Comparator.comparing(Variable::getOrdenEnunciado,
@@ -224,6 +242,7 @@ public class ExportController {
                 addBodyCell(table, safe(v.getCodigoVariable()));
                 addBodyCell(table, safe(v.getEnunciado()));
                 addBodyCell(table, safe(v.getTipoDato()));
+                addBodyCell(table, variableCodingService.getEncodingDescription(v));
             }
 
             document.add(table);
@@ -386,7 +405,206 @@ public class ExportController {
                 .body(bytes);
     }
 
-    @GetMapping("/csv-stata")
+    @GetMapping("/excel-dicotomizado")
+    public ResponseEntity<byte[]> exportExcelCoded() {
+        // LOG
+        try {
+            Usuario u = getCurrentUser();
+            if (u != null) {
+                auditoriaService.registrarAccion(u, null, "EXPORTAR", "Base de Datos",
+                        "Exportó Base Codificada (Excel)");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        try (Workbook workbook = new XSSFWorkbook();
+                ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+
+            Sheet sheet = workbook.createSheet("Datos Codificados");
+
+            List<Variable> variables = getSafeVariables();
+            List<Participante> participantes = participanteRepository.findAll();
+
+            // Map: ParticipanteID -> { CodigoVariable -> Valor }
+            Map<Integer, Map<String, String>> respuestasMap = respuestaRepository.findAll().stream()
+                    .collect(Collectors.groupingBy(
+                            r -> r.getParticipante().getIdParticipante(),
+                            Collectors.toMap(
+                                    r -> r.getVariable().getCodigoVariable(),
+                                    Respuesta::getValorIngresado,
+                                    (a, b) -> b)));
+
+            // Pre-Calculate Coded Values to avoid double processing (needed for stats)
+            // Structure: ParticipanteID -> { CodeVar -> CodedVal }
+            Map<Integer, Map<String, String>> codedValues = new java.util.HashMap<>();
+            for (Participante p : participantes) {
+                Map<String, String> pRespuestas = respuestasMap.getOrDefault(p.getIdParticipante(), Map.of());
+                Map<String, String> pCoded = new java.util.HashMap<>();
+
+                // Static
+                pCoded.put("CODIGO_PARTICIPANTE", p.getCodigoParticipante());
+
+                for (Variable v : variables) {
+                    String raw = pRespuestas.getOrDefault(v.getCodigoVariable(), "");
+                    String coded = variableCodingService.encodeValue(v, raw);
+                    pCoded.put(v.getCodigoVariable(), coded);
+                }
+                codedValues.put(p.getIdParticipante(), pCoded);
+            }
+
+            // --- HEADER ROW (Row 0) ---
+            Row headerRow = sheet.createRow(0);
+            CellStyle headerStyle = createHeaderStyle(workbook);
+            int colIdx = 0;
+
+            // Static Headers
+            for (StaticColumn col : StaticColumn.values()) {
+                Cell cell = headerRow.createCell(colIdx++);
+                cell.setCellValue(col.name());
+                cell.setCellStyle(headerStyle);
+            }
+            // Variable Headers
+            for (Variable v : variables) {
+                Cell cell = headerRow.createCell(colIdx++);
+                cell.setCellValue(v.getCodigoVariable());
+                cell.setCellStyle(headerStyle);
+            }
+
+            // --- SUMMARY ROWS (Rows 1, 2, 3) ---
+            // Row 1: Count "0"
+            // Row 2: Count "1" (or >0 for Ordinals?) - User asked for 0/1 counts.
+            // For ordinals (0,1,2,3), "1" count is specific. Maybe better to just count 0
+            // and 1 as requested?
+            // "Contadores 0/1/vacíos" -> I will count exact matches for 0 and 1, and empty.
+            Row rowCount0 = sheet.createRow(1);
+            Row rowCount1 = sheet.createRow(2);
+            Row rowCountEmpty = sheet.createRow(3);
+
+            rowCount0.createCell(0).setCellValue("Total '0'");
+            rowCount1.createCell(0).setCellValue("Total '1'");
+            rowCountEmpty.createCell(0).setCellValue("Vacíos/Nulos");
+
+            colIdx = 1; // start after header static col (assuming only 1 static col
+                        // CODIGO_PARTICIPANTE)
+            // Note: Static column has no 0/1 stats usually, just skip or empty.
+
+            for (Variable v : variables) {
+                long c0 = 0;
+                long c1 = 0;
+                long cEmpty = 0;
+
+                for (Participante p : participantes) {
+                    Map<String, String> vals = codedValues.get(p.getIdParticipante());
+                    String val = vals.get(v.getCodigoVariable());
+
+                    if (val == null || val.isEmpty())
+                        cEmpty++;
+                    else if (val.equals("0"))
+                        c0++;
+                    else if (val.equals("1"))
+                        c1++;
+                }
+
+                rowCount0.createCell(colIdx).setCellValue(c0);
+                rowCount1.createCell(colIdx).setCellValue(c1);
+                rowCountEmpty.createCell(colIdx).setCellValue(cEmpty);
+                colIdx++;
+            }
+
+            // --- DATA ROWS (Row 4+) ---
+            int rowIdx = 4;
+            for (Participante p : participantes) {
+                Row row = sheet.createRow(rowIdx++);
+                colIdx = 0;
+                Map<String, String> vals = codedValues.get(p.getIdParticipante());
+
+                // Static
+                row.createCell(colIdx++).setCellValue(vals.get("CODIGO_PARTICIPANTE"));
+
+                // Variables
+                for (Variable v : variables) {
+                    Cell cell = row.createCell(colIdx++);
+                    String val = vals.get(v.getCodigoVariable());
+                    // Try to store as number if possible for better excel handling
+                    try {
+                        if (val != null && !val.isEmpty()) {
+                            double d = Double.parseDouble(val);
+                            cell.setCellValue(d);
+                        } else {
+                            cell.setCellValue("");
+                        }
+                    } catch (NumberFormatException e) {
+                        cell.setCellValue(safe(val));
+                    }
+                }
+            }
+
+            workbook.write(baos);
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"datos_codificados.xlsx\"")
+                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                    .body(baos.toByteArray());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @GetMapping("/csv-dicotomizado")
+    public ResponseEntity<byte[]> exportCsvCoded() {
+        // LOG
+        try {
+            Usuario u = getCurrentUser();
+            if (u != null) {
+                auditoriaService.registrarAccion(u, null, "EXPORTAR", "Base de Datos",
+                        "Exportó Base Codificada (CSV)");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        List<Variable> variables = getSafeVariables();
+        List<Participante> participantes = participanteRepository.findAll();
+        Map<Integer, Map<String, String>> respuestasMap = respuestaRepository.findAll().stream()
+                .collect(Collectors.groupingBy(
+                        r -> r.getParticipante().getIdParticipante(),
+                        Collectors.toMap(
+                                r -> r.getVariable().getCodigoVariable(),
+                                Respuesta::getValorIngresado,
+                                (a, b) -> b)));
+
+        StringBuilder csv = new StringBuilder();
+
+        // Header
+        List<String> headers = new ArrayList<>();
+        for (StaticColumn col : StaticColumn.values())
+            headers.add(col.name());
+        for (Variable v : variables)
+            headers.add(v.getCodigoVariable());
+        csv.append(String.join(",", headers)).append("\n");
+
+        for (Participante p : participantes) {
+            List<String> cols = new ArrayList<>();
+            cols.add(escapeCsv(p.getCodigoParticipante()));
+
+            Map<String, String> pRespuestas = respuestasMap.getOrDefault(p.getIdParticipante(), Map.of());
+
+            for (Variable v : variables) {
+                String raw = pRespuestas.getOrDefault(v.getCodigoVariable(), "");
+                String coded = variableCodingService.encodeValue(v, raw);
+                cols.add(escapeCsv(coded));
+            }
+            csv.append(String.join(",", cols)).append("\n");
+        }
+
+        byte[] bytes = csv.toString().getBytes(StandardCharsets.UTF_8);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"datos_codificados.csv\"")
+                .contentType(MediaType.parseMediaType("text/csv"))
+                .body(bytes);
+    }
 
     public ResponseEntity<byte[]> exportToCsvStata() {
         // LOG
@@ -507,8 +725,7 @@ public class ExportController {
                 "telefono",
                 "nombre_completo",
                 "correo_electronico",
-                "direccion"
-        ));
+                "direccion"));
 
         return variableRepository.findAll().stream()
                 .sorted(Comparator
@@ -524,7 +741,8 @@ public class ExportController {
                 // Excluir sensibles y columnas estáticas
                 .filter(v -> {
                     String code = v.getCodigoVariable();
-                    if (code == null) return false;
+                    if (code == null)
+                        return false;
                     String lower = code.toLowerCase();
                     return !sensitiveCodes.contains(lower)
                             && !lower.equals(StaticColumn.CODIGO_PARTICIPANTE.name().toLowerCase());
