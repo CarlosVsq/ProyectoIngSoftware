@@ -184,7 +184,7 @@ export class ReclutamientoComponent implements OnInit, AfterViewInit {
     if (!ctx) return;
     const dataPoints = this.resumen
       ? [this.resumen.casos, this.resumen.controles, this.resumen.completas + this.resumen.incompletas]
-      : [60, 80, 100];
+      : [0, 0, 0];
     const config: any = {
       type: 'line',
       data: {
