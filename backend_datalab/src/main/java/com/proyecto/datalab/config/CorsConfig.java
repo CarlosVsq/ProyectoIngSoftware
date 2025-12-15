@@ -26,7 +26,8 @@ public class CorsConfig {
             "http://localhost:4200",  // Angular dev
             "http://localhost:8040",  // Frontend en Docker
             "http://localhost:8038",   // Backend publicado
-            "http://pacheco.chillan.ubiobio.cl:8038"
+            "http://pacheco.chillan.ubiobio.cl:8038",
+            "http://pacheco.chillan.ubiobio.cl:8040"
         ));
         
         // Métodos permitidos
