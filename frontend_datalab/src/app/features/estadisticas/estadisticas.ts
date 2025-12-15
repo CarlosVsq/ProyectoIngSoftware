@@ -5,6 +5,7 @@ import { Chart, registerables } from 'chart.js';
 import { AlertPanelComponent } from '../../alert-panel/alert-panel.component';
 import { LogoutPanelComponent } from '../../shared/logout-panel/logout-panel.component';
 import { AuthService } from '../../shared/auth/auth.service';
+import { API_BASE_URL } from '../../shared/config/api.config';
 
 Chart.register(...registerables);
 
@@ -48,7 +49,7 @@ export class EstadisticasComponent implements AfterViewInit {
   }
 
   loadStats() {
-    this.http.get<any>('http://localhost:8080/api/dashboard/clinical').subscribe({
+    this.http.get<any>(`${API_BASE_URL}/dashboard/clinical`).subscribe({
       next: (res) => {
         if (res.success) {
           this.stats = res.data;

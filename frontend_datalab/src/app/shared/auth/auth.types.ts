@@ -1,4 +1,6 @@
 export interface PermisosDTO {
+  puedeVerDatos: boolean;
+  puedeModificar: boolean;
   puedeCrudCrf: boolean;
   puedeExportar: boolean;
   puedeReclutar: boolean;

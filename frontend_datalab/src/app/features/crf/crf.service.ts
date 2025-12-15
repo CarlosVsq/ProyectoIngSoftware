@@ -138,7 +138,7 @@ export class CrfService {
       const section = sections.get(title)!;
 
       // Filter out auto-generated or unwanted fields
-      if (['CODIGO_PARTICIPANTE', 'CODIGO', 'IMC'].includes(codigo.toUpperCase())) return;
+      if (['CODIGO_PARTICIPANTE', 'CODIGO'].includes(codigo.toUpperCase())) return;
 
       const type = this.mapTipoDato(row.tipo_dato || row.tipoDato);
       let options = this.parseOptions(row.opciones);
@@ -208,7 +208,7 @@ export class CrfService {
 
   private mapTipoDato(tipo: string | null | undefined): CRFFieldType {
     const normalized = (tipo || '').toLowerCase();
-    if (normalized.includes('numero')) return 'number';
+    if (normalized.includes('numero') || normalized.includes('decimal')) return 'number';
     if (normalized.includes('fecha')) return 'date';
     if (normalized.includes('seleccionunica')) return 'radio';
     if (normalized.includes('seleccionmultiple') || normalized.includes('checkbox')) return 'checkbox';

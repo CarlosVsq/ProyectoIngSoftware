@@ -106,7 +106,8 @@ public class ParticipanteService {
         }
 
         /**
-         * Guardar respuestas con validacion basica por tipo y reglas declaradas en la variable.
+         * Guardar respuestas con validacion basica por tipo y reglas declaradas en la
+         * variable.
          */
         @Transactional
         public void guardarRespuestas(Integer participanteId, Map<String, String> respuestasMap,
@@ -174,15 +175,17 @@ public class ParticipanteService {
 
                         respuestaRepository.save(respuesta);
                         existentes.put(variable.getIdVariable(), valor);
-
-                        auditoriaService.registrarAccion(
-                                        editor,
-                                        participante,
-                                        "ACTUALIZAR",
-                                        "Respuesta",
-                                        "Se guardo respuesta para participante ID: " + participante.getIdParticipante()
-                                                        + ", Variable: " + variable.getCodigoVariable());
                 }
+
+                // Registrar auditoria agrupada
+                auditoriaService.registrarAccion(
+                                editor,
+                                participante,
+                                "ACTUALIZAR",
+                                "Respuesta",
+                                "Se guardaron respuestas (" + respuestasMap.size()
+                                                + " variables) para participante ID: "
+                                                + participante.getIdParticipante());
 
                 // evaluar completitud: todas las variables obligatorias con valor no vacío
                 boolean completo = isFichaCompleta(existentes, participante.getGrupo());
@@ -192,8 +195,7 @@ public class ParticipanteService {
 
         private boolean isFichaCompleta(Map<Integer, String> respuestasActuales, GrupoParticipante grupo) {
                 List<Variable> requeridas = variableRepository.findAll().stream()
-                                // .filter(Variable::isEsObligatoria) // Ahora se requieren todas para estar
-                                // COMPLETA
+                                .filter(Variable::isEsObligatoria)
                                 .filter(v -> {
                                         String codigo = v.getCodigoVariable() != null
                                                         ? v.getCodigoVariable().toUpperCase()
@@ -246,6 +248,9 @@ public class ParticipanteService {
                                                 .fechaInclusion(p.getFechaInclusion())
                                                 .telefono(p.getTelefono())
                                                 .direccion(p.getDireccion())
+                                                .nombreReclutador(p.getReclutador() != null
+                                                                ? p.getReclutador().getNombreCompleto()
+                                                                : "")
                                                 .respuestas(p.getRespuestas() == null ? List.of()
                                                                 : p.getRespuestas().stream()
                                                                                 .map(r -> CrfRespuestaDTO.builder()

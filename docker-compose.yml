@@ -12,7 +12,9 @@ services:
       - db_data:/var/lib/mysql
       - ./BDD/init:/docker-entrypoint-initdb.d:ro
     healthcheck:
-      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      # Root en la imagen de MySQL 8 siempre requiere contraseña; se usa CMD-SHELL
+      # para que expanda la variable dentro del contenedor.
+      test: [ "CMD-SHELL", "mysqladmin ping -h localhost -uroot -p$$MYSQL_ROOT_PASSWORD" ]
       interval: 15s
       timeout: 10s
       retries: 20
@@ -26,20 +28,20 @@ services:
       db:
         condition: service_healthy
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8080/actuator/health" ]
+      test: [ "CMD", "curl", "-f", "http://localhost:${SERVER_PORT:-8080}/actuator/health" ]
       interval: 15s
       timeout: 10s
       retries: 20
       start_period: 30s
     environment:
       SPRING_PROFILES_ACTIVE: prod
-      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/DBB_DATALAB?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/${MYSQL_DATABASE:-DBB_DATALAB}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       SPRING_DATASOURCE_USERNAME: ${MYSQL_USER:-datalab_user}
       SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD:-password_datalab_user}
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SERVER_PORT: ${SERVER_PORT:-8080}
     ports:
-      - "8038:8080"
+      - "${BACKEND_PORT:-8038}:${SERVER_PORT:-8080}"
 
   phpmyadmin:
     image: phpmyadmin:5
@@ -49,17 +51,21 @@ services:
     environment:
       PMA_HOST: db
       PMA_PORT: 3306
+      PMA_USER: ${PHPMYADMIN_USER:-datalab_user}
+      PMA_PASSWORD: ${PHPMYADMIN_PASSWORD:-password_datalab_user}
     ports:
-      - "8039:80"
+      - "${PHPMYADMIN_PORT:-8039}:80"
   frontend:
     build:
       context: ./frontend_datalab
+      args:
+        NG_APP_BACKEND_BASE: ${NG_APP_BACKEND_BASE:-http://localhost:8038}
     depends_on:
       app:
         condition: service_healthy
     environment:
       NODE_ENV: production
     ports:
-      - 8040:80
+      - "${FRONTEND_PORT:-8040}:80"
 volumes:
   db_data:

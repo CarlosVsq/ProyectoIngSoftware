@@ -19,7 +19,7 @@
       <div class="bg-white p-6 rounded-xl border-l-4 border-blue-400 shadow-sm flex flex-col justify-between">
         <div>
           <h3 class="text-gray-500 text-sm font-semibold mb-1">Meta Mensual</h3>
-          <p class="text-3xl font-semibold text-blue-700">85</p>
+          <p class="text-3xl font-semibold text-blue-700">{{ resumen?.meta ?? 0 }}</p>
         </div>
         <p class="text-sm text-gray-400 mt-2">Participantes objetivo</p>
       </div>
@@ -27,7 +27,7 @@
       <div class="bg-white p-6 rounded-xl border-l-4 border-green-400 shadow-sm flex flex-col justify-between">
         <div>
           <h3 class="text-gray-500 text-sm font-semibold mb-1">Reclutados</h3>
-          <p class="text-3xl font-semibold text-green-600">{{ resumen?.total || 67 }}</p>
+          <p class="text-3xl font-semibold text-green-600">{{ resumen?.total ?? 0 }}</p>
         </div>
         <p class="text-sm text-gray-400 mt-2">Este mes</p>
       </div>
@@ -35,7 +35,7 @@
       <div class="bg-white p-6 rounded-xl border-l-4 border-orange-400 shadow-sm flex flex-col justify-between">
         <div>
           <h3 class="text-gray-500 text-sm font-semibold mb-1">Completas</h3>
-          <p class="text-3xl font-semibold text-orange-500">{{ resumen?.completas || 0 }}</p>
+          <p class="text-3xl font-semibold text-orange-500">{{ resumen?.completas ?? 0 }}</p>
         </div>
         <p class="text-sm text-gray-400 mt-2">Aceptación</p>
       </div>
@@ -43,7 +43,7 @@
       <div class="bg-white p-6 rounded-xl border-l-4 border-purple-400 shadow-sm flex flex-col justify-between">
         <div>
           <h3 class="text-gray-500 text-sm font-semibold mb-1">Incompletas</h3>
-          <p class="text-3xl font-semibold text-purple-600">{{ resumen?.incompletas || 0 }}</p>
+          <p class="text-3xl font-semibold text-purple-600">{{ resumen?.incompletas ?? 0 }}</p>
         </div>
         <p class="text-sm text-gray-400 mt-2">En proceso</p>
       </div>

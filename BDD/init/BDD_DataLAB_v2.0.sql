@@ -1,6 +1,7 @@
 --
 -- SECCIÓN 1: DDL - CREACIÓN DE TABLAS
 --
+SET NAMES 'utf8mb4';
 
 CREATE DATABASE IF NOT EXISTS `DBB_DATALAB` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 USE `DBB_DATALAB`;
@@ -165,7 +166,7 @@ INSERT INTO `Variable`
 ('Comuna', 'comuna', 'Texto', NULL, 'Ambos', 'Datos sociodemograficos', 11, 0),
 ('Ciudad', 'ciudad', 'Texto', NULL, 'Ambos', 'Datos sociodemograficos', 12, 0),
 ('Zona', 'zona', 'SeleccionUnica', 'Urbana,Rural', 'Ambos', 'Datos sociodemograficos', 13, 0),
-('Vive usted en esta zona desde hace mas de 5 anios?', 'vive_mas_5_anios_zona', 'SeleccionUnica', 'Si,No', 'Ambos', 'Datos sociodemograficos', 14, 0),
+('Vive usted en esta zona desde hace mas de 5 años?', 'vive_mas_5_anios_zona', 'SeleccionUnica', 'Si,No', 'Ambos', 'Datos sociodemograficos', 14, 0),
 ('Nivel educacional', 'nivel_educacional', 'SeleccionUnica', 'Basico,Medio,Superior', 'Ambos', 'Datos sociodemograficos', 15, 0),
 ('Ocupacion actual', 'ocupacion_actual', 'Texto', NULL, 'Ambos', 'Datos sociodemograficos', 16, 0),
 ('Prevision de salud actual', 'prevision_salud', 'SeleccionUnica', 'Fonasa,Isapre,Capredena / Dipreca,Sin prevision,Otra', 'Ambos', 'Datos sociodemograficos', 17, 0),
@@ -196,8 +197,8 @@ INSERT INTO `Variable`
 (`enunciado`, `codigo_variable`, `tipo_dato`, `opciones`, `aplica_a`, `seccion`, `orden_enunciado`, `es_obligatoria`) VALUES
 ('Estado de tabaquismo', 'estado_tabaquismo', 'SeleccionUnica', 'Nunca fumo (<100 cigarrillos vida),Exfumador,Fumador actual', 'Ambos', 'Tabaquismo', 31, 0),
 ('Cantidad promedio fumada', 'cantidad_cigarrillos_dia', 'SeleccionUnica', '1-9 cigarrillos/dia (poco),10-19 cigarrillos/dia (moderado),>=20 cigarrillos/dia (mucho)', 'Ambos', 'Tabaquismo', 32, 0),
-('Tiempo total fumando', 'tiempo_total_fumando', 'SeleccionUnica', '<10 anios,10-20 anios,>20 anios', 'Ambos', 'Tabaquismo', 33, 0),
-('Si exfumador: tiempo desde que dejo de fumar', 'tiempo_desde_dejo_fumar', 'SeleccionUnica', '<5 anios,5-10 anios,>10 anios', 'Ambos', 'Tabaquismo', 34, 0);
+('Tiempo total fumando', 'tiempo_total_fumando', 'SeleccionUnica', '<10 años,10-20 años,>20 años', 'Ambos', 'Tabaquismo', 33, 0),
+('Si exfumador: tiempo desde que dejo de fumar', 'tiempo_desde_dejo_fumar', 'SeleccionUnica', '<5 años,5-10 años,>10 años', 'Ambos', 'Tabaquismo', 34, 0);
 
 /* 6. Consumo de alcohol */
 INSERT INTO `Variable`
@@ -205,8 +206,8 @@ INSERT INTO `Variable`
 ('Estado de consumo', 'estado_consumo_alcohol', 'SeleccionUnica', 'Nunca,Exconsumidor,Consumidor actual', 'Ambos', 'Consumo de alcohol', 35, 0),
 ('Frecuencia', 'frecuencia_consumo_alcohol', 'SeleccionUnica', 'Ocasional (<1 vez/semana),Regular (1-3 veces/semana),Frecuente (>=4 veces/semana)', 'Ambos', 'Consumo de alcohol', 36, 0),
 ('Cantidad tipica por ocasion', 'cantidad_tragos_ocasion', 'SeleccionUnica', '1-2 tragos (poco),3-4 tragos (moderado),>=5 tragos (mucho)', 'Ambos', 'Consumo de alcohol', 37, 0),
-('Anios de consumo habitual', 'anios_consumo_alcohol', 'SeleccionUnica', '<10 anios,10-20 anios,>20 anios', 'Ambos', 'Consumo de alcohol', 38, 0),
-('Si exconsumidor: tiempo desde que dejo de beber regularmente', 'tiempo_desde_dejo_beber', 'SeleccionUnica', '<5 anios,5-10 anios,>10 anios', 'Ambos', 'Consumo de alcohol', 39, 0);
+('Años de consumo habitual', 'anios_consumo_alcohol', 'SeleccionUnica', '<10 años,10-20 años,>20 años', 'Ambos', 'Consumo de alcohol', 38, 0),
+('Si exconsumidor: tiempo desde que dejo de beber regularmente', 'tiempo_desde_dejo_beber', 'SeleccionUnica', '<5 años,5-10 años,>10 años', 'Ambos', 'Consumo de alcohol', 39, 0);
 
 /* 7. Factores dietarios y ambientales */
 INSERT INTO `Variable`
@@ -230,14 +231,14 @@ INSERT INTO `Variable`
 (`enunciado`, `codigo_variable`, `tipo_dato`, `opciones`, `aplica_a`, `seccion`, `orden_enunciado`, `es_obligatoria`) VALUES
 ('Resultado del examen para Helicobacter pylori', 'hp_resultado_actual', 'SeleccionUnica', 'Positivo,Negativo,Desconocido', 'Ambos', 'Infeccion por Helicobacter pylori', 53, 0),
 ('Ha tenido alguna vez un resultado POSITIVO para H. pylori en el pasado?', 'hp_resultado_prev_positivo', 'SeleccionUnica', 'Si,No,No recuerda', 'Ambos', 'Infeccion por Helicobacter pylori', 54, 0),
-('Anio aproximado del resultado positivo previo para H. pylori', 'hp_resultado_prev_anio', 'Numero', NULL, 'Ambos', 'Infeccion por Helicobacter pylori', 55, 0),
+('Año aproximado del resultado positivo previo para H. pylori', 'hp_resultado_prev_anio', 'Numero', NULL, 'Ambos', 'Infeccion por Helicobacter pylori', 55, 0),
 ('Tipo de examen del resultado positivo previo para H. pylori', 'hp_resultado_prev_tipo_examen', 'Texto', NULL, 'Ambos', 'Infeccion por Helicobacter pylori', 56, 0),
 ('Recibio tratamiento para erradicacion de H. pylori?', 'hp_tratamiento_erradicacion', 'SeleccionUnica', 'Si,No,No recuerda', 'Ambos', 'Infeccion por Helicobacter pylori', 57, 0),
-('Anio del tratamiento para erradicacion de H. pylori', 'hp_tratamiento_erradicacion_anio', 'Numero', NULL, 'Ambos', 'Infeccion por Helicobacter pylori', 58, 0),
+('Año del tratamiento para erradicacion de H. pylori', 'hp_tratamiento_erradicacion_anio', 'Numero', NULL, 'Ambos', 'Infeccion por Helicobacter pylori', 58, 0),
 ('Esquema de tratamiento para erradicacion de H. pylori', 'hp_tratamiento_erradicacion_esquema', 'Texto', NULL, 'Ambos', 'Infeccion por Helicobacter pylori', 59, 0),
 ('Tipo de examen realizado para H. pylori', 'hp_tipo_examen_actual', 'SeleccionUnica', 'Test de aliento (urea-C13/C14),Antigeno en deposiciones,Serologia (IgG),Test rapido de ureasa,Histologia / Biopsia,Otro', 'Ambos', 'Infeccion por Helicobacter pylori', 60, 0),
 ('Tipo de examen realizado para H. pylori - Otro (especificar)', 'hp_tipo_examen_otro', 'Texto', NULL, 'Ambos', 'Infeccion por Helicobacter pylori', 61, 0),
-('Hace cuanto tiempo se realizo el test para H. pylori?', 'hp_tiempo_desde_test', 'SeleccionUnica', '<1 anio,1-5 anios,>5 anios', 'Ambos', 'Infeccion por Helicobacter pylori', 62, 0),
+('Hace cuanto tiempo se realizo el test para H. pylori?', 'hp_tiempo_desde_test', 'SeleccionUnica', '<1 año,1-5 años,>5 años', 'Ambos', 'Infeccion por Helicobacter pylori', 62, 0),
 ('Uso de antibioticos o inhibidores de bomba de protones (IBP) en las 4 semanas previas al examen de H. pylori', 'hp_uso_antibioticos_ibp_4s', 'SeleccionUnica', 'Si,No,No recuerda', 'Ambos', 'Infeccion por Helicobacter pylori', 63, 0),
 ('Ha repetido el examen para H. pylori posteriormente?', 'hp_repite_examen', 'SeleccionUnica', 'Si,No', 'Ambos', 'Infeccion por Helicobacter pylori', 64, 0),
 ('Fecha del examen para H. pylori mas reciente', 'hp_repite_examen_fecha_reciente', 'Fecha', NULL, 'Ambos', 'Infeccion por Helicobacter pylori', 65, 0),

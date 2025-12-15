@@ -25,36 +25,44 @@
         <span class="material-icons text-[20px]">home</span>
         <span *ngIf="open">Inicio</span>
       </a>
-
-      <a routerLink="/lista-participantes" routerLinkActive="bg-blue-50 text-primary font-semibold"
-        class="flex items-center gap-3 px-6 py-3 text-gray-600 hover:bg-blue-50 hover:text-primary transition">
-        <span class="material-icons text-[20px]">people</span>
-        <span *ngIf="open">Listado de Participantes</span>
+      <!-- Listado de Participantes -->
+      <a routerLink="/lista-participantes" routerLinkActive="bg-blue-50 text-blue-700"
+        [class.pointer-events-none]="!auth.canViewData()" [class.opacity-50]="!auth.canViewData()"
+        class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors group">
+        <span class="material-icons text-xl group-hover:text-blue-600 transition-colors">people</span>
+        <span *ngIf="open" class="font-medium text-sm">Listado Participantes</span>
       </a>
 
-      <a routerLink="/reclutamiento" routerLinkActive="bg-blue-50 text-primary font-semibold"
-        class="flex items-center gap-3 px-6 py-3 text-gray-600 hover:bg-blue-50 hover:text-primary transition">
-        <span class="material-icons text-[20px]">timeline</span>
-        <span *ngIf="open">Progreso de Reclutamiento</span>
+      <!-- Progreso (Modificar) -->
+      <a routerLink="/reclutamiento" routerLinkActive="bg-blue-50 text-blue-700"
+        [class.pointer-events-none]="!auth.canModify()" [class.opacity-50]="!auth.canModify()"
+        class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors group">
+        <span class="material-icons text-xl group-hover:text-blue-600 transition-colors">show_chart</span>
+        <span *ngIf="open" class="font-medium text-sm">Progreso Reclutamiento</span>
       </a>
 
-
-      <a routerLink="/exportaciones" routerLinkActive="bg-blue-50 text-primary font-semibold"
-        class="flex items-center gap-3 px-6 py-3 text-gray-600 hover:bg-blue-50 hover:text-primary transition">
-        <span class="material-icons text-[20px]">download</span>
-        <span *ngIf="open">Exportaciones</span>
+      <!-- Exportaciones -->
+      <a routerLink="/exportaciones" routerLinkActive="bg-blue-50 text-blue-700"
+        [class.pointer-events-none]="!auth.canExport()" [class.opacity-50]="!auth.canExport()"
+        class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors group">
+        <span class="material-icons text-xl group-hover:text-blue-600 transition-colors">file_download</span>
+        <span *ngIf="open" class="font-medium text-sm">Exportaciones</span>
       </a>
 
-      <a routerLink="/auditoria" routerLinkActive="bg-blue-50 text-primary font-semibold"
-        class="flex items-center gap-3 px-6 py-3 text-gray-600 hover:bg-blue-50 hover:text-primary transition">
-        <span class="material-icons text-[20px]">shield</span>
-        <span *ngIf="open">Auditoría</span>
+      <!-- Auditoría -->
+      <a routerLink="/auditoria" routerLinkActive="bg-blue-50 text-blue-700"
+        [class.pointer-events-none]="!auth.canAdmin()" [class.opacity-50]="!auth.canAdmin()"
+        class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors group">
+        <span class="material-icons text-xl group-hover:text-blue-600 transition-colors">manage_history</span>
+        <span *ngIf="open" class="font-medium text-sm">Auditoría</span>
       </a>
 
-      <a routerLink="/configuracion" routerLinkActive="bg-blue-50 text-primary font-semibold"
-        class="flex items-center gap-3 px-6 py-3 text-gray-600 hover:bg-blue-50 hover:text-primary transition">
-        <span class="material-icons text-[20px]">settings</span>
-        <span *ngIf="open">Configuración</span>
+      <!-- Configuración -->
+      <a routerLink="/configuracion" routerLinkActive="bg-blue-50 text-blue-700"
+        [class.pointer-events-none]="!auth.canAdmin()" [class.opacity-50]="!auth.canAdmin()"
+        class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors group">
+        <span class="material-icons text-xl group-hover:text-blue-600 transition-colors">settings</span>
+        <span *ngIf="open" class="font-medium text-sm">Configuración</span>
       </a>
     </nav>
   </div>

@@ -41,11 +41,12 @@ public class SecurityConfig {
                         // Endpoints públicos (sin autenticación)
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/variables").permitAll()
 
                         // --- SEGURIDAD DE AUDITORÍA ---
-                        // Se permite acceso a Administradores e Investigadoras Principales
-                        .requestMatchers("/api/auditoria/**")
-                        .hasAnyAuthority("Administrador", "Investigadora Principal")
+                        // Se permite acceso a Usuarios Autenticados (El control fino lo hace el
+                        // Frontend/Controller)
+                        .requestMatchers("/api/auditoria/**").authenticated()
                         // --------------------------------------------------------------------------
 
                         .requestMatchers("/actuator/health").permitAll()
