@@ -6,11 +6,21 @@
 const envBackendBase =
   (import.meta as any)?.env?.NG_APP_BACKEND_BASE as string | undefined;
 
-const fallbackHost =
+const hostname =
   typeof window !== 'undefined' && window.location?.hostname
-    ? `http://${window.location.hostname}:8038`
-    : 'http://localhost:8038';
+    ? window.location.hostname
+    : 'localhost';
+
+const fallbackHost = `http://${hostname}:8038`;
+const resolvedEnv = envBackendBase?.trim();
+
+// Evita usar un valor de build que apunte a localhost cuando el frontend se sirve desde otro host.
+const shouldIgnoreEnvLocalhost =
+  resolvedEnv &&
+  resolvedEnv.includes('localhost') &&
+  hostname !== 'localhost' &&
+  hostname !== '127.0.0.1';
 
 export const BACKEND_BASE_URL =
-  (envBackendBase && envBackendBase.trim()) || fallbackHost;
+  !resolvedEnv || shouldIgnoreEnvLocalhost ? fallbackHost : resolvedEnv;
 export const API_BASE_URL = `${BACKEND_BASE_URL}/api`;
