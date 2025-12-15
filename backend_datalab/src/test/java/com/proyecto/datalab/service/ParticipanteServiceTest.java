@@ -251,7 +251,8 @@ class ParticipanteServiceTest {
         verify(variableRepository, times(1)).findById(1);
         verify(variableRepository, times(1)).findById(2);
         verify(respuestaRepository, times(2)).save(any(Respuesta.class));
-        verify(auditoriaService, times(2)).registrarAccion(eq(reclutador), eq(participante), eq("ACTUALIZAR"),
+        // The service performs a grouped audit at the end, so it is called 1 time
+        verify(auditoriaService, times(1)).registrarAccion(eq(reclutador), eq(participante), eq("ACTUALIZAR"),
                 eq("Respuesta"), anyString());
     }
 
@@ -346,7 +347,7 @@ class ParticipanteServiceTest {
                 eq(participante),
                 eq("ACTUALIZAR"),
                 eq("Respuesta"),
-                contains("Se guardo respuesta para participante ID:"));
+                contains("Se guardaron respuestas"));
     }
 
     // ==================== PRUEBAS OBTENER PARTICIPANTES ====================
@@ -382,5 +383,82 @@ class ParticipanteServiceTest {
         assertNotNull(resultado);
         assertTrue(resultado.isEmpty());
         verify(participanteRepository, times(1)).findAll();
+    }
+    // ==================== PRUEBAS VALIDACIONES ADICIONALES ====================
+
+    @Test
+    @DisplayName("Lanzar excepción cuando el teléfono tiene formato inválido")
+    void testCrearParticipante_TelefonoInvalido() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            participanteService.crearParticipante("María", "telefono_invalido", "Dir", "CASO", 1);
+        });
+        verify(participanteRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Lanzar excepción cuando el grupo es inválido")
+    void testCrearParticipante_GrupoInvalido() {
+        when(usuarioRepository.findById(1)).thenReturn(Optional.of(reclutador));
+        assertThrows(IllegalArgumentException.class, () -> {
+            participanteService.crearParticipante("María", "555-1234", "Dir", "INVALIDO", 1);
+        });
+        verify(participanteRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Marcar ficha como COMPLETA cuando todas las obligatorias están respondidas")
+    void testGuardarRespuestas_FichaCompleta() {
+        // Variable obligatoria
+        Variable varObligatoria = new Variable();
+        varObligatoria.setIdVariable(1);
+        varObligatoria.setCodigoVariable("V1");
+        varObligatoria.setEsObligatoria(true);
+        varObligatoria.setAplicaA("AMBOS");
+
+        // Mockear repositorios
+        when(participanteRepository.findById(1)).thenReturn(Optional.of(participante));
+        when(usuarioRepository.findById(1)).thenReturn(Optional.of(reclutador));
+        when(variableRepository.findById(1)).thenReturn(Optional.of(varObligatoria));
+        // Mockear findAll para que devuelva la variable obligatoria
+        when(variableRepository.findAll()).thenReturn(Arrays.asList(varObligatoria));
+        when(respuestaRepository.save(any(Respuesta.class))).thenAnswer(i -> i.getArgument(0));
+
+        Map<String, String> respuestasMap = new HashMap<>();
+        respuestasMap.put("1", "valor");
+
+        participanteService.guardarRespuestas(1, respuestasMap, 1, null, null, null, null);
+
+        assertEquals(EstadoFicha.COMPLETA, participante.getEstadoFicha());
+    }
+
+    @Test
+    @DisplayName("Marcar ficha como INCOMPLETA cuando falta una obligatoria")
+    void testGuardarRespuestas_FichaIncompleta() {
+        // Variable obligatoria
+        Variable varObligatoria = new Variable();
+        varObligatoria.setIdVariable(1);
+        varObligatoria.setCodigoVariable("V1");
+        varObligatoria.setEsObligatoria(true);
+        varObligatoria.setAplicaA("AMBOS");
+
+        Variable varOpcional = new Variable();
+        varOpcional.setIdVariable(2);
+        varOpcional.setCodigoVariable("V2");
+        varOpcional.setEsObligatoria(false);
+
+        when(participanteRepository.findById(1)).thenReturn(Optional.of(participante));
+        when(usuarioRepository.findById(1)).thenReturn(Optional.of(reclutador));
+        when(variableRepository.findById(2)).thenReturn(Optional.of(varOpcional));
+        // Devolvemos ambas
+        when(variableRepository.findAll()).thenReturn(Arrays.asList(varObligatoria, varOpcional));
+        when(respuestaRepository.save(any(Respuesta.class))).thenAnswer(i -> i.getArgument(0));
+
+        // Solo respondemos la opcional
+        Map<String, String> respuestasMap = new HashMap<>();
+        respuestasMap.put("2", "valor");
+
+        participanteService.guardarRespuestas(1, respuestasMap, 1, null, null, null, null);
+
+        assertEquals(EstadoFicha.INCOMPLETA, participante.getEstadoFicha());
     }
 }
